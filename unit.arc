@@ -187,13 +187,6 @@
 
 (mac suite (suite-name . tests)
      (ensure-suite-obj)
-     (each (test-name test-body)
-           (pair tests)
-           `(prn "print me, please!"))) ;;doesn't execute this line, seemingly.
-
-
-(mac suite (suite-name . tests)
-     (ensure-suite-obj)
      `(let suite (obj)
            (each (test-name test-body) ;;undefined identifier
                  (pair ,tests)
