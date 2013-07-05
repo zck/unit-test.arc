@@ -22,61 +22,6 @@
       square
       (assert-is 4 (* 2 2)))
 
-(mac suite (suite-name . tests)
-     (ensure-suite-obj)
-     `(when ',tests
-        (= (*unit-tests* ',suite-name)
-           (suite-helper (obj) ,suite-name ,@tests))))
-
-(mac suite-helper (suite-obj suite-name test-name test-body . other-tests)
-     `(let real-suite ,suite-obj
-           ;; '(test ,suite-name ,test-name ,test-body)))
-           (= (*unit-tests* ',suite-name)
-              real-suite)
-           (= (real-suite ',test-name)
-              (test ,suite-name ,test-name ,test-body))
-
-           (prn (no ',other-tests))
-           (prn ',other-tests)
-           (prn (type ',other-tests))))
-           ;; (when ',other-tests
-           ;;   (suite-helper real-suite ,suite-name ,@other-tests))))
-
-(mac tm (cur . others)
-     `(do (prn ,cur)
-             (when ',others
-               (prn "there's more!"))))
-               ;; (tm ,@others))))
-
-
-
-
-;;this is super broken. Not sure what's going on here.
-(mac suite (suite-name . tests)
-     (ensure-suite-obj)
-     (w/uniq (test-name test-body test-map)
-             `(let ,test-map (obj)
-                   (each (,test-name ,test-body) (pair ',tests)
-                         (prn (type ,test-body))
-                         (prn (list->str ,test-body))
-                         (= (,test-map ,test-name)
-                            ``(test ,,suite-name ,test-name ,,test-body)))
-                            ;; (test ,suite-name ,test-name (err "what?"))))
-                   ;; (quote ( ,suite-name ,test-name ,@test-body))))
-                   ;; (quote (test ',suite-name ',test-name ,@test-body))))
-                   (= (*unit-tests* ',suite-name) ,test-map))))
-
-(mac suite (suite-name . tests)
-     (ensure-suite-obj)
-     `(let test-map (obj)
-           (each (test-name test-body) (pair ',tests)
-                 ;; (prn (type ,test-body))
-                 ;; (prn (list->str ,test-body))
-                 (= (test-map test-name)
-                    (test ,suite-name test-name test-body))) ;; might not be having test-body run!
-           (= (*unit-tests* ',suite-name) test-map)))
-
-
 (mac run-suites suite-names
      `(each name ',suite-names
            (run-suite name)))
@@ -86,16 +31,6 @@
      (unless (bound '*unit-tests*)
        (= *unit-tests* (obj))))
 
-
-
-
-
-;; (mac suite (suite-name . tests)
-;;      `(let suite (obj)
-;;            (= (suite (car ',tests))
-;;               (fn () (cadr ',tests))) ;;something here gets "inverting what looks like a function call"
-;;            (= (*unit-tests* ',suite-name)
-;;               suite)))
 
 (mac assert (test fail-message)
      `(unless ,test
@@ -149,83 +84,6 @@
 
 
 
-(mac suite (suite-name . tests)
-     (ensure-suite-obj)
-     `(let suite (obj)
-           (each (test-name test-body)
-                 (pair ',tests)
-                 (prn test-name #\tab test-body))
-           suite))
-;; arc> (suite a b c)
-;; b	c
-;; #hash()
-
-(mac suite (suite-name . tests)
-     (ensure-suite-obj)
-     `(let suite (obj)
-           (each (test-name test-body)
-                 (pair ',tests)
-                 (= (suite test-name) t)) ;;inverting function call
-           suite))
-
-
-(mac suite (suite-name . tests)
-     (ensure-suite-obj)
-     `(let suite (obj)
-           (each (test-name test-body)
-                 (pair ',tests)
-                 (prn "what?")) ;;fine, but only prints
-           suite))
-
-(mac suite (suite-name . tests)
-     (ensure-suite-obj)
-     `(let suite (obj)
-           (each (test-name test-body)
-                 (pair ',tests)
-                 (prn test-name #\tab test-body)) ;;fine, only prints *quoted* values
-           suite))
-
-(mac suite (suite-name . tests)
-     (ensure-suite-obj)
-     `(let suite (obj)
-           (each (test-name test-body) ;;undefined identifier
-                 (pair ,tests)
-                 (prn test-name #\tab test-body))
-           suite))
-
-(mac suite (suite-name . tests)
-     (ensure-suite-obj)
-     `(let suite (obj)
-           (each (test-name test-body)
-                 (pair ',tests)
-                 suite!a);;loops forever
-           suite))
-
-(mac suite (suite-name . tests)
-     (ensure-suite-obj)
-     `(let suite (obj)
-           (each (test-name test-body)
-                 (pair ',tests)
-                 (let var 'a (suite var)));;loops forever
-           suite))
-
-
-           ;;       (= suite.test-name
-           ;;          (test ',suite-name test-name test-body)))
-           ;; (= (*unit-tests* ',suite-name)
-           ;;    suite)))
-
-(mac suite (suite-name . tests) ;;this doesn't actually run the code in the body
-     (each (test-name test-body)
-           (pair tests)
-           `(prn "executing")
-           `(prn ',test-name #\tab ',test-body)))
-
-(mac make-tests (suite-name . tests)
-     (when tests
-       `(cons ',(car tests)
-              (make-tests suite-name
-                          ,@(cddr tests))))) ;;works!
 
 (mac make-tests (suite-name . tests)
      (when tests
@@ -237,21 +95,7 @@
 
 (mac suite (suite-name . tests)
      (ensure-suite-obj)
-     `(obj suite ',suite-name
-           tests (make-tests ,suite-name
-                             ,@tests))) ;;works to return hash of suite
-
-(mac suite (suite-name . tests)
-     (ensure-suite-obj)
      `(= (*unit-tests* ',suite-name)
          (obj suite ',suite-name
            tests (make-tests ,suite-name
                              ,@tests)))) ;;works to put suite in *unit-tests*
-
-
-
-
-
-(mac helper (test-name test-body)
-     `(do (prn (type ,test-name))
-       (prn ',test-name #\tab ',test-body)))
