@@ -48,16 +48,7 @@
                (prn "there's more!"))))
                ;; (tm ,@others))))
 
-(mac all-bound1 objs
-     `(if ',objs
-          (bound ',(car objs))
-        "nothing's there!"))
 
-(mac all-bound2 objs
-     `(if ',objs
-          (and (bound ',(car objs))
-               (all-bound2 ,@(cdr objs)))
-        (prn "nothing's there!")))
 
 
 
