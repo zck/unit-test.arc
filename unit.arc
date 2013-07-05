@@ -73,17 +73,23 @@
                 (cdr l))
                ")")))
 
-(mac make-tests (suite-name . tests)
-     (when tests
-       `(cons (test suite-name
-                    ,(car tests)
-                    ,(cadr tests))
-              (make-tests suite-name
-                          ,@(cddr tests))))) ;;works!
+(mac make-tests (suite-name suite-obj . tests)
+     (if tests
+         `(let cur-suite ,suite-obj ;;make gensyms
+            (= (cur-suite ',(car tests))
+               (test ,suite-name
+                     ,(car tests)
+                     ,(cadr tests)))
+              (make-tests ,suite-name
+                          cur-suite
+                          ,@(cddr tests)))
+       suite-obj))
+
 
 (mac suite (suite-name . tests)
      (ensure-suite-obj)
      `(= (*unit-tests* ',suite-name)
          (obj suite ',suite-name
            tests (make-tests ,suite-name
-                             ,@tests)))) ;;works to put suite in *unit-tests*
+                             (obj)
+                             ,@tests))))
