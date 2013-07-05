@@ -22,10 +22,6 @@
       square
       (assert-is 4 (* 2 2)))
 
-(mac run-suites suite-names
-     `(each name ',suite-names
-           (run-suite name)))
-;; * ',suite-name) test-map))))
 
 (def ensure-suite-obj ()
      (unless (bound '*unit-tests*)
@@ -76,14 +72,6 @@
                                (self (cdr ele)))))
                 (cdr l))
                ")")))
-
-(mac recur stufflst
-     (if stufflst
-         `(do (prn "the first thing is " ,(car stufflst))
-              (recur ,@(cdr stufflst)))))
-
-
-
 
 (mac make-tests (suite-name . tests)
      (when tests
