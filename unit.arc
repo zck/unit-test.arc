@@ -1,3 +1,11 @@
+(deftem test-results
+  test-name ""
+  suite-name ""
+  status 'fail
+  details ""
+  return-value nil)
+
+
 (mac run-suites suite-names
      `(each name ',suite-names
            (run-suite name)))
@@ -14,9 +22,9 @@
 
 (mac test (suite-name test-name . body)
      `(fn ()
-          (on-err (fn (ex) (obj suite-name ',suite-name test-name ',test-name status 'fail details (details ex)))
+          (on-err (fn (ex) (inst 'testresults 'suite-name ',suite-name 'test-name ',test-name 'status 'fail 'details (details ex)))
                   (fn ()
-                      (obj suite-name ',suite-name test-name ',test-name status 'pass return (do ,@body))))))
+                      (inst 'test-results 'suite-name ',suite-name 'test-name ',test-name 'status 'pass 'return-value (do ,@body))))))
 
 (test math
       square
