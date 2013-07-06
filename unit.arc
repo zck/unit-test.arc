@@ -5,6 +5,10 @@
   details ""
   return-value nil)
 
+(deftem test
+  test-name "no-testname mcgee"
+  suite-name "no-suitename mcgee"
+  test-fn (fn args (assert nil "You didn't give this test a body. So I'm making it fail.")))
 
 (mac run-suites suite-names
      `(each name ',suite-names
@@ -15,10 +19,18 @@
      (aif *unit-tests*.suite-name
           (each (name test) it
                 (prn "running test " name)
-                (test))
+                (test)) ;;need to pull the test-fn out
           (err "no suite found" suite-name " isn't a test suite!")))
 
 
+(mac test (suite-name test-name . body)
+     `(inst 'test
+            'suite-name ',suite-name
+            'test-name ',test-name
+            'test-fn (fn ()
+          (on-err (fn (ex) (inst 'testresults 'suite-name ',suite-name 'test-name ',test-name 'status 'fail 'details (details ex)))
+                  (fn ()
+                      (inst 'test-results 'suite-name ',suite-name 'test-name ',test-name 'status 'pass 'return-value (do ,@body)))))))
 
 (mac test (suite-name test-name . body)
      `(fn ()
