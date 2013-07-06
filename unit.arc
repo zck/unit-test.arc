@@ -17,9 +17,9 @@
 (def run-suite (suite-name)
      (ensure-suite-obj)
      (aif *unit-tests*.suite-name
-          (each (name test) it
+          (each (name cur-test) it!tests
                 (prn "running test " name)
-                (test)) ;;need to pull the test-fn out
+                (cur-test!test-fn))
           (err "no suite found" suite-name " isn't a test suite!")))
 
 
