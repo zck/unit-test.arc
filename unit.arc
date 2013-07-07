@@ -43,12 +43,23 @@
 
 (def run-suite (suite-name)
      (ensure-globals)
+     (prn "\nRunning suite " suite-name)
      (= *unit-test-results*.suite-name (obj))
      (aif *unit-tests*.suite-name
-          (each (name cur-test) it!tests
-                (pretty-results (= *unit-test-results*.suite-name.name
-                                   (cur-test!test-fn))))
+          (do (each (name cur-test) it!tests
+                    (pretty-results (= *unit-test-results*.suite-name.name
+                                       (cur-test!test-fn))))
+              (summarize-suite suite-name))
           (err "no suite found" suite-name " isn't a test suite!")))
+
+(def summarize-suite (suite-name)
+     (with (tests 0
+            passed 0)
+           (each (test-name test-result) *unit-test-results*.suite-name
+                 (++ tests)
+                 (when (is test-result!status 'pass)
+                   (++ passed)))
+           (prn "In " suite-name ", " passed " of " tests " passed.")))
 
 (def ensure-globals ()
      (unless (bound '*unit-tests*)
