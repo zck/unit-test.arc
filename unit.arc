@@ -1,3 +1,7 @@
+(deftem suite
+  suite-name ""
+  tests nil)
+
 (deftem test-results
   test-name ""
   suite-name ""
@@ -109,7 +113,7 @@
 (mac suite (suite-name . tests)
      (ensure-suite-obj)
      `(= (*unit-tests* ',suite-name)
-         (obj suite ',suite-name
-           tests (make-tests ,suite-name
+         (inst 'suite 'suite-name ',suite-name
+           'tests (make-tests ,suite-name
                              (obj)
                              ,@tests))))
