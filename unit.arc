@@ -20,10 +20,12 @@
 
 (def run-suite (suite-name)
      (ensure-globals)
+     (= *unit-test-results*.suite-name (obj))
      (aif *unit-tests*.suite-name
           (each (name cur-test) it!tests
                 (prn "running test " name)
-                (cur-test!test-fn))
+                (= *unit-test-results*.suite-name.name
+                   (cur-test!test-fn)))
           (err "no suite found" suite-name " isn't a test suite!")))
 
 
