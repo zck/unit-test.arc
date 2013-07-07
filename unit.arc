@@ -14,6 +14,12 @@
   suite-name "no-suitename mcgee"
   test-fn (fn args (assert nil "You didn't give this test a body. So I'm making it fail.")))
 
+(def pretty-results (test-result)
+     (pr test-result!suite-name "." test-result!test-name " ")
+     (if (is test-result!status 'pass)
+         (prn  "passed!")
+       (prn "failed: " test-result!details)))
+
 (mac run-suites suite-names
      `(each name ',suite-names
            (run-suite name)))
@@ -23,9 +29,8 @@
      (= *unit-test-results*.suite-name (obj))
      (aif *unit-tests*.suite-name
           (each (name cur-test) it!tests
-                (prn "running test " name)
-                (= *unit-test-results*.suite-name.name
-                   (cur-test!test-fn)))
+                (pretty-results (= *unit-test-results*.suite-name.name
+                                   (cur-test!test-fn))))
           (err "no suite found" suite-name " isn't a test suite!")))
 
 
