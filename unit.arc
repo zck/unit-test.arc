@@ -2,17 +2,34 @@
   suite-name ""
   tests nil)
 
+(mac suite (suite-name . tests)
+     (ensure-globals)
+     `(= (*unit-tests* ',suite-name)
+         (inst 'suite 'suite-name ',suite-name
+           'tests (make-tests ,suite-name
+                             (obj)
+                             ,@tests))))
+
+(deftem test
+  test-name "no-testname mcgee"
+  suite-name "no-suitename mcgee"
+  test-fn (fn args (assert nil "You didn't give this test a body. So I'm making it fail.")))
+
+(mac test (suite-name test-name . body)
+     `(inst 'test
+            'suite-name ',suite-name
+            'test-name ',test-name
+            'test-fn (fn ()
+          (on-err (fn (ex) (inst 'testresults 'suite-name ',suite-name 'test-name ',test-name 'status 'fail 'details (details ex)))
+                  (fn ()
+                      (inst 'test-results 'suite-name ',suite-name 'test-name ',test-name 'status 'pass 'return-value (do ,@body)))))))
+
 (deftem test-results
   test-name ""
   suite-name ""
   status 'fail
   details ""
   return-value nil)
-
-(deftem test
-  test-name "no-testname mcgee"
-  suite-name "no-suitename mcgee"
-  test-fn (fn args (assert nil "You didn't give this test a body. So I'm making it fail.")))
 
 (def pretty-results (test-result)
      (pr test-result!suite-name "." test-result!test-name " ")
@@ -33,33 +50,11 @@
                                    (cur-test!test-fn))))
           (err "no suite found" suite-name " isn't a test suite!")))
 
-
-(mac test (suite-name test-name . body)
-     `(inst 'test
-            'suite-name ',suite-name
-            'test-name ',test-name
-            'test-fn (fn ()
-          (on-err (fn (ex) (inst 'testresults 'suite-name ',suite-name 'test-name ',test-name 'status 'fail 'details (details ex)))
-                  (fn ()
-                      (inst 'test-results 'suite-name ',suite-name 'test-name ',test-name 'status 'pass 'return-value (do ,@body)))))))
-
-(mac test (suite-name test-name . body)
-     `(fn ()
-          (on-err (fn (ex) (inst 'testresults 'suite-name ',suite-name 'test-name ',test-name 'status 'fail 'details (details ex)))
-                  (fn ()
-                      (inst 'test-results 'suite-name ',suite-name 'test-name ',test-name 'status 'pass 'return-value (do ,@body))))))
-
-(test math
-      square
-      (assert-is 4 (* 2 2)))
-
-
 (def ensure-globals ()
      (unless (bound '*unit-tests*)
        (= *unit-tests* (obj)))
      (unless (bound '*unit-test-results*)
        (= *unit-test-results* (obj))))
-
 
 (mac assert (test fail-message)
      `(unless ,test
@@ -89,8 +84,6 @@
                     (string (intersperse #\space (rev ret)))
                     ")"))))
 
-
-
 (def list->str (l) ;;recursive
      (if (atom l)
          (string l)
@@ -117,12 +110,3 @@
                           cur-suite
                           ,@(cddr tests)))
        suite-obj))
-
-
-(mac suite (suite-name . tests)
-     (ensure-globals)
-     `(= (*unit-tests* ',suite-name)
-         (inst 'suite 'suite-name ',suite-name
-           'tests (make-tests ,suite-name
-                             (obj)
-                             ,@tests))))
