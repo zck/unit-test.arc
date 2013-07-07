@@ -19,7 +19,7 @@
            (run-suite name)))
 
 (def run-suite (suite-name)
-     (ensure-suite-obj)
+     (ensure-globals)
      (aif *unit-tests*.suite-name
           (each (name cur-test) it!tests
                 (prn "running test " name)
@@ -47,9 +47,11 @@
       (assert-is 4 (* 2 2)))
 
 
-(def ensure-suite-obj ()
+(def ensure-globals ()
      (unless (bound '*unit-tests*)
-       (= *unit-tests* (obj))))
+       (= *unit-tests* (obj)))
+     (unless (bound '*unit-test-results*)
+       (= *unit-test-results* (obj))))
 
 
 (mac assert (test fail-message)
@@ -111,7 +113,7 @@
 
 
 (mac suite (suite-name . tests)
-     (ensure-suite-obj)
+     (ensure-globals)
      `(= (*unit-tests* ',suite-name)
          (inst 'suite 'suite-name ',suite-name
            'tests (make-tests ,suite-name
