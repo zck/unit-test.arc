@@ -84,6 +84,19 @@
                                    (awhen ,fail-message
                                           (string ". " it)))))))
 
+(mac assert-iso (expected actual (o fail-message))
+     (w/uniq (exp act)
+             `(with (,exp ,expected
+                     ,act ,actual)
+                    (assert (iso ,exp ,act)
+                            (string (list->str ',actual)
+                                   " should be "
+                                   (list->str ,expected)
+                                   " but instead was "
+                                   (list->str ,act)
+                                   (awhen ,fail-message
+                                          (string ". " it)))))))
+
 (def list->str (l) ;;iterative
      (if (atom l)
          (string l)
