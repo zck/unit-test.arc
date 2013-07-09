@@ -78,9 +78,9 @@
                     (assert (is ,exp ,act)
                             (string (list->str ',actual)
                                    " should be "
-                                   ',expected
+                                   (list->str ,expected)
                                    " but instead was "
-                                   ,act
+                                   (list->str ,act)
                                    (awhen ,fail-message
                                           (string ". " it)))))))
 
