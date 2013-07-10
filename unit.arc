@@ -1,6 +1,7 @@
 (deftem suite
   suite-name ""
-  tests nil)
+  tests nil
+  nested-suites nil)
 
 (mac suite (suite-name . tests)
      (ensure-globals)
@@ -9,6 +10,26 @@
            'tests (make-tests ,suite-name
                              (obj)
                              ,@tests))))
+
+;;returns a cons. The car is a list of tests.
+;;The cdr is a list of nested suites.
+(mac suite-partition everything
+     (if everything
+         `(if (caris (car ',everything)
+                     'suite)
+              (let the-rest (suite-partition ,@(cdr everything))
+                   (cons (cons ,(car everything)
+                               (car the-rest))
+                         (cdr the-rest)))
+            (let the-rest (suite-partition ,@(cddr everything))
+                 (cons (car the-rest)
+                       (cons (test 'temp
+                                   ',(car everything)
+                                   ,(cadr everything))
+                             (cdr the-rest)))))
+       `(list nil nil)))
+              ;;test
+
 
 (deftem test
   test-name "no-testname mcgee"
