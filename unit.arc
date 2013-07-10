@@ -13,23 +13,23 @@
 
 ;;returns a cons. The car is a list of tests.
 ;;The cdr is a list of nested suites.
-(mac suite-partition everything
+
+;;going to need to deal with test names: right now, the test takes a suite name. Maybe just make this already a string that's pre-concatenated.
+(mac suite-partition everything ;;test me
      (if everything
          `(if (caris (car ',everything)
                      'suite)
               (let the-rest (suite-partition ,@(cdr everything))
-                   (cons (cons ,(car everything)
-                               (car the-rest))
-                         (cdr the-rest)))
+                   (cons (car the-rest)
+                         (cons ,(car everything)
+                               (cdr the-rest))))
             (let the-rest (suite-partition ,@(cddr everything))
-                 (cons (car the-rest)
-                       (cons (test 'temp
+                 (cons (cons (test 'temp
                                    ',(car everything)
                                    ,(cadr everything))
-                             (cdr the-rest)))))
+                             (car the-rest))
+                       (cdr the-rest))))
        `(list nil nil)))
-              ;;test
-
 
 (deftem test
   test-name "no-testname mcgee"
