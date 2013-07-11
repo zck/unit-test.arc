@@ -29,7 +29,7 @@
                                    ,(cadr everything))
                              (car the-rest))
                        (cdr the-rest))))
-       `(list nil nil)))
+       `(cons nil nil)))
 
 (deftem test
   test-name "no-testname mcgee"
