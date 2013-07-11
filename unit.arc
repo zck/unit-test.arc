@@ -6,10 +6,13 @@
 (mac suite (suite-name . tests)
      (ensure-globals)
      `(= (*unit-tests* ',suite-name)
-         (inst 'suite 'suite-name ',suite-name
+         (make-suite ,suite-name ,@tests)))
+
+(mac make-suite (suite-name . tests)
+     `(inst 'suite 'suite-name ',suite-name
            'tests (make-tests ,suite-name
                              (obj)
-                             ,@tests))))
+                             ,@tests)))
 
 ;;returns a cons. The car is a list of tests.
 ;;The cdr is a list of nested suites.
