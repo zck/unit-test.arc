@@ -20,13 +20,13 @@
 ;;going to need to deal with test names: right now, the test takes a suite name. Maybe just make this already a string that's pre-concatenated.
 (mac suite-partition everything
      (if everything
-         `(if (caris (car ',everything)
+         (if (caris (car everything)
                      'suite)
-              (let the-rest (suite-partition ,@(cdr everything))
+              `(let the-rest (suite-partition ,@(cdr everything))
                    (cons (car the-rest)
-                         (cons ,(car everything)
+                         (cons (make-suite ,@(cdr (car everything)))
                                (cdr the-rest))))
-            (let the-rest (suite-partition ,@(cddr everything))
+            `(let the-rest (suite-partition ,@(cddr everything))
                  (cons (cons (test 'temp
                                    ',(car everything)
                                    ,(cadr everything))
