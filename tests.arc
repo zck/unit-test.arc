@@ -24,3 +24,16 @@
             suite-name (assert-is 'sample-suite sample-test!suite-name)
             test-fn (assert (isa (sample-test!test-fn)
                                  'table)"The test function should run and return the value we set up.")))
+
+(with (pass-test-val ((make-test-fn sample-suite pass-test 3))
+       fail-test-val ((make-test-fn sample-suite
+       fail-test (err "failing..."))))
+      (suite make-test-fn
+             pass-has-right-return-value (assert-is 3 pass-test-val!return-value)
+             pass-has-test-name (assert-is 'pass-test pass-test-val!test-name)
+             fail-has-test-name (assert-is 'fail-test fail-test-val!test-name)
+             pass-has-suite-name (assert-is 'sample-suite pass-test-val!suite-name)
+             fail-has-suite-name (assert-is 'sample-suite fail-test-val!suite-name)
+             pass-has-pass-status (assert-is 'pass pass-test-val!status)
+             fail-has-fail-status (assert-is 'fail fail-test-val!status)
+             fail-has-proper-details (assert-is "failing..." fail-test-val!details)))
