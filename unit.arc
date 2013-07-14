@@ -19,10 +19,13 @@
      `(inst 'test
             'suite-name ',suite-name
             'test-name ',test-name
-            'test-fn (fn ()
+            'test-fn (make-test-fn ,suite-name ,test-name ,@body)))
+
+(mac make-test-fn (suite-name test-name . body)
+     `(fn ()
           (on-err (fn (ex) (inst 'testresults 'suite-name ',suite-name 'test-name ',test-name 'status 'fail 'details (details ex)))
                   (fn ()
-                      (inst 'test-results 'suite-name ',suite-name 'test-name ',test-name 'status 'pass 'return-value (do ,@body)))))))
+                      (inst 'test-results 'suite-name ',suite-name 'test-name ',test-name 'status 'pass 'return-value (do ,@body))))))
 
 (deftem test-results
   test-name ""
