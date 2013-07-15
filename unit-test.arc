@@ -18,18 +18,20 @@
 ;;The cdr is a list of nested suites.
 
 ;;going to need to deal with test names: right now, the test takes a suite name. Maybe just make this already a string that's pre-concatenated.
-(mac suite-partition everything
-     (if everything
-         (if (caris (car everything)
+(mac suite-partition (parent-suite-name . children)
+     (if children
+         (if (caris (car children)
                      'suite)
-              `(let the-rest (suite-partition ,@(cdr everything))
+              `(let the-rest (suite-partition ,(cadr (car children))
+                                              ,@(cdr children))
                    (cons (car the-rest)
-                         (cons (make-suite ,@(cdr (car everything)))
+                         (cons (make-suite ,@(cdr (car children)))
                                (cdr the-rest))))
-            `(let the-rest (suite-partition ,@(cddr everything))
-                 (cons (cons (test 'temp
-                                   ',(car everything)
-                                   ,(cadr everything))
+            `(let the-rest (suite-partition ,parent-suite-name
+                                            ,@(cddr children))
+                 (cons (cons (test ,parent-suite-name
+                                   ,(car children)
+                                   ,(cadr children))
                              (car the-rest))
                        (cdr the-rest))))
        `(cons nil nil)))
