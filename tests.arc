@@ -37,3 +37,22 @@
              pass-has-pass-status (assert-is 'pass pass-test-val!status)
              fail-has-fail-status (assert-is 'fail fail-test-val!status)
              fail-has-proper-details (assert-is "failing..." fail-test-val!details)))
+
+(with (single-test (suite-partition a 3)
+       single-suite (suite-partition (suite a))
+       two-of-each (suite-partition a 3 (suite b c 4) d 5 (suite e 6 f 7)))
+      (suite suite-partition
+             nothing (assert-iso (suite-partition)
+                                 (cons nil nil))
+             one-test-has-no-suite (assert-is nil
+                                              (cdr single-test))
+             one-test-has-one-test (assert-is 1
+                                              (len (car single-test)))
+             single-suite-has-no-tests (assert-is nil
+                                                  (car single-suite))
+             single-suite-has-one-suite (assert-is 1
+                                                   (len (car single-test)))
+             two-of-each-has-two-tests (assert-is 2
+                                                  (len (car two-of-each)))
+             two-of-each-has-two-suites (assert-is 2
+                                                  (len (cdr two-of-each)))))
