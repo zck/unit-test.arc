@@ -39,7 +39,7 @@
              fail-has-proper-details (assert-is "failing..." fail-test-val!details)))
 
 (with (single-test (suite-partition a 3)
-       single-suite (suite-partition (suite a))
+       single-suite (suite-partition (suite a b 3))
        two-of-each (suite-partition a 3 (suite b c 4) d 5 (suite e 6 f 7)))
       (suite suite-partition
              nothing (assert-iso (suite-partition)
@@ -51,7 +51,14 @@
              single-suite-has-no-tests (assert-is nil
                                                   (car single-suite))
              single-suite-has-one-suite (assert-is 1
-                                                   (len (car single-test)))
+                                                   (len (cdr single-suite)))
+             single-suite-has-right-name (assert-is 'a
+                                                    ((cadr single-suite) 'suite-name))
+
+             single-suite-contains-one-test (assert-is 1
+                                                       (len ((cadr single-suite) 'tests)))
+             single-suite-contains-right-test (assert-is 'b
+                                                         (car (keys ((cadr single-suite) 'tests))))
              two-of-each-has-two-tests (assert-is 2
                                                   (len (car two-of-each)))
              two-of-each-has-two-suites (assert-is 2
