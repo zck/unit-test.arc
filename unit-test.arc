@@ -1,14 +1,38 @@
 (deftem suite
   suite-name ""
-  tests nil)
+  tests nil
+  nested-suites nil)
 
 (mac suite (suite-name . tests)
      (ensure-globals)
      `(= (*unit-tests* ',suite-name)
-         (inst 'suite 'suite-name ',suite-name
+         (make-suite ,suite-name ,@tests)))
+
+(mac make-suite (suite-name . tests)
+     `(inst 'suite 'suite-name ',suite-name
            'tests (make-tests ,suite-name
                              (obj)
-                             ,@tests))))
+                             ,@tests)))
+
+;;returns a cons. The car is a list of tests.
+;;The cdr is a list of nested suites.
+
+;;going to need to deal with test names: right now, the test takes a suite name. Maybe just make this already a string that's pre-concatenated.
+(mac suite-partition everything
+     (if everything
+         (if (caris (car everything)
+                     'suite)
+              `(let the-rest (suite-partition ,@(cdr everything))
+                   (cons (car the-rest)
+                         (cons (make-suite ,@(cdr (car everything)))
+                               (cdr the-rest))))
+            `(let the-rest (suite-partition ,@(cddr everything))
+                 (cons (cons (test 'temp
+                                   ',(car everything)
+                                   ,(cadr everything))
+                             (car the-rest))
+                       (cdr the-rest))))
+       `(cons nil nil)))
 
 (deftem test
   test-name "no-testname mcgee"
