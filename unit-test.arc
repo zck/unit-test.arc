@@ -24,17 +24,17 @@
                      'suite)
               `(let the-rest (suite-partition ,(cadr (car children))
                                               ,@(cdr children))
-                    (push (make-suite ,@(cdr (car children)))
-                          the-rest!suites)
+                    (= (the-rest!suites ',(cadr (car children)))
+                       (make-suite ,@(cdr (car children))))
                     the-rest)
             `(let the-rest (suite-partition ,parent-suite-name
                                             ,@(cddr children))
-                  (push (test ,parent-suite-name
-                              ,(car children)
-                              ,(cadr children))
-                        the-rest!tests)
+                  (= (the-rest!tests ',(car children))
+                     (test ,parent-suite-name
+                           ,(car children)
+                           ,(cadr children)))
                   the-rest))
-       `(obj 'tests nil 'suites nil)))
+       `(obj tests (obj) suites (obj))))
 
 (deftem test
   test-name "no-testname mcgee"
