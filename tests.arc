@@ -40,30 +40,31 @@
 
 (with (single-test (suite-partition test-suite-1 a 3)
        single-suite (suite-partition test-suite-2 (suite a b 3))
-       two-of-each (suite-partition test-suite-3 a 3 (suite b c 4) d 5 (suite e 6 f 7)))
+       two-of-each (suite-partition test-suite-3 a 3 (suite b c 4) d 5 (suite e 6 f 7))
+       none-of-either (suite-partition test-suite-4))
       (suite suite-partition
-             nothing (assert-iso (suite-partition 'blank)
-                                 (cons nil nil))
-             one-test-has-no-suite (assert-is nil
-                                              (cdr single-test))
+             nothing (do (assert-is t (empty none-of-either!tests))
+                         (assert-is t (empty none-of-either!suites)))
+             one-test-has-no-suite (assert-is t
+                                              (empty single-test!suites))
              one-test-has-one-test (assert-is 1
-                                              (len (car single-test)))
+                                              (len single-test!tests))
              one-test-has-right-test (assert-is 'a
-                                                ((caar single-test) 'test-name))
+                                                ((car single-test!tests) 'test-name))
              one-test-has-right-suite (assert-is 'test-suite-1
-                                                ((caar single-test) 'suite-name))
-             single-suite-has-no-tests (assert-is nil
-                                                  (car single-suite))
+                                                ((car single-test!tests) 'suite-name))
+             single-suite-has-no-tests (assert-is t
+                                                  (empty single-suite!tests))
              single-suite-has-one-suite (assert-is 1
-                                                   (len (cdr single-suite)))
+                                                   (len single-suite!suites))
              single-suite-has-right-suite-name (assert-is 'a
-                                                    ((cadr single-suite) 'suite-name))
+                                                    ((car single-suite!suites) 'suite-name))
 
              single-suite-contains-one-test (assert-is 1
-                                                       (len ((cadr single-suite) 'tests)))
+                                                       (len ((car single-suite!suites) 'tests)))
              single-suite-contains-right-test (assert-is 'b
-                                                         (car (keys ((cadr single-suite) 'tests))))
+                                                         (car (keys ((car single-suite!suites) 'tests))))
              two-of-each-has-two-tests (assert-is 2
-                                                  (len (car two-of-each)))
+                                                  (len two-of-each!tests))
              two-of-each-has-two-suites (assert-is 2
-                                                  (len (cdr two-of-each)))))
+                                                  (len two-of-each!suites))))
