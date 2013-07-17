@@ -15,9 +15,6 @@
                  'nested-suites processed-children!suites
                  'tests processed-children!tests)))
 
-;;returns a cons. The car is a list of tests.
-;;The cdr is a list of nested suites.
-
 ;;going to need to deal with test names: right now, the test takes a suite name. Maybe just make this already a string that's pre-concatenated.
 (mac suite-partition (parent-suite-name . children)
      (if children
