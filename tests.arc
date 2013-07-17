@@ -67,3 +67,34 @@
                                                   (len two-of-each!tests))
              two-of-each-has-two-suites (assert-is 2
                                                   (len two-of-each!suites))))
+
+
+(with (single-test (make-suite test-suite-1 a 3)
+       single-suite (make-suite test-suite-2 (suite a b 3))
+       two-of-each (make-suite test-suite-3 a 3 (suite b c 4) d 5 (suite e 6 f 7))
+       none-of-either (suite-partition test-suite-4))
+      (suite make-suite
+             nothing (do (assert-is t (empty none-of-either!tests))
+                         (assert-is t (empty none-of-either!suites)))
+             single-test-has-no-suite (assert-is t
+                                              (empty single-test!suites))
+             single-test-has-one-test (assert-is 1
+                                              (len single-test!tests))
+             single-test-has-right-test (assert-is 'a
+                                                single-test!tests!a!test-name)
+             single-test-has-right-suite (assert-is 'test-suite-1
+                                                 single-test!tests!a!suite-name)
+             single-suite-has-no-tests (assert-is t
+                                                  (empty single-suite!tests))
+             single-suite-has-one-suite (assert-is 1
+                                                   (len single-suite!nested-suites))
+             single-suite-has-right-suite-name (assert-is 'a
+                                                          single-suite!nested-suites!a!suite-name)
+             single-suite-contains-one-test (assert-is 1
+                                                       (len single-suite!nested-suites!a!tests))
+             single-suite-contains-right-test (assert-is 'b
+                                                         single-suite!nested-suites!a!tests!b!test-name)
+             two-of-each-has-two-tests (assert-is 2
+                                                  (len two-of-each!tests))
+             two-of-each-has-two-suites (assert-is 2
+                                                  (len two-of-each!nested-suites))))

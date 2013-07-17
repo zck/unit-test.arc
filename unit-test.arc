@@ -3,16 +3,17 @@
   tests nil
   nested-suites nil)
 
-(mac suite (suite-name . tests)
+(mac suite (suite-name . children)
      (ensure-globals)
      `(= (*unit-tests* ',suite-name)
-         (make-suite ,suite-name ,@tests)))
+         (make-suite ,suite-name ,@children)))
 
-(mac make-suite (suite-name . tests)
-     `(inst 'suite 'suite-name ',suite-name
-           'tests (make-tests ,suite-name
-                             (obj)
-                             ,@tests)))
+(mac make-suite (suite-name . children)
+     `(let processed-children (suite-partition ,suite-name
+                                               ,@children)
+           (inst 'suite 'suite-name ',suite-name
+                 'nested-suites processed-children!suites
+                 'tests processed-children!tests)))
 
 ;;returns a cons. The car is a list of tests.
 ;;The cdr is a list of nested suites.
