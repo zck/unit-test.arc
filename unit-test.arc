@@ -77,9 +77,10 @@
      (each (name cur-test) cur-suite!tests
            (pretty-results (= ((*unit-test-results* cur-suite!suite-name) name)
                               (cur-test!test-fn))))
+     (summarize-suite cur-suite!suite-name)
      (each (child-suite-name child-suite) cur-suite!nested-suites
-           (run-suite child-suite))
-     (summarize-suite cur-suite!suite-name))
+           (run-suite child-suite)))
+
 
 (def summarize-suite (suite-name)
      (with (tests 0
