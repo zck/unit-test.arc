@@ -66,18 +66,20 @@
 
 (mac run-suites suite-names
      `(each name ',suite-names
-           (run-suite name)))
+            (aif *unit-tests*.name
+                 (run-suite it)
+                 (err "no suite found: " name " isn't a test suite."))))
 
-(def run-suite (suite-name)
+(def run-suite (cur-suite)
      (ensure-globals)
-     (prn "\nRunning suite " suite-name)
-     (= *unit-test-results*.suite-name (obj))
-     (aif *unit-tests*.suite-name
-          (do (each (name cur-test) it!tests
-                    (pretty-results (= *unit-test-results*.suite-name.name
-                                       (cur-test!test-fn))))
-              (summarize-suite suite-name))
-          (err "no suite found" suite-name " isn't a test suite!")))
+     (prn "\nRunning suite " cur-suite!suite-name)
+     (= (*unit-test-results* cur-suite!suite-name) (obj))
+     (each (name cur-test) cur-suite!tests
+           (pretty-results (= ((*unit-test-results* cur-suite!suite-name) name)
+                              (cur-test!test-fn))))
+     (each (child-suite-name child-suite) cur-suite!nested-suites
+           (run-suite child-suite))
+     (summarize-suite cur-suite!suite-name))
 
 (def summarize-suite (suite-name)
      (with (tests 0
