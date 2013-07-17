@@ -68,7 +68,7 @@
      `(each name ',suite-names
             (aif *unit-tests*.name
                  (run-suite it)
-                 (err "no suite found: " name " isn't a test suite."))))
+                 (prn "\nno suite found: " name " isn't a test suite."))))
 
 (def run-suite (cur-suite)
      (ensure-globals)
