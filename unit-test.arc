@@ -1,14 +1,38 @@
 (deftem suite
   suite-name ""
-  tests nil)
+  tests nil
+  nested-suites nil)
 
-(mac suite (suite-name . tests)
+(mac suite (suite-name . children)
      (ensure-globals)
      `(= (*unit-tests* ',suite-name)
-         (inst 'suite 'suite-name ',suite-name
-           'tests (make-tests ,suite-name
-                             (obj)
-                             ,@tests))))
+         (make-suite ,suite-name ,@children)))
+
+(mac make-suite (suite-name . children)
+     `(let processed-children (suite-partition ,suite-name
+                                               ,@children)
+           (inst 'suite 'suite-name ',suite-name
+                 'nested-suites processed-children!suites
+                 'tests processed-children!tests)))
+
+;;going to need to deal with test names: right now, the test takes a suite name. Maybe just make this already a string that's pre-concatenated.
+(mac suite-partition (parent-suite-name . children)
+     (if children
+         (if (caris (car children)
+                     'suite)
+              `(let the-rest (suite-partition ,(cadr (car children))
+                                              ,@(cdr children))
+                    (= (the-rest!suites ',(cadr (car children)))
+                       (make-suite ,@(cdr (car children))))
+                    the-rest)
+            `(let the-rest (suite-partition ,parent-suite-name
+                                            ,@(cddr children))
+                  (= (the-rest!tests ',(car children))
+                     (test ,parent-suite-name
+                           ,(car children)
+                           ,(cadr children)))
+                  the-rest))
+       `(obj tests (obj) suites (obj))))
 
 (deftem test
   test-name "no-testname mcgee"
@@ -42,18 +66,21 @@
 
 (mac run-suites suite-names
      `(each name ',suite-names
-           (run-suite name)))
+            (aif *unit-tests*.name
+                 (run-suite it)
+                 (err "no suite found: " name " isn't a test suite."))))
 
-(def run-suite (suite-name)
+(def run-suite (cur-suite)
      (ensure-globals)
-     (prn "\nRunning suite " suite-name)
-     (= *unit-test-results*.suite-name (obj))
-     (aif *unit-tests*.suite-name
-          (do (each (name cur-test) it!tests
-                    (pretty-results (= *unit-test-results*.suite-name.name
-                                       (cur-test!test-fn))))
-              (summarize-suite suite-name))
-          (err "no suite found" suite-name " isn't a test suite!")))
+     (prn "\nRunning suite " cur-suite!suite-name)
+     (= (*unit-test-results* cur-suite!suite-name) (obj))
+     (each (name cur-test) cur-suite!tests
+           (pretty-results (= ((*unit-test-results* cur-suite!suite-name) name)
+                              (cur-test!test-fn))))
+     (summarize-suite cur-suite!suite-name)
+     (each (child-suite-name child-suite) cur-suite!nested-suites
+           (run-suite child-suite)))
+
 
 (def summarize-suite (suite-name)
      (with (tests 0
