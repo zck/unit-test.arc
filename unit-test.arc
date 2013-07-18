@@ -76,12 +76,12 @@
 
 (def run-suite (cur-suite)
      (ensure-globals)
-     (prn "\nRunning suite " cur-suite!suite-name)
-     (= (*unit-test-results* cur-suite!suite-name) (obj))
+     (prn "\nRunning suite " cur-suite!full-suite-name)
+     (= (*unit-test-results* cur-suite!full-suite-name) (obj))
      (each (name cur-test) cur-suite!tests
-           (pretty-results (= ((*unit-test-results* cur-suite!suite-name) name)
+           (pretty-results (= ((*unit-test-results* cur-suite!full-suite-name) name)
                               (cur-test!test-fn))))
-     (summarize-suite cur-suite!suite-name)
+     (summarize-suite cur-suite!full-suite-name)
      (each (child-suite-name child-suite) cur-suite!nested-suites
            (run-suite child-suite)))
 
