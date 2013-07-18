@@ -1,19 +1,21 @@
 (deftem suite
   suite-name ""
   tests nil
-  nested-suites nil)
+  nested-suites nil
+  full-suite-name "")
 
 (mac suite (suite-name . children)
      (ensure-globals)
      `(= (*unit-tests* ',suite-name)
-         (make-suite ,suite-name ,@children)))
+         (make-suite ,suite-name nil ,@children)))
 
-(mac make-suite (suite-name . children)
+(mac make-suite (suite-name parent-suite-name . children)
      `(let processed-children (suite-partition ,suite-name
                                                ,@children)
            (inst 'suite 'suite-name ',suite-name
                  'nested-suites processed-children!suites
-                 'tests processed-children!tests)))
+                 'tests processed-children!tests
+                 'full-suite-name (string (when ',parent-suite-name (string ',parent-suite-name ".")) ',suite-name))))
 
 ;;going to need to deal with test names: right now, the test takes a suite name. Maybe just make this already a string that's pre-concatenated.
 (mac suite-partition (parent-suite-name . children)
@@ -23,7 +25,9 @@
               `(let the-rest (suite-partition ,(cadr (car children))
                                               ,@(cdr children))
                     (= (the-rest!suites ',(cadr (car children)))
-                       (make-suite ,@(cdr (car children))))
+                       (make-suite ,(cadr (car children))
+                                   ,parent-suite-name
+                                   ,@(cddr (car children))))
                     the-rest)
             `(let the-rest (suite-partition ,parent-suite-name
                                             ,@(cddr children))
