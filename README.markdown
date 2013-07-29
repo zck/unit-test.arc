@@ -8,7 +8,7 @@ Yeah, everyone wants examples first, so here they are:
 
 ### Defining a suite
 
-To declare a suite, give it a name, then a declare a bunch of tests. When declaring a test, give it a name, then the code to run it. Use asserts (see below) when you want to throw if the two things aren't equal to each other.
+To declare a suite, give it a name, then a declare a bunch of tests. To declare a test, give it a name, then the code to run it. Use asserts (see below) when you want to throw if the two things aren't equal to each other.
 
     (suite math
            good (assert-is 4 (+ 2 2))
@@ -31,7 +31,7 @@ n.b.: The proper way to call this is with `run-suites`, not `run-suite`. That's 
 
 ## Asserts
 
-You can use either `assert-is` or `assert-iso` for right now. They work the same, except on lists: `assert-is` will throw unless the two lists are the exact same, not just with the same elements. If you're comparing lists, always use `assert-iso`. Note: we can't compare hashtables with either of those. It's a [known bug](https://bitbucket.org/zck/unit-test.arc/issue/18/make-assert-iso-work-on-hashtables); check its [bug report](https://bitbucket.org/zck/unit-test.arc/issue/18/make-assert-iso-work-on-hashtables) for updates.
+You can use either `assert-is` or `assert-iso` for right now. They work the same, except on lists: `assert-is` will throw unless the two lists are the exact same, not just with the same elements. If you're comparing lists, always use `assert-iso`. Note: we can't compare hashtables with either of those. It's a known bug; check its [bug report](https://bitbucket.org/zck/unit-test.arc/issue/18/make-assert-iso-work-on-hashtables) for updates.
 
 All asserts require the expected value *before* the test-value. This is needed for pretty, pretty messages when the assert fails:
 
@@ -40,18 +40,18 @@ All asserts require the expected value *before* the test-value. This is needed f
 
 ### Custom error messages
 
-You can also add custom error messages to your asserts. They get appended to the end of the error message.
+You can also add custom error messages to your asserts. They get appended to the end of the aforementioned pretty, pretty error message.
 
     arc> (assert-is 42 27 "Those aren't equal?!")
     Error: "27 should be 42 but instead was 27. Those aren't equal?!"
 
 ## Nested suites
 
-Suites can be nested, for the sake of organization, and making them easier to run.
+Suites can be nested, for the sake of organization, and to make them easier to run.
 
 ### Defining nested suites
 
-Put a suite anywhere inside a suite. You can intermingle tests and suites, and it'll deal with it just fine:
+Put a nested suite anywhere inside its parent suite. You can intermingle tests and suites, and it'll deal with it just fine:
 
     (suite math
            numbers-are-equal (assert-is 2 2)
@@ -63,7 +63,7 @@ Put a suite anywhere inside a suite. You can intermingle tests and suites, and i
                   good (assert-is 0 (- 2 2))
                   bad (assert-is 0 (- 2 42))))
 
- If you run a suite, it also runs all nested suites inside it.
+If you run a suite, it also runs all nested suites inside it.
 
     arc> (run-suites math)
 
