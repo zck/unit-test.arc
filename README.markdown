@@ -8,7 +8,7 @@ Yeah, everyone wants examples first, so here they are:
 
 ### Defining a suite
 
-When declaring a test, give it a name, then the code to run it. Use asserts (see below) when you want to throw if the two things aren't equal to each other.
+To declare a suite, give it a name, then a declare a bunch of tests. When declaring a test, give it a name, then the code to run it. Use asserts (see below) when you want to throw if the two things aren't equal to each other.
 
     (suite math
            good (assert-is 4 (+ 2 2))
@@ -47,7 +47,7 @@ You can also add custom error messages to your asserts. They get appended to the
 
 ## Nested suites
 
-Suites can be nested.
+Suites can be nested, for the sake of organization, and making them easier to run.
 
 ### Defining nested suites
 
