@@ -110,11 +110,11 @@
              `(with (,exp ,expected
                      ,act ,actual)
                     (assert (is ,exp ,act)
-                            (string (list->str ',actual)
+                            (string (tostring (disp ',actual))
                                    " should be "
-                                   (list->str ,expected)
+                                   (tostring (disp ,expected))
                                    " but instead was "
-                                   (list->str ,act)
+                                   (tostring (disp ,act))
                                    (awhen ,fail-message
                                           (string ". " it)))))))
 
@@ -123,39 +123,13 @@
              `(with (,exp ,expected
                      ,act ,actual)
                     (assert (iso ,exp ,act)
-                            (string (list->str ',actual)
+                            (string (tostring (disp ',actual))
                                    " should be "
-                                   (list->str ,expected)
+                                   (tostring (disp ,expected))
                                    " but instead was "
-                                   (list->str ,act)
+                                   (tostring (disp ,act))
                                    (awhen ,fail-message
                                           (string ". " it)))))))
-
-(def list->str (l) ;;iterative
-     (if (atom l)
-         (string l)
-       (let ret nil
-            (each ele l
-                  (push (list->str ele)
-                        ret))
-            (string "("
-                    (string (intersperse #\space (rev ret)))
-                    ")"))))
-
-(def list->str (l) ;;recursive
-     (if (atom l)
-         (string l)
-       (string "("
-               (list->str (car l))
-               (when (cdr l) " ")
-               ((afn (ele)
-                     (if (atom ele)
-                         (string ele)
-                       (string (list->str (car ele))
-                               (when (cdr ele) " ")
-                               (self (cdr ele)))))
-                (cdr l))
-               ")")))
 
 (mac make-tests (suite-name suite-obj . tests)
      (if tests
