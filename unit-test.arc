@@ -105,31 +105,24 @@
      `(unless ,test
         (err ,fail-message)))
 
-(mac assert-is (expected actual (o fail-message))
+(mac assert-two-vals (test expected actual (o fail-message))
      (w/uniq (exp act)
              `(with (,exp ,expected
-                     ,act ,actual)
-                    (assert (is ,exp ,act)
+                          ,act ,actual)
+                    (assert (,test ,exp ,act)
                             (string (tostring (disp ',actual))
-                                   " should be "
-                                   (tostring (disp ,expected))
-                                   " but instead was "
-                                   (tostring (disp ,act))
-                                   (awhen ,fail-message
-                                          (string ". " it)))))))
+                                    " should be "
+                                    (tostring (disp ,expected))
+                                    " but instead was "
+                                    (tostring (disp ,act))
+                                    (awhen ,fail-message
+                                           (string ". " it)))))))
+
+(mac assert-is (expected actual (o fail-message))
+     `(assert-two-vals is ,expected ,actual ,fail-message))
 
 (mac assert-iso (expected actual (o fail-message))
-     (w/uniq (exp act)
-             `(with (,exp ,expected
-                     ,act ,actual)
-                    (assert (iso ,exp ,act)
-                            (string (tostring (disp ',actual))
-                                   " should be "
-                                   (tostring (disp ,expected))
-                                   " but instead was "
-                                   (tostring (disp ,act))
-                                   (awhen ,fail-message
-                                          (string ". " it)))))))
+     `(assert-two-vals iso ,expected ,actual ,fail-message))
 
 (mac make-tests (suite-name suite-obj . tests)
      (if tests
