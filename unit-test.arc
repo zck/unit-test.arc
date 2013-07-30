@@ -10,32 +10,34 @@
          (make-suite ,suite-name nil ,@children)))
 
 (mac make-suite (suite-name parent-suite-name . children)
-     `(let processed-children (suite-partition ,suite-name
-                                               ,@children)
-           (inst 'suite 'suite-name ',suite-name
-                 'nested-suites processed-children!suites
-                 'tests processed-children!tests
-                 'full-suite-name (sym (string (when ',parent-suite-name (string ',parent-suite-name ".")) ',suite-name)))))
+     (w/uniq processed-children
+             `(let ,processed-children (suite-partition ,suite-name
+                                                        ,@children)
+                   (inst 'suite 'suite-name ',suite-name
+                         'nested-suites (,processed-children 'suites)
+                         'tests (,processed-children 'tests)
+                         'full-suite-name (sym (string (when ',parent-suite-name (string ',parent-suite-name ".")) ',suite-name))))))
 
 ;;going to need to deal with test names: right now, the test takes a suite name. Maybe just make this already a string that's pre-concatenated.
 (mac suite-partition (parent-suite-name . children)
      (if children
-         (if (caris (car children)
-                     'suite)
-              `(let the-rest (suite-partition ,(cadr (car children))
-                                              ,@(cdr children))
-                    (= (the-rest!suites ',(cadr (car children)))
-                       (make-suite ,(cadr (car children))
-                                   ,parent-suite-name
-                                   ,@(cddr (car children))))
-                    the-rest)
-            `(let the-rest (suite-partition ,parent-suite-name
-                                            ,@(cddr children))
-                  (= (the-rest!tests ',(car children))
-                     (test ,parent-suite-name
-                           ,(car children)
-                           ,(cadr children)))
-                  the-rest))
+         (w/uniq the-rest
+                 (if (caris (car children)
+                            'suite)
+                     `(let ,the-rest (suite-partition ,(cadr (car children))
+                                                      ,@(cdr children))
+                           (= ((,the-rest 'suites) ',(cadr (car children)))
+                              (make-suite ,(cadr (car children))
+                                          ,parent-suite-name
+                                          ,@(cddr (car children))))
+                           ,the-rest)
+                   `(let ,the-rest (suite-partition ,parent-suite-name
+                                                   ,@(cddr children))
+                         (= ((,the-rest 'tests) ',(car children))
+                            (test ,parent-suite-name
+                                  ,(car children)
+                                  ,(cadr children)))
+                         ,the-rest)))
        `(obj tests (obj) suites (obj))))
 
 (deftem test
@@ -69,10 +71,11 @@
        (prn "failed: " test-result!details)))
 
 (mac run-suites suite-names
-     `(each name ',suite-names
-            (aif *unit-tests*.name
-                 (run-suite it)
-                 (prn "\nno suite found: " name " isn't a test suite."))))
+     (w/uniq name
+             `(each ,name ',suite-names
+                    (aif (*unit-tests* ,name)
+                         (run-suite it)
+                         (prn "\nno suite found: " ,name " isn't a test suite.")))))
 
 (def run-suite (cur-suite)
      (ensure-globals)
@@ -126,12 +129,13 @@
 
 (mac make-tests (suite-name suite-obj . tests)
      (if tests
-         `(let cur-suite ,suite-obj ;;make gensyms
-            (= (cur-suite ',(car tests))
-               (test ,suite-name
-                     ,(car tests)
-                     ,(cadr tests)))
-              (make-tests ,suite-name
-                          cur-suite
-                          ,@(cddr tests)))
+         (w/uniq cur-suite
+                 `(let ,cur-suite ,suite-obj ;;make gensyms
+                       (= (,cur-suite ',(car tests))
+                          (test ,suite-name
+                                ,(car tests)
+                                ,(cadr tests)))
+                       (make-tests ,suite-name
+                                   ,cur-suite
+                                   ,@(cddr tests)))
        suite-obj))
