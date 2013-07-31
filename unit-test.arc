@@ -137,5 +137,5 @@
                                 ,(cadr tests)))
                        (make-tests ,suite-name
                                    ,cur-suite
-                                   ,@(cddr tests)))
+                                   ,@(cddr tests))))
        suite-obj))
