@@ -22,8 +22,8 @@
 (mac suite-partition (parent-suite-name . children)
      (if children
          (w/uniq the-rest
-                 (if (caris (car children)
-                            'suite)
+                 (if (isa (car children)
+                          'cons)
                      `(let ,the-rest (suite-partition ,(cadr (car children))
                                                       ,@(cdr children))
                            (= ((,the-rest 'suites) ',(cadr (car children)))
