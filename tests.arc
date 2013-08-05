@@ -104,20 +104,22 @@
 
 
 (suite total-tests
-       3-flat (total-tests (assert-is 3
-                                      (make-suite 3-flat a t b t c t)))
-       3-nested (total-tests (assert-is 3
-                                        (make-suite 3-nested
+       0 (assert-is 0
+                    (total-tests (make-suite a nil)))
+       3-flat (assert-is 3
+                         (total-tests (make-suite 3-flat nil a t b t c t)))
+       3-nested (assert-is 3
+                           (total-tests (make-suite 3-nested nil
                                                     a t
                                                     (suite 3-internal
                                                            b t
                                                            c t))))
        2-empty-main-suite (assert-is 2
-                                     (total-tests (make-suite 2-empty-main-suite
+                                     (total-tests (make-suite 2-empty-main-suite nil
                                                               (suite 2-inner-suite
                                                                      a t b t))))
        7-doubly-nested (assert-is 7
-                                  (total-tests (make-suite 7-doubly-nested
+                                  (total-tests (make-suite 7-doubly-nested nil
                                                            a t
                                                            (suite first-inner
                                                                   b t
@@ -125,7 +127,7 @@
                                                                          c t d t e t f t)
                                                                   g t))))
        7-multiple-nested (assert-is 7
-                                    (total-tests (make-suite 4-multiple-nested
+                                    (total-tests (make-suite 4-multiple-nested nil
                                                              a t
                                                              (suite first-nested
                                                                     b t
