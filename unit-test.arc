@@ -77,22 +77,28 @@
                          (run-suite it)
                          (prn "\nno suite found: " ,name " isn't a test suite.")))))
 
+(deftem suite-results
+  suite-name ""
+  test-results (obj) ;;hash of test-name -> test-result
+  nested-suite-results (obj)) ;;nested-suite-fullname -> suite-result
+
 (def run-suite (cur-suite)
      (ensure-globals)
      (prn "\nRunning suite " cur-suite!full-suite-name)
-     (= (*unit-test-results* cur-suite!full-suite-name) (obj))
+     (= (*unit-test-results* cur-suite!full-suite-name) (inst 'suite-results 'suite-name cur-suite!full-suite-name))
      (each (name cur-test) cur-suite!tests
-           (pretty-results (= ((*unit-test-results* cur-suite!full-suite-name) name)
+           (pretty-results (= (((*unit-test-results* cur-suite!full-suite-name) 'test-results) name)
                               (cur-test!test-fn))))
      (summarize-suite cur-suite!full-suite-name)
      (each (child-suite-name child-suite) cur-suite!nested-suites
-           (run-suite child-suite)))
+           (push (run-suite child-suite)
+                 (((*unit-test-results* cur-suite!full-suite-name) 'nested-suite-results) child-suite-name))))
 
 
 (def summarize-suite (suite-name)
      (with (tests 0
             passed 0)
-           (each (test-name test-result) *unit-test-results*.suite-name
+           (each (test-name test-result) *unit-test-results*.suite-name!test-results
                  (++ tests)
                  (when (is test-result!status 'pass)
                    (++ passed)))
