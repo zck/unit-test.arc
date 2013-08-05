@@ -101,3 +101,34 @@
                                                   (len two-of-each!tests))
              two-of-each-has-two-suites (assert-is 2
                                                   (len two-of-each!nested-suites))))
+
+
+(suite total-tests
+       3-flat (total-tests (assert-is 3
+                                      (make-suite 3-flat a t b t c t)))
+       3-nested (total-tests (assert-is 3
+                                        (make-suite 3-nested
+                                                    a t
+                                                    (suite 3-internal
+                                                           b t
+                                                           c t))))
+       2-empty-main-suite (assert-is 2
+                                     (total-tests (make-suite 2-empty-main-suite
+                                                              (suite 2-inner-suite
+                                                                     a t b t))))
+       7-doubly-nested (assert-is 7
+                                  (total-tests (make-suite 7-doubly-nested
+                                                           a t
+                                                           (suite first-inner
+                                                                  b t
+                                                                  (suite second-inner
+                                                                         c t d t e t f t)
+                                                                  g t))))
+       7-multiple-nested (assert-is 7
+                                    (total-tests (make-suite 4-multiple-nested
+                                                             a t
+                                                             (suite first-nested
+                                                                    b t
+                                                                    c t)
+                                                             (suite second-nested
+                                                                    d t e t f t g t)))))

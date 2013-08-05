@@ -72,10 +72,26 @@
 
 (mac run-suites suite-names
      (w/uniq name
-             `(each ,name ',suite-names
-                    (aif (*unit-tests* ,name)
-                         (run-suite it)
-                         (prn "\nno suite found: " ,name " isn't a test suite.")))))
+             `(with (total-tests 0
+                     passes 0
+                     fails 0)
+                    (each ,name ',suite-names
+                          (aif (*unit-tests* ,name)
+                             (do (run-suite it)
+                                 (++ total-tests (count-tests it))
+                                 (++ passes (count-passes it))
+                                 (++ fails (count-fails it)))
+                             (prn "\nno suite found: " ,name " isn't a test suite.")))
+                    (if (is passes total-tests)
+                        (prn "\nYay! All tests pass! Get yourself a cookie.")
+                      (prn "\nOh dear, " fails " of " total-tests " failed.")))))
+
+(def total-tests (cur-results)
+     (apply +
+            (len cur-results!tests)
+            (map (fn (nested-suite)
+                     (total-tests nested-suite))
+                 (vals cur-results!nested-suites))))
 
 (def run-suite (cur-suite)
      (ensure-globals)
@@ -85,8 +101,10 @@
            (pretty-results (= ((*unit-test-results* cur-suite!full-suite-name) name)
                               (cur-test!test-fn))))
      (summarize-suite cur-suite!full-suite-name)
-     (each (child-suite-name child-suite) cur-suite!nested-suites
-           (run-suite child-suite)))
+     (each (child-suite-name child-suite) cur-suite!nested-suites ;;put the child suite in the results
+           (push (run-suite child-suite)
+                 ((*unit-test-results* cur-suite!full-suite-name) 'child-results)))
+     (*unit-test-results* cur-suite!full-suite-name))
 
 
 (def summarize-suite (suite-name)
