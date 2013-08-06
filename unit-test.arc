@@ -106,19 +106,10 @@
            (pretty-results (= (((*unit-test-results* cur-suite!full-suite-name) 'test-results) name)
                               (cur-test!test-fn))))
      (summarize-suite cur-suite!full-suite-name)
-<<<<<<< local
-     (each (child-suite-name child-suite) cur-suite!nested-suites ;;put the child suite in the results
-=======
      (each (child-suite-name child-suite) cur-suite!nested-suites
->>>>>>> other
            (push (run-suite child-suite)
-<<<<<<< local
-                 ((*unit-test-results* cur-suite!full-suite-name) 'child-results)))
+                 (((*unit-test-results* cur-suite!full-suite-name) 'nested-suite-results) child-suite-name)))
      (*unit-test-results* cur-suite!full-suite-name))
-=======
-                 (((*unit-test-results* cur-suite!full-suite-name) 'nested-suite-results) child-suite-name))))
->>>>>>> other
-
 
 (def summarize-suite (suite-name)
      (with (tests 0
