@@ -83,8 +83,8 @@
                                       (++ passes (count-passes results))
                                       (++ fails (count-fails results))))
                              (prn "\nno suite found: " ,name " isn't a test suite.")))
-                    (if (is passes total-tests)
-                        (prn "\nYay! All " total-tests " tests pass! Get yourself a cookie.")
+                    (if (is passes tests)
+                        (prn "\nYay! All " tests " tests pass! Get yourself a cookie.")
                       (prn "\nOh dear, " fails " of " tests " failed.")))))
 
 (def total-tests (suite-results)
