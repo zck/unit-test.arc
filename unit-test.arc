@@ -85,7 +85,8 @@
                              (prn "\nno suite found: " ,name " isn't a test suite.")))
                     (if (is passes tests)
                         (prn "\nYay! All " tests " tests pass! Get yourself a cookie.")
-                      (prn "\nOh dear, " fails " of " tests " failed.")))))
+                      (prn "\nOh dear, " fails " of " tests " failed."))
+                    nil)))
 
 (def total-tests (suite-results)
      (apply +

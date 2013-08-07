@@ -68,17 +68,19 @@ If you run a suite, it also runs all nested suites inside it.
     arc> (run-suites math)
 
     Running suite math
-    adding.numbers-are-equal-but-this-test-will-fail failed: 4 should be 3 but instead was 4
     math.numbers-are-equal passed!
+    adding.numbers-are-equal-but-this-test-will-fail failed: 4 should be 3 but instead was 4
     In math, 1 of 2 passed.
+
+    Running suite math.adding
+    adding.good passed!
+    adding.bad failed: (+ 2 2) should be 3 but instead was 4
+    In math.adding, 1 of 2 passed.
 
     Running suite adding.subtracting
     subtracting.good passed!
     subtracting.bad failed: (- 2 42) should be 0 but instead was -40
     In adding.subtracting, 1 of 2 passed.
 
-    Running suite math.adding
-    adding.good passed!
-    adding.bad failed: (+ 2 2) should be 3 but instead was 4
-    In math.adding, 1 of 2 passed.
+    Oh dear, 3 of 6 failed.
     nil
