@@ -72,26 +72,44 @@
 
 (mac run-suites suite-names
      (w/uniq name
-             `(with (total-tests 0
+             `(with (tests 0
                      passes 0
                      fails 0)
                     (each ,name ',suite-names
                           (aif (*unit-tests* ,name)
                              (do (run-suite it)
-                                 (++ total-tests (count-tests it))
-                                 (++ passes (count-passes it))
-                                 (++ fails (count-fails it)))
+                                 (let results (*unit-test-results* it!full-suite-name)
+                                      (++ tests (total-tests results))
+                                      (++ passes (count-passes results))
+                                      (++ fails (count-fails results))))
                              (prn "\nno suite found: " ,name " isn't a test suite.")))
                     (if (is passes total-tests)
-                        (prn "\nYay! All tests pass! Get yourself a cookie.")
-                      (prn "\nOh dear, " fails " of " total-tests " failed.")))))
+                        (prn "\nYay! All " total-tests " tests pass! Get yourself a cookie.")
+                      (prn "\nOh dear, " fails " of " tests " failed.")))))
 
-(def total-tests (cur-results)
+(def total-tests (suite-results)
      (apply +
-            (len cur-results!tests)
-            (map (fn (nested-suite)
-                     (total-tests nested-suite))
-                 (vals cur-results!nested-suites))))
+            (len suite-results!test-results)
+            (map total-tests
+                 (vals suite-results!nested-suite-results))))
+
+(def count-passes (suite-results)
+     (apply +
+            (count result-is-pass
+                   (vals suite-results!test-results))
+            (map count-passes
+                 (vals suite-results!nested-suite-results))))
+
+(def count-fails (suite-results)
+     (apply +
+            (count [no (result-is-pass _)]
+                   (vals suite-results!test-results))
+            (map count-fails
+                 (vals suite-results!nested-suite-results))))
+
+(def result-is-pass (test-result)
+     (is test-result!status
+         'pass))
 
 (deftem suite-results
   suite-name ""
@@ -107,8 +125,8 @@
                               (cur-test!test-fn))))
      (summarize-suite cur-suite!full-suite-name)
      (each (child-suite-name child-suite) cur-suite!nested-suites
-           (push (run-suite child-suite)
-                 (((*unit-test-results* cur-suite!full-suite-name) 'nested-suite-results) child-suite-name)))
+           (= (((*unit-test-results* cur-suite!full-suite-name) 'nested-suite-results) child-suite-name)
+              (run-suite child-suite)))
      (*unit-test-results* cur-suite!full-suite-name))
 
 (def summarize-suite (suite-name)
