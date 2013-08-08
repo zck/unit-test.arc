@@ -76,11 +76,14 @@
        (summarize-suites ,@suite-names)
        nil))
 
+(mac run-suite suite-names
+     `(run-suites ,@suite-names))
+
 (mac run-these-suites suite-names
      (w/uniq name
              `(each ,name ',suite-names
                     (aif (*unit-tests* ,name)
-                         (run-suite it)
+                         (run-one-suite it)
                          (prn "\nno suite found: " ,name " isn't a test suite.")))))
 
 (mac summarize-suites suite-names
@@ -124,7 +127,7 @@
   test-results (obj) ;;hash of test-name -> test-result
   nested-suite-results (obj)) ;;nested-suite-fullname -> suite-result
 
-(def run-suite (cur-suite)
+(def run-one-suite (cur-suite)
      (ensure-globals)
      (prn "\nRunning suite " cur-suite!full-suite-name)
      (= (*unit-test-results* cur-suite!full-suite-name) (inst 'suite-results 'suite-name cur-suite!full-suite-name))
@@ -134,7 +137,7 @@
      (summarize-suite cur-suite!full-suite-name)
      (each (child-suite-name child-suite) cur-suite!nested-suites
            (= (((*unit-test-results* cur-suite!full-suite-name) 'nested-suite-results) child-suite-name)
-              (run-suite child-suite)))
+              (run-one-suite child-suite)))
      (*unit-test-results* cur-suite!full-suite-name))
 
 (def summarize-suite (suite-name)
