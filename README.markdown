@@ -27,6 +27,8 @@ To declare a suite, give it a name, then a declare a bunch of tests. To declare 
     Oh dear, 1 of 2 failed.
     nil
 
+You can run multiple suites in `run-suite`, or call `run-suites`. They do the same thing.
+
 ## Asserts
 
 You can use either `assert-is` or `assert-iso` for right now. They work the same, except on lists: `assert-is` will throw unless the two lists are the exact same, not just with the same elements. If you're comparing lists, always use `assert-iso`. Note: we can't compare hashtables with either of those. It's a known bug; check its [bug report](https://bitbucket.org/zck/unit-test.arc/issue/18/make-assert-iso-work-on-hashtables) for updates.
