@@ -71,22 +71,29 @@
        (prn "failed: " test-result!details)))
 
 (mac run-suites suite-names
+     `(do
+       (run-these-suites ,@suite-names)
+       (summarize-suites ,@suite-names)
+       nil))
+
+(mac run-these-suites suite-names
+     (w/uniq name
+             `(each ,name ',suite-names
+                    (aif (*unit-tests* ,name)
+                         (run-suite it)
+                         (prn "\nno suite found: " ,name " isn't a test suite.")))))
+
+(mac summarize-suites suite-names
      (w/uniq name
              `(with (tests 0
-                     passes 0
-                     fails 0)
+                     passes 0)
                     (each ,name ',suite-names
-                          (aif (*unit-tests* ,name)
-                             (do (run-suite it)
-                                 (let results (*unit-test-results* it!full-suite-name)
-                                      (++ tests (total-tests results))
-                                      (++ passes (count-passes results))
-                                      (++ fails (count-fails results))))
-                             (prn "\nno suite found: " ,name " isn't a test suite.")))
+                          (let results (*unit-test-results* ,name)
+                               (++ tests (total-tests results))
+                               (++ passes (count-passes results))))
                     (if (is passes tests)
                         (prn "\nYay! All " tests " tests pass! Get yourself a cookie.")
-                      (prn "\nOh dear, " fails " of " tests " failed."))
-                    nil)))
+                      (prn "\nOh dear, " (- tests passes) " of " tests " failed.")))))
 
 (def total-tests (suite-results)
      (apply +
