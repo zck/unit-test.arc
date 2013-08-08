@@ -111,13 +111,6 @@
             (map count-passes
                  (vals suite-results!nested-suite-results))))
 
-(def count-fails (suite-results)
-     (apply +
-            (count [no (result-is-pass _)]
-                   (vals suite-results!test-results))
-            (map count-fails
-                 (vals suite-results!nested-suite-results))))
-
 (def result-is-pass (test-result)
      (is test-result!status
          'pass))
