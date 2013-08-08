@@ -71,18 +71,63 @@
        (prn "failed: " test-result!details)))
 
 (mac run-suites suite-names
+     `(do
+       (run-these-suites ,@suite-names)
+       (summarize-suites ,@suite-names)
+       nil))
+
+(mac run-suite suite-names
+     `(run-suites ,@suite-names))
+
+(mac run-these-suites suite-names
      (w/uniq name
              `(each ,name ',suite-names
                     (aif (*unit-tests* ,name)
-                         (run-suite it)
+                         (run-one-suite it)
                          (prn "\nno suite found: " ,name " isn't a test suite.")))))
+
+(mac summarize-suites suite-names
+     (w/uniq name
+             `(with (tests 0
+                     passes 0)
+                    (each ,name ',suite-names
+                          (let results (*unit-test-results* ,name)
+                               (++ tests (total-tests results))
+                               (++ passes (count-passes results))))
+                    (if (is passes tests)
+                        (prn "\nYay! All " tests " tests pass! Get yourself a cookie.")
+                      (prn "\nOh dear, " (- tests passes) " of " tests " failed.")))))
+
+(def total-tests (suite-results)
+     (apply +
+            (len suite-results!test-results)
+            (map total-tests
+                 (vals suite-results!nested-suite-results))))
+
+(def count-passes (suite-results)
+     (apply +
+            (count result-is-pass
+                   (vals suite-results!test-results))
+            (map count-passes
+                 (vals suite-results!nested-suite-results))))
+
+(def count-fails (suite-results)
+     (apply +
+            (count [no (result-is-pass _)]
+                   (vals suite-results!test-results))
+            (map count-fails
+                 (vals suite-results!nested-suite-results))))
+
+(def result-is-pass (test-result)
+     (is test-result!status
+         'pass))
 
 (deftem suite-results
   suite-name ""
   test-results (obj) ;;hash of test-name -> test-result
   nested-suite-results (obj)) ;;nested-suite-fullname -> suite-result
 
-(def run-suite (cur-suite)
+(def run-one-suite (cur-suite)
      (ensure-globals)
      (prn "\nRunning suite " cur-suite!full-suite-name)
      (= (*unit-test-results* cur-suite!full-suite-name) (inst 'suite-results 'suite-name cur-suite!full-suite-name))
@@ -91,9 +136,9 @@
                               (cur-test!test-fn))))
      (summarize-suite cur-suite!full-suite-name)
      (each (child-suite-name child-suite) cur-suite!nested-suites
-           (push (run-suite child-suite)
-                 (((*unit-test-results* cur-suite!full-suite-name) 'nested-suite-results) child-suite-name))))
-
+           (= (((*unit-test-results* cur-suite!full-suite-name) 'nested-suite-results) child-suite-name)
+              (run-one-suite child-suite)))
+     (*unit-test-results* cur-suite!full-suite-name))
 
 (def summarize-suite (suite-name)
      (with (tests 0
