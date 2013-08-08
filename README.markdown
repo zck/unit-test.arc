@@ -11,23 +11,21 @@ Yeah, everyone wants examples first, so here they are:
 To declare a suite, give it a name, then a declare a bunch of tests. To declare a test, give it a name, then the code to run it. Use asserts (see below) when you want to throw if the two things aren't equal to each other.
 
     (suite math
-           good (assert-is 4 (+ 2 2))
-           bad (assert-is 3 (+ 2 2)))
-
-
+           this-will-pass (assert-is 4 (+ 2 2))
+           this-will-fail (assert-is 3 (+ 2 2)))
 
 
 ### Running a suite
 
-    arc> (run-suites math)
+    arc> (run-suite math)
 
     Running suite math
-    math.good passed!
-    math.bad failed: (+ 2 2) should be 3 but instead was 4
+    math.this-will-pass passed!
+    math.this-will-fail failed: (+ 2 2) should be 3 but instead was 4
     In math, 1 of 2 passed.
-    nil
 
-n.b.: The proper way to call this is with `run-suites`, not `run-suite`. That's a macro used for internal purposes. I'm going to [fix that](https://bitbucket.org/zck/unit-test.arc/issue/17/make-run-suite-work-if-given-a-suite-name). I know I sometimes use `run-suite` by mistake, so it's not your fault for confusing it.
+    Oh dear, 1 of 2 failed.
+    nil
 
 ## Asserts
 
