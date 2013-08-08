@@ -146,10 +146,65 @@
                                                                                                                    sample3 (inst 'test-results)))
                                                                                   nested2 (inst 'suite-results
                                                                                                 'test-results
-                                                                                                (obj                                                                                                                    sample4 (inst 'test-results)
-                                                                                                                                                                                                                        sample5 (inst 'test-results)
-                                                                                                                                                                                                                        sample6 (inst 'test-results)
-                                                                                                                                                                                                                        sample7 (inst 'test-results))))))))
+                                                                                                (obj sample4 (inst 'test-results)
+                                                                                                     sample5 (inst 'test-results)
+                                                                                                     sample6 (inst 'test-results)
+                                                                                                     sample7 (inst 'test-results))))))))
+
+
+(suite count-passes
+       0-empty (assert-is 0
+                          (count-passes (inst 'suite-results
+                                              'test-results (obj))))
+       0-stuff (assert-is 0
+                          (count-passes (inst 'suite-results
+                                              'test-results (obj fail (inst 'test-results 'status 'fail)))))
+       1 (assert-is 1
+                    (count-passes (inst 'suite-results
+                                        'test-results (obj numbers
+                                                           (inst 'test-results 'status 'pass)))))
+       2-flat (assert-is 2
+                         (count-passes (inst 'suite-results
+                                             'test-results (obj sample1 (inst 'test-results 'status 'pass)
+                                                                sample2 (inst 'test-results 'status 'fail)
+                                                                sample3 (inst 'test-results 'status 'pass)))))
+       3-nested (assert-is 3
+                           (count-passes (inst 'suite-results
+                                               'test-results (obj sample1 (inst 'test-results 'status 'pass)
+                                                                  sample2 (inst 'test-results 'status 'pass)
+                                                                  sample3 (inst 'test-results 'status 'fail))
+                                               'nested-suite-results (obj nested (inst 'suite-results
+                                                                                       'test-results (obj sample1 (inst 'test-results 'status 'pass)
+                                                                                                          sample2 (inst 'test-results 'status 'fail)))))))
+       1-empty-main-suite (assert-is 1
+                                     (count-passes (inst 'suite-results
+                                                         'nested-suite-results (obj nested (inst 'suite-results
+                                                                                                 'test-results (obj sample1 (inst 'test-results 'status 'pass)
+                                                                                                                    sample2 (inst 'test-results 'status 'fail)))))))
+       3-doubly-nested (assert-is 3
+                                  (count-passes (inst 'suite-results
+                                                      'test-results (obj sample1 (inst 'test-results 'status 'fail))
+                                                      'nested-suite-results (obj nested1 (inst 'suite-results
+                                                                                               'test-results (obj sample2 (inst 'test-results 'status 'pass)
+                                                                                                                  sample3 (inst 'test-results 'status 'fail))
+                                                                                               'nested-suite-results (obj nested2 (inst 'suite-results
+                                                                                                                                        'test-results (obj sample4 (inst 'test-results 'status 'pass)
+                                                                                                                                                           sample5 (inst 'test-results 'status 'pass)
+                                                                                                                                                           sample6 (inst 'test-results 'status 'fail)
+                                                                                                                                                           sample7 (inst 'test-results 'status 'fail)))))))))
+       6-multiple-nested (assert-is 6
+                                    (count-passes (inst 'suite-results
+                                                        'test-results (obj sample1 (inst 'test-results 'status 'pass))
+                                                        'nested-suite-results (obj nested1 (inst 'suite-results
+                                                                                                 'test-results (obj sample2 (inst 'test-results 'status 'pass)
+                                                                                                                    sample3 (inst 'test-results 'status 'pass)
+                                                                                                                    sample4 (inst 'test-results 'status 'fail)))
+                                                                                   nested2 (inst 'suite-results
+                                                                                                 'test-results
+                                                                                                 (obj sample4 (inst 'test-results 'status 'pass)
+                                                                                                      sample5 (inst 'test-results 'status 'pass)
+                                                                                                      sample6 (inst 'test-results 'status 'pass)
+                                                                                                      sample7 (inst 'test-results 'status 'fail))))))))
 
 
 
