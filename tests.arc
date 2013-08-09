@@ -41,7 +41,8 @@
 (with (single-test (suite-partition test-suite-1 a 3)
        single-suite (suite-partition test-suite-2 (suite a b 3))
        two-of-each (suite-partition test-suite-3 a 3 (suite b c 4) d 5 (suite e 6 f 7))
-       none-of-either (suite-partition test-suite-4))
+       none-of-either (suite-partition test-suite-4)
+       test-after-nested-suite (suite-partition test-suite-4 (suite a 1) b 2))
       (suite suite-partition
              nothing (do (assert-is t (empty none-of-either!tests))
                          (assert-is t (empty none-of-either!suites)))
@@ -66,7 +67,9 @@
              two-of-each-has-two-tests (assert-is 2
                                                   (len two-of-each!tests))
              two-of-each-has-two-suites (assert-is 2
-                                                  (len two-of-each!suites))))
+                                                  (len two-of-each!suites))
+             test-after-nested-suite-has-correct-parent-name (assert-is 'test-suite-4
+                                                                        test-after-nested-suite!tests!b!suite-name)))
 
 
 (with (single-test (make-suite test-suite-1 nil a 3)

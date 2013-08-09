@@ -24,7 +24,7 @@
          (w/uniq the-rest
                  (if (isa (car children)
                           'cons)
-                     `(let ,the-rest (suite-partition ,(cadr (car children))
+                     `(let ,the-rest (suite-partition ,parent-suite-name
                                                       ,@(cdr children))
                            (= ((,the-rest 'suites) ',(cadr (car children)))
                               (make-suite ,(cadr (car children))
