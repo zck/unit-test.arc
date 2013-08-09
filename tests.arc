@@ -68,6 +68,8 @@
                                                   (len two-of-each!tests))
              two-of-each-has-two-suites (assert-is 2
                                                   (len two-of-each!suites))
+             nested-suit-has-right-name (assert-is 'a
+                                                   single-suite!suites!a!suite-name)
              test-after-nested-suite-has-correct-parent-name (assert-is 'test-suite-4
                                                                         test-after-nested-suite!tests!b!suite-name)))
 
