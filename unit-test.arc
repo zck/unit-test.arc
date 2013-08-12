@@ -15,7 +15,6 @@
                                                         ,@children)
                    (inst 'suite 'suite-name (make-suite-name ',parent-suite-name
                                                              ',suite-name)
-;;(sym (string (when ',parent-suite-name (string ',parent-suite-name ".")) ',suite-name))
                          'nested-suites (,processed-children 'suites)
                          'tests (,processed-children 'tests)
                          'full-suite-name (make-suite-name ',parent-suite-name
