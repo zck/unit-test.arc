@@ -177,7 +177,7 @@
 (mac make-tests (suite-name suite-obj . tests)
      (if tests
          (w/uniq cur-suite
-                 `(let ,cur-suite ,suite-obj ;;make gensyms
+                 `(let ,cur-suite ,suite-obj
                        (= (,cur-suite ',(car tests))
                           (test ,suite-name
                                 ,(car tests)
