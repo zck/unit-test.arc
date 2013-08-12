@@ -58,8 +58,6 @@
                                                   (empty single-suite!tests))
              single-suite-has-one-suite (assert-is 1
                                                    (len single-suite!suites))
-             single-suite-has-right-suite-name (assert-is 'a
-                                                          single-suite!suites!a!suite-name)
              single-suite-contains-one-test (assert-is 1
                                                        (len single-suite!suites!a!tests))
              single-suite-contains-right-test (assert-is 'b
@@ -68,7 +66,7 @@
                                                   (len two-of-each!tests))
              two-of-each-has-two-suites (assert-is 2
                                                   (len two-of-each!suites))
-             nested-suite-has-right-name (assert-is 'a
+             nested-suite-has-right-name (assert-is 'test-suite-2.a
                                                     single-suite!suites!a!suite-name)
              test-after-nested-suite-has-correct-parent-name (assert-is 'test-suite-4
                                                                         test-after-nested-suite!tests!b!suite-name)))
@@ -90,7 +88,7 @@
                                                   (empty single-suite!tests))
              single-suite-has-one-suite (assert-is 1
                                                    (len single-suite!nested-suites))
-             single-suites-nested-suite-has-right-suite-name (assert-is 'a
+             single-suites-nested-suite-has-right-suite-name (assert-is 'test-suite-2.a
                                                                         single-suite!nested-suites!a!suite-name)
              single-suite-has-right-name (assert-is 'test-suite-2
                                                     single-suite!suite-name)

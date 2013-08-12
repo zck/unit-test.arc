@@ -13,7 +13,7 @@
      (w/uniq processed-children
              `(let ,processed-children (suite-partition ,suite-name
                                                         ,@children)
-                   (inst 'suite 'suite-name ',suite-name
+                   (inst 'suite 'suite-name (sym (string (when ',parent-suite-name (string ',parent-suite-name ".")) ',suite-name))
                          'nested-suites (,processed-children 'suites)
                          'tests (,processed-children 'tests)
                          'full-suite-name (sym (string (when ',parent-suite-name (string ',parent-suite-name ".")) ',suite-name))))))
