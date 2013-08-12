@@ -218,3 +218,11 @@
        fail (assert-is nil
                        (result-is-pass (inst 'test-results
                                              'status 'fail))))
+
+(suite make-suite-name
+       regular (assert-is 'pants
+                          (make-suite-name nil
+                                           'pants))
+       nested (assert-is 'parent.child
+                         (make-suite-name 'parent
+                                          'child)))
