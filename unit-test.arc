@@ -125,15 +125,20 @@
 (def run-one-suite (cur-suite)
      (ensure-globals)
      (prn "\nRunning suite " cur-suite!full-suite-name)
-     (= (*unit-test-results* cur-suite!full-suite-name) (inst 'suite-results 'suite-name cur-suite!full-suite-name))
-     (each (name cur-test) cur-suite!tests
-           (pretty-results (= (((*unit-test-results* cur-suite!full-suite-name) 'test-results) name)
-                              (cur-test!test-fn))))
+     (= (*unit-test-results* cur-suite!full-suite-name)
+        (inst 'suite-results 'suite-name cur-suite!full-suite-name))
+     (run-tests cur-suite)
      (summarize-suite cur-suite!full-suite-name)
      (each (child-suite-name child-suite) cur-suite!nested-suites
            (= (((*unit-test-results* cur-suite!full-suite-name) 'nested-suite-results) child-suite-name)
               (run-one-suite child-suite)))
      (*unit-test-results* cur-suite!full-suite-name))
+
+;; Runs all the tests inside cur-suite. Does not recurse.
+(def run-tests (cur-suite)
+     (each (name cur-test) cur-suite!tests
+           (pretty-results (= (((*unit-test-results* cur-suite!full-suite-name) 'test-results) name)
+                              (cur-test!test-fn)))))
 
 (def summarize-suite (suite-name)
      (with (tests 0
