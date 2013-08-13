@@ -75,7 +75,7 @@
 (mac run-suites suite-names
      `(do
        (run-these-suites ,@suite-names)
-       (summarize-suites ,@suite-names)
+       (summarize-run ,@suite-names)
        nil))
 
 (mac run-suite suite-names
@@ -88,7 +88,9 @@
                          (run-one-suite it)
                          (prn "\nno suite found: " ,name " isn't a test suite.")))))
 
-(mac summarize-suites suite-names
+;; Summarize a given test run. That is, print out information about the overall
+;; status of a set of suites.
+(mac summarize-run suite-names
      (w/uniq name
              `(with (tests 0
                      passes 0)
