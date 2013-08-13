@@ -136,9 +136,10 @@
 
 ;; Runs all the tests inside cur-suite. Does not recurse.
 (def run-tests (cur-suite)
-     (each (name cur-test) cur-suite!tests
-           (pretty-results (= (((*unit-test-results* cur-suite!full-suite-name) 'test-results) name)
-                              (cur-test!test-fn)))))
+     (let cur-results ((*unit-test-results* cur-suite!full-suite-name) 'test-results)
+          (each (name cur-test) cur-suite!tests
+                (pretty-results (= cur-results.name
+                                   (cur-test!test-fn))))))
 
 (def summarize-suite (suite-name)
      (with (tests 0
