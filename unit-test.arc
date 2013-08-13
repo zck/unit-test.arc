@@ -131,9 +131,7 @@
         (inst 'suite-results 'suite-name cur-suite!full-suite-name))
      (run-tests cur-suite)
      (summarize-suite cur-suite!full-suite-name)
-     (each (child-suite-name child-suite) cur-suite!nested-suites
-           (= (((*unit-test-results* cur-suite!full-suite-name) 'nested-suite-results) child-suite-name)
-              (run-one-suite child-suite)))
+     (run-child-suites cur-suite)
      (*unit-test-results* cur-suite!full-suite-name))
 
 ;; Runs all the tests inside cur-suite. Does not recurse.
@@ -142,6 +140,13 @@
           (each (name cur-test) cur-suite!tests
                 (pretty-results (= cur-results.name
                                    (cur-test!test-fn))))))
+
+(def run-child-suites (cur-suite)
+     (let cur-results ((*unit-test-results* cur-suite!full-suite-name)
+                       'nested-suite-results)
+          (each (child-suite-name child-suite) cur-suite!nested-suites
+                (= cur-results.child-suite-name
+                   (run-one-suite child-suite)))))
 
 (def summarize-suite (suite-name)
      (with (tests 0
