@@ -66,8 +66,10 @@
                                                   (len two-of-each!tests))
              two-of-each-has-two-suites (assert-is 2
                                                   (len two-of-each!suites))
-             nested-suite-has-right-name (assert-is 'test-suite-2.a
+             nested-suite-has-right-name (assert-is 'a
                                                     single-suite!suites!a!suite-name)
+             nested-suite-has-right-full-name (assert-is 'test-suite-2.a
+                                                    single-suite!suites!a!full-suite-name)
              test-after-nested-suite-has-correct-parent-name (assert-is 'test-suite-4
                                                                         test-after-nested-suite!tests!b!suite-name)))
 
@@ -88,8 +90,10 @@
                                                   (empty single-suite!tests))
              single-suite-has-one-suite (assert-is 1
                                                    (len single-suite!nested-suites))
-             single-suites-nested-suite-has-right-suite-name (assert-is 'test-suite-2.a
+             single-suites-nested-suite-has-right-suite-name (assert-is 'a
                                                                         single-suite!nested-suites!a!suite-name)
+             single-suites-nested-suite-has-right-full-suite-name (assert-is 'test-suite-2.a
+                                                                             single-suite!nested-suites!a!full-suite-name)
              single-suite-has-right-name (assert-is 'test-suite-2
                                                     single-suite!suite-name)
              single-suite-has-right-full-suite-name (assert-is 'test-suite-2
@@ -219,10 +223,10 @@
                        (result-is-pass (inst 'test-results
                                              'status 'fail))))
 
-(suite make-suite-name
+(suite make-full-suite-name
        regular (assert-is 'pants
-                          (make-suite-name nil
-                                           'pants))
+                          (make-full-suite-name nil
+                                                'pants))
        nested (assert-is 'parent.child
-                         (make-suite-name 'parent
-                                          'child)))
+                         (make-full-suite-name 'parent
+                                               'child)))
