@@ -102,8 +102,6 @@
                                                        (len single-suite!nested-suites!a!tests))
              single-suite-contains-right-test (assert-is 'b
                                                          single-suite!nested-suites!a!tests!b!test-name)
-             single-suites-nested-suite-has-right-full-suite-name (assert-is 'test-suite-2.a
-                                                                        single-suite!nested-suites!a!full-suite-name)
              two-of-each-has-two-tests (assert-is 2
                                                   (len two-of-each!tests))
              two-of-each-has-two-suites (assert-is 2
