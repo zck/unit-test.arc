@@ -13,11 +13,10 @@
      (w/uniq processed-children
              `(let ,processed-children (suite-partition ,suite-name
                                                         ,@children)
-                   (inst 'suite 'suite-name (make-suite-name ',parent-suite-name
-                                                             ',suite-name)
+                   (inst 'suite 'suite-name ',suite-name
                          'nested-suites (,processed-children 'suites)
                          'tests (,processed-children 'tests)
-                         'full-suite-name (make-suite-name ',parent-suite-name
+                         'full-suite-name (make-full-suite-name ',parent-suite-name
                                                            ',suite-name)))))
 
 ;;going to need to deal with test names: right now, the test takes a suite name. Maybe just make this already a string that's pre-concatenated.
@@ -199,7 +198,7 @@
                                    ,@(cddr tests))))
        suite-obj))
 
-(def make-suite-name (parent-suite-name child-suite-name)
+(def make-full-suite-name (parent-suite-name child-suite-name)
      (sym (string (when parent-suite-name
                     (string parent-suite-name "."))
                   child-suite-name)))
