@@ -11,7 +11,8 @@
 
 (mac make-suite (suite-name parent-suite-name . children)
      (w/uniq processed-children
-             `(let ,processed-children (suite-partition ,suite-name
+             `(let ,processed-children (suite-partition ,(make-full-suite-name parent-suite-name
+                                                                               suite-name)
                                                         ,@children)
                    (inst 'suite 'suite-name ',suite-name
                          'nested-suites (,processed-children 'suites)
