@@ -230,3 +230,35 @@
        nested (assert-is 'parent.child
                          (make-full-suite-name 'parent
                                                'child)))
+
+(suite hash-equal
+       empty (assert-is t
+                        (hash-equal (obj)
+                                    (obj)))
+       single-elt-same (assert-is t
+                                  (hash-equal (obj 1 t)
+                                              (obj 1 t)))
+       single-elt-different-val (assert-is nil
+                                           (hash-equal (obj 1 t)
+                                                       (obj 1 'pants)))
+       single-elt-different-key (assert-is nil
+                                           (hash-equal (obj 1 t)
+                                                       (obj 2 t)))
+       multiple-elts-same (assert-is t
+                                     (hash-equal (obj 1 t 2 'a (1) 2)
+                                                 (obj 1 t 2 'a (1) 2)))
+       multiple-elts-different-key (assert-is nil
+                                              (hash-equal (obj 1 t 2 t 3 t)
+                                                          (obj 1 t 2 t 4 t)))
+       multiple-elts-different-val (assert-is nil
+                                              (hash-equal (obj 1 t 2 t 3 t)
+                                                          (obj 1 t 2 t 3 4)))
+       extra-elt-on-left (assert-is nil
+                                    (hash-equal (obj 1 t 2 t)
+                                                (obj 1 t 2 t 3 t)))
+       extra-elt-on-right (assert-is nil
+                                     (hash-equal (obj 1 t 2 t 3 t)
+                                                 (obj 1 t 2 t)))
+       does-order-matter? (assert-is t
+                                     (hash-equal (obj 1 t 2 t)
+                                                 (obj 2 t 1 t))))
