@@ -28,8 +28,7 @@
 
 
 (with (pass-test-val ((make-test-fn sample-suite pass-test 3))
-       fail-test-val ((make-test-fn sample-suite
-       fail-test (err "failing..."))))
+       fail-test-val ((make-test-fn sample-suite fail-test (err "failing..."))))
       (suite make-test-fn
              pass-has-right-return-value (assert-is 3 pass-test-val!return-value)
              pass-has-test-name (assert-is 'pass-test pass-test-val!test-name)
