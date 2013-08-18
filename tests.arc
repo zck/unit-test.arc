@@ -22,8 +22,10 @@
      (suite test
             test-name (assert-is 'sample-test sample-test!test-name)
             suite-name (assert-is 'sample-suite sample-test!suite-name)
-            test-fn (assert (isa (sample-test!test-fn)
-                                 'table)"The test function should run and return the value we set up.")))
+            test-fn (assert-is 3
+                               ((sample-test!test-fn)
+                                'return-value))))
+
 
 (with (pass-test-val ((make-test-fn sample-suite pass-test 3))
        fail-test-val ((make-test-fn sample-suite
