@@ -203,3 +203,11 @@
      (sym (string (when parent-suite-name
                     (string parent-suite-name "."))
                   child-suite-name)))
+
+(def hash-equal (hash1 hash2)
+     (and (is (len (keys hash1))
+              (len (keys hash2))) ;;only need to check the length here; if the keys differ, we'll find it below
+          (all idfn
+               (map [is hash1._
+                        hash2._]
+                    (keys hash1)))))
