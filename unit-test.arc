@@ -96,8 +96,9 @@
                      passes 0)
                     (each ,name ',suite-names
                           (let results (*unit-test-results* ,name)
-                               (++ tests (total-tests results))
-                               (++ passes (count-passes results))))
+                               (when results
+                                   (do (++ tests (total-tests results))
+                                       (++ passes (count-passes results))))))
                     (if (is passes tests)
                         (prn "\nYay! All " tests " tests pass! Get yourself a cookie.")
                       (prn "\nOh dear, " (- tests passes) " of " tests " failed.")))))
