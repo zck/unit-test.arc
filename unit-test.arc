@@ -175,7 +175,7 @@
                     (assert (,test ,exp ,act)
                             (string (tostring (disp ',actual))
                                     " should be "
-                                    (tostring (disp ,expected))
+                                    (tostring (disp ,exp))
                                     " but instead was "
                                     (tostring (disp ,act))
                                     (awhen ,fail-message
