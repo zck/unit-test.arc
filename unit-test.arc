@@ -20,7 +20,6 @@
                          'full-suite-name (make-full-suite-name ',parent-suite-name
                                                                 ',suite-name)))))
 
-;;going to need to deal with test names: right now, the test takes a suite name. Maybe just make this already a string that's pre-concatenated.
 (mac suite-partition (parent-suite-name . children)
      (if children
          (w/uniq the-rest
