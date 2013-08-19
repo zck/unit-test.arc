@@ -180,11 +180,15 @@
                                     (awhen ,fail-message
                                            (string ". " it)))))))
 
-(mac assert-is (expected actual (o fail-message))
-     `(assert-two-vals is ,expected ,actual ,fail-message))
-
-(mac assert-iso (expected actual (o fail-message))
+(mac assert-same (expected actual (o fail-message))
      `(assert-two-vals iso ,expected ,actual ,fail-message))
+
+(mac assert-t (actual (o fail-message))
+     `(assert-two-vals isnt nil ,actual ,fail-message))
+;; have to do "isnt nil" because we want to accept _any_ non-nil value, not just 't
+
+(mac assert-nil (actual (o fail-message))
+     `(assert-two-vals is nil ,actual ,fail-message))
 
 (mac make-tests (suite-name suite-obj . tests)
      (if tests
@@ -203,6 +207,14 @@
      (sym (string (when parent-suite-name
                     (string parent-suite-name "."))
                   child-suite-name)))
+
+(def same (thing1 thing2)
+     (if (and (isa thing1
+                   'table)
+              (isa thing2
+                   'table))
+         (hash-equal thing1 thing2)
+       (iso thing1 thing2)))
 
 (def hash-equal (hash1 hash2)
      (and (is (len (keys hash1))
