@@ -185,7 +185,7 @@
 
 (mac assert-t (actual (o fail-message))
      `(assert-two-vals (fn (ex act) act) t ,actual ,fail-message))
-;; have to do "isnt nil" because we want to accept _any_ non-nil value, not just 't
+;; We can't call (assert-two-vals is t ,actual) because we want to accept _any_ non-nil value, not just 't
 
 (mac assert-nil (actual (o fail-message))
      `(assert-two-vals is nil ,actual ,fail-message))
