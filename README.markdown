@@ -11,8 +11,8 @@ Yeah, everyone wants examples first, so here they are:
 To declare a suite, give it a name, then a declare a bunch of tests. To declare a test, give it a name, then the code to run it. Use asserts (see below) when you want to throw if the two things aren't equal to each other.
 
     (suite math
-           this-will-pass (assert-is 4 (+ 2 2))
-           this-will-fail (assert-is 3 (+ 2 2)))
+           this-will-pass (assert-same 4 (+ 2 2))
+           this-will-fail (assert-same 3 (+ 2 2)))
 
 
 ### Running a suite
@@ -31,18 +31,24 @@ You can run multiple suites in `run-suite`, or call `run-suites`. They do the sa
 
 ## Asserts
 
-You can use either `assert-is` or `assert-iso` for right now. They work the same, except on lists: `assert-is` will throw unless the two lists are the exact same, not just with the same elements. If you're comparing lists, always use `assert-iso`. Note: we can't compare hashtables with either of those. It's a known bug; check its [bug report](https://bitbucket.org/zck/unit-test.arc/issue/18/make-assert-iso-work-on-hashtables) for updates.
+There are three asserts:
 
-All asserts require the expected value *before* the test-value. This is needed for pretty, pretty messages when the assert fails:
+* `assert-same` -- Arguments: `(expected actual (o fail-message))`. Throws if the `actual` value is not `expected`. `fail-message` is optional, and is used when you want to give more information about a failure.
 
-    arc> (assert-is 4 (- 2 2))
+* `assert-t` -- Arguments: `(actual (o fail-message))`. Throws when `actual` is nil. Accepts _any_ other value, whether `t`, or any other data type.
+
+* `assert-nil` -- Arguments: `(actual (o fail-message))`. Throws when `actual` is *not* nil.
+
+`assert-same` requires the expected value *before* the test-value. This is needed for pretty, pretty messages when the assert fails:
+
+    arc> (assert-same 4 (- 2 2))
     Error: "(- 2 2) should be 4 but instead was 0"
 
 ### Custom error messages
 
 You can also add custom error messages to your asserts. They get appended to the end of the aforementioned pretty, pretty error message.
 
-    arc> (assert-is 42 27 "Those aren't equal?!")
+    arc> (assert-same 42 27 "Those aren't equal?!")
     Error: "27 should be 42 but instead was 27. Those aren't equal?!"
 
 ## Nested suites
@@ -54,14 +60,14 @@ Suites can be nested, for the sake of organization, and to make them easier to r
 Put a nested suite anywhere inside its parent suite. You can intermingle tests and suites, and it'll deal with it just fine:
 
     (suite math
-           numbers-are-equal (assert-is 2 2)
+           numbers-are-equal (assert-same 2 2)
            (suite adding
-                  good (assert-is 4 (+ 2 2))
-                  bad (assert-is 3 (+ 2 2)))
-           numbers-are-equal-but-this-test-will-fail (assert-is 3 4)
+                  good (assert-same 4 (+ 2 2))
+                  bad (assert-same 3 (+ 2 2)))
+           numbers-are-equal-but-this-test-will-fail (assert-same 3 4)
            (suite subtracting
-                  good (assert-is 0 (- 2 2))
-                  bad (assert-is 0 (- 2 42))))
+                  good (assert-same 0 (- 2 2))
+                  bad (assert-same 0 (- 2 42))))
 
 If you run a suite, it also runs all nested suites inside it.
 
