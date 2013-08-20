@@ -232,3 +232,13 @@
                                                   (obj 1 t 2 t)))
        does-order-matter? (assert-t (hash-equal (obj 1 t 2 t)
                                                 (obj 2 t 1 t))))
+
+(suite expect-error
+       err-is-ok (expect-error (err "oh dear!"))
+       no-err-fails (assert-nil (errsafe (do (expect-error "no error")
+                                             t)))
+       checks-error-message (assert-nil (errsafe (do (expect-error (err "this is bad")
+                                                                 "this is the wrong message")
+                                                   t)))
+       valid-error-message-passes (expect-error (err "oh no...")
+                                                "oh no..."))

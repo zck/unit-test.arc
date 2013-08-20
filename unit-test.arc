@@ -223,3 +223,13 @@
                (map [is hash1._
                         hash2._]
                     (keys hash1)))))
+
+(mac expect-error (actual (o expected-error))
+     `(unless (on-err (fn (ex) (if ',expected-error
+                                   (do (assert-same ,expected-error
+                                                    (details ex))
+                                       t)
+                                 t))
+                      (fn () ,actual
+                             nil))
+        (err "Expected an error to be thrown")))
