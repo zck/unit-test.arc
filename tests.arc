@@ -1,6 +1,5 @@
 (suite assert t-doesnt-error (assert t "shouldn't throw")
-       nil-errors (when (errsafe (do (assert nil "should throw") t)) (err
-                                                                      "asserting nil should throw")))
+       nil-errors (expect-error (assert nil "should throw")))
 
 (suite same
        numbers-same (assert-t (same 1 1))
@@ -32,25 +31,17 @@
 (suite assert-same
        equal-vals (assert-same 1 1 "equal values are good")
        lists-are-iso (assert-same (list 1) (list 1) "equal lists are good")
-       different-vals (when (errsafe (do (assert-same 1 2)
-                                         t))
-                        (err "assert-same on different values should throw")))
+       different-vals (expect-error (assert-same 1 2)))
 
 (suite assert-t
        t-is-good (assert-t t)
-       nil-throws (when (errsafe (do (assert-t nil)
-                                     t))
-                    (err "assert-t called with nil should throw"))
+       nil-throws (expect-error (assert-t nil))
        3-is-treated-as-good (assert-t 3))
 
 (suite assert-nil
-       t-is-good (when (errsafe (do (assert-nil t)
-                                    t))
-                   (err "assert-t called with nil should throw"))
+       t-is-good (expect-error (assert-nil t))
        nil-is-good (assert-nil nil)
-       3-is-treated-as-bad (when (errsafe (do (assert-nil 3)
-                                              t))
-                             (err "assert-nil called with 3 should throw")))
+       3-is-treated-as-bad (expect-error (assert-nil 3)))
 
 (let sample-test (test sample-suite sample-test 3)
      (suite test
