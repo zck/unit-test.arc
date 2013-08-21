@@ -233,3 +233,11 @@
                                                    t)))
        valid-error-message-passes (expect-error (err "oh no...")
                                                 "oh no..."))
+
+(suite to-readable-string
+       strings-are-quoted (assert-same "'string!'"
+                                       (to-readable-string "string!"))
+       numbers-are-ok (assert-same "42"
+                                   (to-readable-string 42))
+       lists-are-ok (assert-same "(1 (2 3) . 4)"
+                                 (to-readable-string '(1 (2 3) . 4))))
