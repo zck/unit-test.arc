@@ -172,13 +172,19 @@
              `(with (,exp ,expected
                           ,act ,actual)
                     (assert (,test ,exp ,act)
-                            (string (tostring (disp ',actual))
+                            (string (to-readable-string ',actual)
                                     " should be "
-                                    (tostring (disp ,exp))
+                                    (to-readable-string ,exp)
                                     " but instead was "
-                                    (tostring (disp ,act))
+                                    (to-readable-string ,act)
                                     (awhen ,fail-message
                                            (string ". " it)))))))
+
+(def to-readable-string (val)
+     (if (isa val
+              'string)
+         (string #\' val #\')
+       (tostring (disp val))))
 
 (mac assert-same (expected actual (o fail-message))
      `(assert-two-vals iso ,expected ,actual ,fail-message))
