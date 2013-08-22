@@ -242,4 +242,6 @@
        lists-are-ok (assert-same "(1 (2 3) . 4)"
                                  (to-readable-string '(1 (2 3) . 4)))
        lists-containing-string (assert-same "(1 '2' 3)"
-                                            (to-readable-string '(1 "2" 3))))
+                                            (to-readable-string '(1 "2" 3)))
+       tables-containing-string (assert-same "#hash((1 . '2')('3' . 4))"
+                                             (to-readable-string (obj 1 "2" "3" 4))))

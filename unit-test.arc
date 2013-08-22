@@ -187,6 +187,9 @@
        (isa val
             'cons)
        (list-to-readable-string val)
+       (isa val
+            'table)
+       (table-to-readable-string val)
        (tostring (disp val))))
 
 (def list-to-readable-string (val)
@@ -205,6 +208,12 @@
                       (list-innards-to-readable-string (cdr val)))
             (string " . "
                     (to-readable-string (cdr val))))))))
+
+(def table-to-readable-string (tbl)
+     (tostring (pr "#hash(")
+               (each (key val) tbl
+                     (pr (to-readable-string (cons key val))))
+               (pr ")")))
 
 
 
