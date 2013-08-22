@@ -183,8 +183,30 @@
 (def to-readable-string (val)
      (if (isa val
               'string)
-         (string #\' val #\')
+         (string #\' val #\') ;;use single quotes, because (err "a \"string\" here") looks weird
+       (isa val
+            'cons)
+       (list-to-readable-string val)
        (tostring (disp val))))
+
+(def list-to-readable-string (val)
+     (string #\(
+             (list-innards-to-readable-string val)
+             #\)))
+
+(def list-innards-to-readable-string (val)
+     (when val
+       (string
+        (to-readable-string (car val))
+        (when (cdr val)
+          (if (isa (cdr val)
+                   'cons)
+              (string #\space
+                      (list-innards-to-readable-string (cdr val)))
+            (string " . "
+                    (to-readable-string (cdr val))))))))
+
+
 
 (mac assert-same (expected actual (o fail-message))
      `(assert-two-vals iso ,expected ,actual ,fail-message))

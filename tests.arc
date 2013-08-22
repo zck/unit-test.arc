@@ -240,4 +240,6 @@
        numbers-are-ok (assert-same "42"
                                    (to-readable-string 42))
        lists-are-ok (assert-same "(1 (2 3) . 4)"
-                                 (to-readable-string '(1 (2 3) . 4))))
+                                 (to-readable-string '(1 (2 3) . 4)))
+       lists-containing-string (assert-same "(1 '2' 3)"
+                                            (to-readable-string '(1 "2" 3))))
