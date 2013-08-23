@@ -1,5 +1,5 @@
 (suite assert t-doesnt-error (assert t "shouldn't throw")
-       nil-errors (expect-error (assert nil "should throw")))
+       nil-errors (assert-error (assert nil "should throw")))
 
 (suite same
        numbers-same (assert-t (same 1 1))
@@ -31,17 +31,17 @@
 (suite assert-same
        equal-vals (assert-same 1 1 "equal values are good")
        lists-are-iso (assert-same (list 1) (list 1) "equal lists are good")
-       different-vals (expect-error (assert-same 1 2)))
+       different-vals (assert-error (assert-same 1 2)))
 
 (suite assert-t
        t-is-good (assert-t t)
-       nil-throws (expect-error (assert-t nil))
+       nil-throws (assert-error (assert-t nil))
        3-is-treated-as-good (assert-t 3))
 
 (suite assert-nil
-       t-is-good (expect-error (assert-nil t))
+       t-is-good (assert-error (assert-nil t))
        nil-is-good (assert-nil nil)
-       3-is-treated-as-bad (expect-error (assert-nil 3)))
+       3-is-treated-as-bad (assert-error (assert-nil 3)))
 
 (let sample-test (test sample-suite sample-test 3)
      (suite test
@@ -224,14 +224,14 @@
        does-order-matter? (assert-t (hash-equal (obj 1 t 2 t)
                                                 (obj 2 t 1 t))))
 
-(suite expect-error
-       err-is-ok (expect-error (err "oh dear!"))
-       no-err-fails (assert-nil (errsafe (do (expect-error "no error")
+(suite assert-error
+       err-is-ok (assert-error (err "oh dear!"))
+       no-err-fails (assert-nil (errsafe (do (assert-error "no error")
                                              t)))
-       checks-error-message (assert-nil (errsafe (do (expect-error (err "this is bad")
+       checks-error-message (assert-nil (errsafe (do (assert-error (err "this is bad")
                                                                  "this is the wrong message")
                                                    t)))
-       valid-error-message-passes (expect-error (err "oh no...")
+       valid-error-message-passes (assert-error (err "oh no...")
                                                 "oh no..."))
 
 (suite to-readable-string

@@ -261,7 +261,7 @@
                         hash2._]
                     (keys hash1)))))
 
-(mac expect-error (actual (o expected-error))
+(mac assert-error (actual (o expected-error))
      `(unless (on-err (fn (ex) (if ',expected-error
                                    (do (assert-same ,expected-error
                                                     (details ex))
