@@ -232,7 +232,10 @@
                                                                  "this is the wrong message")
                                                    t)))
        valid-error-message-passes (assert-error (err "oh no...")
-                                                "oh no..."))
+                                                "oh no...")
+       no-error-fails-when-error-message-given (assert-nil (errsafe (do (assert-error "no error" "error message")
+                                                                        t))
+                                                           "Even when an error message is given, not having an error should fail assert-error."))
 
 (suite to-readable-string
        strings-are-quoted (assert-same "'string!'"
