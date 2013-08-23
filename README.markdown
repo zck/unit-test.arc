@@ -33,19 +33,18 @@ You can run multiple suites in `run-suite`, or call `run-suites`. They do the sa
 
 There are four asserts:
 
-* `assert-same` -- Arguments: `(expected actual (o fail-message))`. Throws if the `actual` value is not `expected`. `fail-message` is optional, and is used when you want to give more information about a failure.
-
-Note that `assert-same` requires the expected value *before* the test-value. This is needed for pretty, pretty messages when the assert fails:
-
-    arc> (assert-same 4 (- 2 2))
-    Error: "(- 2 2) should be 4 but instead was 0"
-
 * `assert-t` -- Arguments: `(actual (o fail-message))`. Throws when `actual` is nil. Accepts _any_ other value, whether `t`, or any other data type.
 
 * `assert-nil` -- Arguments: `(actual (o fail-message))`. Throws when `actual` is *not* nil.
 
 * `assert-error` -- Arguments: `(actual (o expected-error))`. Throws when `actual` does *not* error. If `expected-error` is given, also asserts that the error details is the same as `expected-error`.
 
+* `assert-same` -- Arguments: `(expected actual (o fail-message))`. Throws if the `actual` value is not `expected`. `fail-message` is optional, and is used when you want to give more information about a failure.
+
+Note that `assert-same` requires the expected value *before* the test-value. This is needed for pretty, pretty messages when the assert fails:
+
+    arc> (assert-same 4 (- 2 2))
+    Error: "(- 2 2) should be 4 but instead was 0"
 
 ### Custom error messages
 
