@@ -95,7 +95,11 @@
              nested-suite-has-right-full-name (assert-same 'test-suite-2.a
                                                            single-suite!suites!a!full-suite-name)
              test-after-nested-suite-has-correct-parent-name (assert-same 'test-suite-4
-                                                                          test-after-nested-suite!tests!b!suite-name)))
+                                                                          test-after-nested-suite!tests!b!suite-name)
+             test-fn-returns-right-value (assert-same 3
+                                                      ((single-test!tests!a!test-fn) 'return-value))
+             nested-test-fn-returns-right-value (assert-same 3
+                                                             ((single-suite!suites!a!tests!b!test-fn) 'return-value))))
 
 
 (with (single-test (make-suite test-suite-1 nil a 3)
