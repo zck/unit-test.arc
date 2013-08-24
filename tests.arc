@@ -66,7 +66,7 @@
 
 (with (single-test (suite-partition test-suite-1 a 3)
        single-suite (suite-partition test-suite-2 (suite a b 3))
-       two-of-each (suite-partition test-suite-3 a 3 (suite b c 4) d 5 (suite e 6 f 7))
+       two-of-each (suite-partition test-suite-3 a 3 (suite b c 4) d 5 (suite e f 6 g 7))
        none-of-either (suite-partition test-suite-4)
        test-after-nested-suite (suite-partition test-suite-4 (suite a 1) b 2))
       (suite suite-partition
