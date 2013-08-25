@@ -7,12 +7,18 @@
 (mac suite (suite-name . children)
      (ensure-globals)
      `(= (*unit-tests* ',suite-name)
-         (make-suite ,suite-name nil ,@children)))
+         (make-suite ,suite-name nil nil ,@children)))
 
-(mac make-suite (suite-name parent-suite-name . children)
+(mac suite-w/setup (suite-name setup . children)
+     (ensure-globals)
+     `(= (*unit-tests* ',suite-name)
+         (make-suite ,suite-name nil ,setup ,@children)))
+
+(mac make-suite (suite-name parent-suite-name setup . children)
      (w/uniq processed-children
              `(let ,processed-children (suite-partition ,(make-full-suite-name parent-suite-name
                                                                                suite-name)
+                                                        ,setup
                                                         ,@children)
                    (inst 'suite 'suite-name ',suite-name
                          'nested-suites (,processed-children 'suites)
@@ -20,24 +26,40 @@
                          'full-suite-name (make-full-suite-name ',parent-suite-name
                                                                 ',suite-name)))))
 
-(mac suite-partition (parent-suite-name . children)
+(mac suite-partition (parent-suite-name setup . children)
      (if children
          (w/uniq the-rest
-                 (if (isa (car children)
-                          'cons)
+                 (if (isnt (type (car children))
+                           'cons) ;;test names can be anything but lists
                      `(let ,the-rest (suite-partition ,parent-suite-name
-                                                      ,@(cdr children))
-                           (= ((,the-rest 'suites) ',(cadr (car children)))
-                              (make-suite ,(cadr (car children))
-                                          ,parent-suite-name
-                                          ,@(cddr (car children))))
+                                                      ,setup
+                                                      ,@(cddr children))
+                           (= ((,the-rest 'tests) ',(car children))
+                              (test ,parent-suite-name
+                                    ,(car children)
+                                    ,setup
+                                    ,(cadr children)))
                            ,the-rest)
+                   (is (caar children)
+                       'suite)
                    `(let ,the-rest (suite-partition ,parent-suite-name
-                                                   ,@(cddr children))
-                         (= ((,the-rest 'tests) ',(car children))
-                            (test ,parent-suite-name
-                                  ,(car children)
-                                  ,(cadr children)))
+                                                    ,setup
+                                                    ,@(cdr children))
+                         (= ((,the-rest 'suites) ',(cadr (car children)))
+                            (make-suite ,(cadr (car children))
+                                        ,parent-suite-name
+                                        nil
+                                        ,@(cddr (car children))))
+                         ,the-rest)
+                   ;;here, children looks like: ((suite-w/setup suite-name (setup...) . body) . rest)
+                   `(let ,the-rest (suite-partition ,parent-suite-name
+                                                    ,setup
+                                                    ,@(cdr children))
+                         (= ((,the-rest 'suites) ',(cadr (car children)))
+                            (make-suite ,(cadr (car children))
+                                        ,parent-suite-name
+                                        ,((car children) 2)
+                                        ,@(nthcdr 3 (car children))))
                          ,the-rest)))
        `(obj tests (obj) suites (obj))))
 
@@ -46,17 +68,18 @@
   suite-name "no-suitename mcgee"
   test-fn (fn args (assert nil "You didn't give this test a body. So I'm making it fail.")))
 
-(mac test (suite-name test-name . body)
+(mac test (suite-name test-name setup . body)
      `(inst 'test
             'suite-name ',suite-name
             'test-name ',test-name
-            'test-fn (make-test-fn ,suite-name ,test-name ,@body)))
+            'test-fn (make-test-fn ,suite-name ,test-name ,setup ,@body)))
 
-(mac make-test-fn (suite-name test-name . body)
+(mac make-test-fn (suite-name test-name setup . body)
      `(fn ()
           (on-err (fn (ex) (inst 'testresults 'suite-name ',suite-name 'test-name ',test-name 'status 'fail 'details (details ex)))
                   (fn ()
-                      (inst 'test-results 'suite-name ',suite-name 'test-name ',test-name 'status 'pass 'return-value (do ,@body))))))
+                      (withs ,setup
+                             (inst 'test-results 'suite-name ',suite-name 'test-name ',test-name 'status 'pass 'return-value (do ,@body)))))))
 
 (deftem test-results
   test-name ""
@@ -226,19 +249,6 @@
 
 (mac assert-nil (actual (o fail-message))
      `(assert-two-vals is nil ,actual ,fail-message))
-
-(mac make-tests (suite-name suite-obj . tests)
-     (if tests
-         (w/uniq cur-suite
-                 `(let ,cur-suite ,suite-obj
-                       (= (,cur-suite ',(car tests))
-                          (test ,suite-name
-                                ,(car tests)
-                                ,(cadr tests)))
-                       (make-tests ,suite-name
-                                   ,cur-suite
-                                   ,@(cddr tests))))
-       suite-obj))
 
 (def make-full-suite-name (parent-suite-name child-suite-name)
      (sym (string (when parent-suite-name
