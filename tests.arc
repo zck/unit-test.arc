@@ -43,13 +43,26 @@
        nil-is-good (assert-nil nil)
        3-is-treated-as-bad (assert-error (assert-nil 3)))
 
-(let sample-test (test sample-suite sample-test 3)
+(with (sample-test (test sample-suite sample-test nil 3)
+       simple-setup (test sample-suite simple-setup (x 3) x)
+       multiple-variable-setup (test sample-suite multiple-variable-setup (x 3 y 4) (+ x y))
+       reliant-variable-setup (test sample-suite reliant-variable-setup (x 3 y x) (+ x y)))
      (suite test
             test-name (assert-same 'sample-test sample-test!test-name)
             suite-name (assert-same 'sample-suite sample-test!suite-name)
             test-fn (assert-same 3
                                  ((sample-test!test-fn)
-                                  'return-value))))
+                                  'return-value))
+            simple-setup (assert-same 3
+                                      ((simple-setup!test-fn)
+                                       'return-value))
+            multiple-variable-setup (assert-same 7
+                                      ((multiple-variable-setup!test-fn)
+                                       'return-value))
+            reliant-variable-setup (assert-same 6
+                                      ((reliant-variable-setup!test-fn)
+                                       'return-value))))
+
 
 
 (with (pass-test-val ((make-test-fn sample-suite pass-test nil 3))
