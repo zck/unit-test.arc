@@ -9,6 +9,9 @@
      `(= (*unit-tests* ',suite-name)
          (make-suite ,suite-name nil ,@children)))
 
+(mac suite-w/setup (suite-name setup . children)
+     )
+
 (mac make-suite (suite-name parent-suite-name . children)
      (w/uniq processed-children
              `(let ,processed-children (suite-partition ,(make-full-suite-name parent-suite-name
@@ -23,8 +26,8 @@
 (mac suite-partition (parent-suite-name . children)
      (if children
          (w/uniq the-rest
-                 (if (isa (car children)
-                          'cons)
+                 (if (isnt (type (car children))
+                           'cons) ;;test names can be anything but lists
                      `(let ,the-rest (suite-partition ,parent-suite-name
                                                       ,@(cdr children))
                            (= ((,the-rest 'suites) ',(cadr (car children)))
