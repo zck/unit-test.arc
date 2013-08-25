@@ -52,8 +52,8 @@
                                   'return-value))))
 
 
-(with (pass-test-val ((make-test-fn sample-suite pass-test 3))
-       fail-test-val ((make-test-fn sample-suite fail-test (err "failing..."))))
+(with (pass-test-val ((make-test-fn sample-suite pass-test nil 3))
+       fail-test-val ((make-test-fn sample-suite fail-test nil (err "failing..."))))
       (suite make-test-fn
              pass-has-right-return-value (assert-same 3 pass-test-val!return-value)
              pass-has-test-name (assert-same 'pass-test pass-test-val!test-name)
