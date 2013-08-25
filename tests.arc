@@ -68,7 +68,7 @@
        single-suite (suite-partition test-suite-2 (suite a b 3))
        two-of-each (suite-partition test-suite-3 a 3 (suite b c 4) d 5 (suite e f 6 g 7))
        none-of-either (suite-partition test-suite-4)
-       test-after-nested-suite (suite-partition test-suite-4 (suite a 1) b 2))
+       test-after-nested-suite (suite-partition test-suite-4 (suite a b 1) c 2))
       (suite suite-partition
              nothing (do (assert-t (empty none-of-either!tests))
                          (assert-t (empty none-of-either!suites)))
