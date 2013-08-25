@@ -10,8 +10,9 @@
          (make-suite ,suite-name nil nil ,@children)))
 
 (mac suite-w/setup (suite-name setup . children)
-
-     )
+     (ensure-globals)
+     `(= (*unit-tests* ',suite-name)
+         (make-suite ,suite-name nil ,setup ,@children)))
 
 (mac make-suite (suite-name parent-suite-name setup . children)
      (w/uniq processed-children
