@@ -93,7 +93,7 @@ If you run a suite, it also runs all nested suites inside it.
     Oh dear, 3 of 6 failed.
     nil
 
-### Setup
+## Setup
 
 If you need to set up some values to share across tests, use `suite-w/setup`. The method signature is `(suite-w/setup suite-name setup . children)`. Just like a `with` block, insert a list containing `[var val]` pairs. For example:
 
