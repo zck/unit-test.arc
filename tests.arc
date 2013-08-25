@@ -127,7 +127,8 @@
 
 (with (single-test (make-suite test-suite-1 nil nil a 3)
        single-suite (make-suite test-suite-2 nil nil (suite a b 3))
-       two-of-each (make-suite test-suite-3 nil nil a 3 (suite b c 4) d 5 (suite e f 6 g 7)))
+       two-of-each (make-suite test-suite-3 nil nil a 3 (suite b c 4) d 5 (suite e f 6 g 7))
+       test-w/setup (make-suite test-suite-4 nil (x 3) a x))
       (suite make-suite
              single-test-has-no-suite (assert-t (empty single-test!suites))
              single-test-has-one-test (assert-same 1
@@ -156,7 +157,10 @@
              two-of-each-has-two-tests (assert-same 2
                                                     (len two-of-each!tests))
              two-of-each-has-two-suites (assert-same 2
-                                                     (len two-of-each!nested-suites))))
+                                                     (len two-of-each!nested-suites))
+             setup-is-done-properly (assert-same 3
+                                                 ((test-w/setup!tests!a!test-fn)
+                                                  'return-value))))
 
 
 (suite count-passes
