@@ -92,3 +92,38 @@ If you run a suite, it also runs all nested suites inside it.
 
     Oh dear, 3 of 6 failed.
     nil
+
+### Setup
+
+If you need to set up some values to share across tests, use `suite-w/setup`. The method signature is `(suite-w/setup suite-name setup . children)`. Just like a `with` block, insert a list containing `[var val]` pairs. For example:
+
+    (suite-w/setup math (x 6 y 2)
+                   adding-works (assert-same 8
+                                             (+ x y))
+                   multiplying-works (assert-same 12
+                                                  (* x y)))
+
+    arc> (run-suite math)
+
+    Running suite math
+    math.multiplying-works passed!
+    math.adding-works passed!
+    In math, 2 of 2 passed.
+
+    Yay! All 2 tests pass! Get yourself a cookie.
+    nil
+
+Under the hood, `suite-w/setup` uses `withs`, so variables can depend on earlier variables.
+
+    (suite-w/setup math (x 3 y (+ x 2))
+                   lets-multiply (assert-same 15
+                                              (* x y)))
+
+    arc> (run-suite math)
+
+    Running suite math
+    math.lets-multiply passed!
+    In math, 1 of 1 passed.
+
+    Yay! All 1 tests pass! Get yourself a cookie.
+    nil
