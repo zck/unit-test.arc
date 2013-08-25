@@ -29,22 +29,19 @@
                  (if (isnt (type (car children))
                            'cons) ;;test names can be anything but lists
                      `(let ,the-rest (suite-partition ,parent-suite-name
-                                                      ,@(cddr children))
-                           (= ((,the-rest 'tests) ',(car children))
-                              (test ,parent-suite-name
-                                    ,(car children)
-                                    ,(cadr children)))
+                                                      ,@(cdr children))
+                           (= ((,the-rest 'suites) ',(cadr (car children)))
+                              (make-suite ,(cadr (car children))
+                                          ,parent-suite-name
+                                          ,@(cddr (car children))))
                            ,the-rest)
-                   (is (caar children)
-                       'suite)
                    `(let ,the-rest (suite-partition ,parent-suite-name
-                                                    ,@(cdr children))
-                         (= ((,the-rest 'suites) ',(cadr (car children)))
-                            (make-suite ,(cadr (car children))
-                                        ,parent-suite-name
-                                        ,@(cddr (car children))))
-                         ,the-rest)
-                   ''oh-dear-havent-dealt-with-this-branch))
+                                                   ,@(cddr children))
+                         (= ((,the-rest 'tests) ',(car children))
+                            (test ,parent-suite-name
+                                  ,(car children)
+                                  ,(cadr children)))
+                         ,the-rest)))
        `(obj tests (obj) suites (obj))))
 
 (deftem test
