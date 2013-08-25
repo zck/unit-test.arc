@@ -237,20 +237,6 @@
 (mac assert-nil (actual (o fail-message))
      `(assert-two-vals is nil ,actual ,fail-message))
 
-(mac make-tests (suite-name suite-obj . tests)
-     (if tests
-         (w/uniq cur-suite
-                 `(let ,cur-suite ,suite-obj
-                       (= (,cur-suite ',(car tests))
-                          (test ,suite-name
-                                ,(car tests)
-                                nil
-                                ,(cadr tests)))
-                       (make-tests ,suite-name
-                                   ,cur-suite
-                                   ,@(cddr tests))))
-       suite-obj))
-
 (def make-full-suite-name (parent-suite-name child-suite-name)
      (sym (string (when parent-suite-name
                     (string parent-suite-name "."))
