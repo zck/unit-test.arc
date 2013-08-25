@@ -88,7 +88,8 @@
        two-of-each (suite-partition test-suite-3 nil a 3 (suite b c 4) d 5 (suite e f 6 g 7))
        none-of-either (suite-partition test-suite-4 nil)
        test-after-nested-suite (suite-partition test-suite-4 nil (suite a b 1) c 2)
-       test-with-setup (suite-partition test-suite-5 (x 3) a x))
+       test-with-setup (suite-partition test-suite-5 (x 3) a x)
+       nested-test-with-setup (suite-partition test-suite-6 nil (suite-w/setup a (x 3) b x)))
       (suite suite-partition
              nothing (do (assert-t (empty none-of-either!tests))
                          (assert-t (empty none-of-either!suites)))
@@ -122,6 +123,9 @@
                                                              ((single-suite!suites!a!tests!b!test-fn) 'return-value))
              test-with-setup-returns-right-value (assert-same 3
                                                               ((test-with-setup!tests!a!test-fn)
+                                                               'return-value))
+             nested-test-with-setup-returns-right-value (assert-same 3
+                                                              ((nested-test-with-setup!suites!a!tests!b!test-fn)
                                                                'return-value))))
 
 
