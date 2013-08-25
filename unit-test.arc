@@ -17,6 +17,7 @@
      (w/uniq processed-children
              `(let ,processed-children (suite-partition ,(make-full-suite-name parent-suite-name
                                                                                suite-name)
+                                                        ,setup
                                                         ,@children)
                    (inst 'suite 'suite-name ',suite-name
                          'nested-suites (,processed-children 'suites)
@@ -24,22 +25,24 @@
                          'full-suite-name (make-full-suite-name ',parent-suite-name
                                                                 ',suite-name)))))
 
-(mac suite-partition (parent-suite-name . children)
+(mac suite-partition (parent-suite-name setup . children)
      (if children
          (w/uniq the-rest
                  (if (isnt (type (car children))
                            'cons) ;;test names can be anything but lists
                      `(let ,the-rest (suite-partition ,parent-suite-name
+                                                      ,setup
                                                       ,@(cddr children))
                            (= ((,the-rest 'tests) ',(car children))
                               (test ,parent-suite-name
                                     ,(car children)
-                                    nil
+                                    ,setup
                                     ,(cadr children)))
                            ,the-rest)
                    (is (caar children)
                        'suite)
                    `(let ,the-rest (suite-partition ,parent-suite-name
+                                                    ,setup
                                                     ,@(cdr children))
                          (= ((,the-rest 'suites) ',(cadr (car children)))
                             (make-suite ,(cadr (car children))

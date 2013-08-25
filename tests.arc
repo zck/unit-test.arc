@@ -83,11 +83,12 @@
              multiple-variables-are-setup-properly (assert-same 7 multiple-variable-setup!return-value)
              reliant-variables-are-setup-properly (assert-same 6 reliant-variable-setup!return-value)))
 
-(with (single-test (suite-partition test-suite-1 a 3)
-       single-suite (suite-partition test-suite-2 (suite a b 3))
-       two-of-each (suite-partition test-suite-3 a 3 (suite b c 4) d 5 (suite e f 6 g 7))
-       none-of-either (suite-partition test-suite-4)
-       test-after-nested-suite (suite-partition test-suite-4 (suite a b 1) c 2))
+(with (single-test (suite-partition test-suite-1 nil a 3)
+       single-suite (suite-partition test-suite-2 nil (suite a b 3))
+       two-of-each (suite-partition test-suite-3 nil a 3 (suite b c 4) d 5 (suite e f 6 g 7))
+       none-of-either (suite-partition test-suite-4 nil)
+       test-after-nested-suite (suite-partition test-suite-4 nil (suite a b 1) c 2)
+       test-with-setup (suite-partition test-suite-5 (x 3) a x))
       (suite suite-partition
              nothing (do (assert-t (empty none-of-either!tests))
                          (assert-t (empty none-of-either!suites)))
@@ -118,7 +119,10 @@
              test-fn-returns-right-value (assert-same 3
                                                       ((single-test!tests!a!test-fn) 'return-value))
              nested-test-fn-returns-right-value (assert-same 3
-                                                             ((single-suite!suites!a!tests!b!test-fn) 'return-value))))
+                                                             ((single-suite!suites!a!tests!b!test-fn) 'return-value))
+             test-with-setup-returns-right-value (assert-same 3
+                                                              ((test-with-setup!tests!a!test-fn)
+                                                               'return-value))))
 
 
 (with (single-test (make-suite test-suite-1 nil nil a 3)
