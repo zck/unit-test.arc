@@ -104,7 +104,7 @@
 
 (with (single-test (make-suite test-suite-1 nil a 3)
        single-suite (make-suite test-suite-2 nil (suite a b 3))
-       two-of-each (make-suite test-suite-3 a 3 nil (suite b c 4) d 5 (suite e 6 f 7)))
+       two-of-each (make-suite test-suite-3 nil a 3 (suite b c 4) d 5 (suite e f 6 g 7)))
       (suite make-suite
              single-test-has-no-suite (assert-t (empty single-test!suites))
              single-test-has-one-test (assert-same 1
