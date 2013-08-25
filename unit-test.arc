@@ -7,13 +7,13 @@
 (mac suite (suite-name . children)
      (ensure-globals)
      `(= (*unit-tests* ',suite-name)
-         (make-suite ,suite-name nil ,@children)))
+         (make-suite ,suite-name nil nil ,@children)))
 
 (mac suite-w/setup (suite-name setup . children)
 
      )
 
-(mac make-suite (suite-name parent-suite-name . children)
+(mac make-suite (suite-name parent-suite-name setup . children)
      (w/uniq processed-children
              `(let ,processed-children (suite-partition ,(make-full-suite-name parent-suite-name
                                                                                suite-name)
@@ -43,6 +43,7 @@
                          (= ((,the-rest 'suites) ',(cadr (car children)))
                             (make-suite ,(cadr (car children))
                                         ,parent-suite-name
+                                        nil
                                         ,@(cddr (car children))))
                          ,the-rest)
                    ''oh-dear-havent-dealt-with-this-branch))
