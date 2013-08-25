@@ -51,7 +51,16 @@
                                         nil
                                         ,@(cddr (car children))))
                          ,the-rest)
-                   ''oh-dear-havent-dealt-with-this-branch))
+                   ;;here, children looks like: ((suite-w/setup suite-name (setup...) . body) . rest)
+                   `(let ,the-rest (suite-partition ,parent-suite-name
+                                                    ,setup
+                                                    ,@(cdr children))
+                         (= ((,the-rest 'suites) ',(cadr (car children)))
+                            (make-suite ,(cadr (car children))
+                                        ,parent-suite-name
+                                        ,((car children) 2)
+                                        ,@(nthcdr 3 (car children))))
+                         ,the-rest)))
        `(obj tests (obj) suites (obj))))
 
 (deftem test
