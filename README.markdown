@@ -115,7 +115,8 @@ If you need to set up some values to share across tests, use `suite-w/setup`. Th
 
 Under the hood, `suite-w/setup` uses `withs`, so variables can depend on earlier variables.
 
-    (suite-w/setup math (x 3 y (+ x 2))
+    (suite-w/setup math (x 3
+                         y (+ x 2))
                    lets-multiply (assert-same 15
                                               (* x y)))
 
