@@ -66,29 +66,30 @@ Put a nested suite anywhere inside its parent suite. You can intermingle tests a
            (suite adding
                   good (assert-same 4 (+ 2 2))
                   bad (assert-same 3 (+ 2 2)))
-           numbers-are-equal-but-this-test-will-fail (assert-same 3 4)
+           this-test-will-fail (assert-same 3 4)
            (suite subtracting
                   good (assert-same 0 (- 2 2))
                   bad (assert-same 0 (- 2 42))))
 
 If you run a suite, it also runs all nested suites inside it.
 
-    arc> (run-suites math)
+
+    arc> (run-suite math)
 
     Running suite math
     math.numbers-are-equal passed!
-    adding.numbers-are-equal-but-this-test-will-fail failed: 4 should be 3 but instead was 4
+    math.this-test-will-fail failed: 4 should be 3 but instead was 4
     In math, 1 of 2 passed.
 
     Running suite math.adding
-    adding.good passed!
-    adding.bad failed: (+ 2 2) should be 3 but instead was 4
+    math.adding.good passed!
+    math.adding.bad failed: (+ 2 2) should be 3 but instead was 4
     In math.adding, 1 of 2 passed.
 
-    Running suite adding.subtracting
-    subtracting.good passed!
-    subtracting.bad failed: (- 2 42) should be 0 but instead was -40
-    In adding.subtracting, 1 of 2 passed.
+    Running suite math.subtracting
+    math.subtracting.good passed!
+    math.subtracting.bad failed: (- 2 42) should be 0 but instead was -40
+    In math.subtracting, 1 of 2 passed.
 
     Oh dear, 3 of 6 failed.
     nil
