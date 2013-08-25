@@ -27,8 +27,8 @@
 (mac suite-partition (parent-suite-name . children)
      (if children
          (w/uniq the-rest
-                 (if (isa (car children)
-                          'sym) ;;test
+                 (if (isnt (type (car children))
+                           'cons) ;;test names can be anything but lists
                      `(let ,the-rest (suite-partition ,parent-suite-name
                                                       ,@(cddr children))
                            (= ((,the-rest 'tests) ',(car children))
