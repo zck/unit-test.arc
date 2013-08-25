@@ -9,6 +9,9 @@
      `(= (*unit-tests* ',suite-name)
          (make-suite ,suite-name nil ,@children)))
 
+(mac suite-w/setup (suite-name setup . children)
+
+
 (mac make-suite (suite-name parent-suite-name . children)
      (w/uniq processed-children
              `(let ,processed-children (suite-partition ,(make-full-suite-name parent-suite-name
@@ -24,21 +27,24 @@
      (if children
          (w/uniq the-rest
                  (if (isa (car children)
-                          'cons)
+                          'sym) ;;test
                      `(let ,the-rest (suite-partition ,parent-suite-name
-                                                      ,@(cdr children))
-                           (= ((,the-rest 'suites) ',(cadr (car children)))
-                              (make-suite ,(cadr (car children))
-                                          ,parent-suite-name
-                                          ,@(cddr (car children))))
+                                                      ,@(cddr children))
+                           (= ((,the-rest 'tests) ',(car children))
+                              (test ,parent-suite-name
+                                    ,(car children)
+                                    ,(cadr children)))
                            ,the-rest)
+                   (is (caar children)
+                       'suite)
                    `(let ,the-rest (suite-partition ,parent-suite-name
-                                                   ,@(cddr children))
-                         (= ((,the-rest 'tests) ',(car children))
-                            (test ,parent-suite-name
-                                  ,(car children)
-                                  ,(cadr children)))
-                         ,the-rest)))
+                                                    ,@(cdr children))
+                         (= ((,the-rest 'suites) ',(cadr (car children)))
+                            (make-suite ,(cadr (car children))
+                                        ,parent-suite-name
+                                        ,@(cddr (car children))))
+                         ,the-rest)
+                   ''oh-dear-havent-dealt-with-this-branch))
        `(obj tests (obj) suites (obj))))
 
 (deftem test
