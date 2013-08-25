@@ -34,6 +34,7 @@
                            (= ((,the-rest 'tests) ',(car children))
                               (test ,parent-suite-name
                                     ,(car children)
+                                    nil
                                     ,(cadr children)))
                            ,the-rest)
                    (is (caar children)
@@ -54,11 +55,11 @@
   suite-name "no-suitename mcgee"
   test-fn (fn args (assert nil "You didn't give this test a body. So I'm making it fail.")))
 
-(mac test (suite-name test-name . body)
+(mac test (suite-name test-name setup . body)
      `(inst 'test
             'suite-name ',suite-name
             'test-name ',test-name
-            'test-fn (make-test-fn ,suite-name ,test-name nil ,@body)))
+            'test-fn (make-test-fn ,suite-name ,test-name ,setup ,@body)))
 
 (mac make-test-fn (suite-name test-name setup . body)
      `(fn ()
@@ -243,6 +244,7 @@
                        (= (,cur-suite ',(car tests))
                           (test ,suite-name
                                 ,(car tests)
+                                nil
                                 ,(cadr tests)))
                        (make-tests ,suite-name
                                    ,cur-suite
