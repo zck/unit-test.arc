@@ -53,7 +53,10 @@
 
 
 (with (pass-test-val ((make-test-fn sample-suite pass-test nil 3))
-       fail-test-val ((make-test-fn sample-suite fail-test nil (err "failing..."))))
+       fail-test-val ((make-test-fn sample-suite fail-test nil (err "failing...")))
+       simple-setup ((make-test-fn sample-suite w/setup (x 3) x))
+       multiple-variable-setup ((make-test-fn sample-suite multiple-variable-setup (x 3 y 4) (+ x y)))
+       reliant-variable-setup ((make-test-fn sample-suite reliant-variable-setup (x 3 y x) (+ x y))))
       (suite make-test-fn
              pass-has-right-return-value (assert-same 3 pass-test-val!return-value)
              pass-has-test-name (assert-same 'pass-test pass-test-val!test-name)
@@ -62,7 +65,10 @@
              fail-has-suite-name (assert-same 'sample-suite fail-test-val!suite-name)
              pass-has-pass-status (assert-same 'pass pass-test-val!status)
              fail-has-fail-status (assert-same 'fail fail-test-val!status)
-             fail-has-proper-details (assert-same "failing..." fail-test-val!details)))
+             fail-has-proper-details (assert-same "failing..." fail-test-val!details)
+             setup-has-right-value (assert-same 3 simple-setup!return-value)
+             multiple-variables-are-setup-properly (assert-same 7 multiple-variable-setup!return-value)
+             reliant-variables-are-setup-properly (assert-same 6 reliant-variable-setup!return-value)))
 
 (with (single-test (suite-partition test-suite-1 a 3)
        single-suite (suite-partition test-suite-2 (suite a b 3))
