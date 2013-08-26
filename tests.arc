@@ -165,7 +165,8 @@
                                                               (len two-of-each!nested-suites))
                       setup-is-done-properly (assert-same 3
                                                           ((test-w/setup!tests!a!test-fn)
-                                                           'return-value)))
+                                                           'return-value))
+                      periods-in-suite-names-error (assert-error (make-suite suite.name nil nil)))
 
 
        (suite count-passes

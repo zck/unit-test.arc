@@ -16,15 +16,20 @@
 
 (mac make-suite (suite-name parent-suite-name setup . children)
      (w/uniq processed-children
-             `(let ,processed-children (suite-partition ,(make-full-suite-name parent-suite-name
-                                                                               suite-name)
-                                                        ,setup
-                                                        ,@children)
-                   (inst 'suite 'suite-name ',suite-name
-                         'nested-suites (,processed-children 'suites)
-                         'tests (,processed-children 'tests)
-                         'full-suite-name (make-full-suite-name ',parent-suite-name
-                                                                ',suite-name)))))
+             `(if (find #\.
+                        (string ',suite-name))
+                  (err (string "Suite names can't have periods in them. "
+                               ',suite-name
+                               " does."))
+                (let ,processed-children (suite-partition ,(make-full-suite-name parent-suite-name
+                                                                                 suite-name)
+                                                          ,setup
+                                                          ,@children)
+                     (inst 'suite 'suite-name ',suite-name
+                           'nested-suites (,processed-children 'suites)
+                           'tests (,processed-children 'tests)
+                           'full-suite-name (make-full-suite-name ',parent-suite-name
+                                                                  ',suite-name))))))
 
 (mac suite-partition (parent-suite-name setup . children)
      (if children
