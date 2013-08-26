@@ -76,10 +76,15 @@
   test-fn (fn args (assert nil "You didn't give this test a body. So I'm making it fail.")))
 
 (mac test (suite-name test-name setup . body)
-     `(inst 'test
-            'suite-name ',suite-name
-            'test-name ',test-name
-            'test-fn (make-test-fn ,suite-name ,test-name ,setup ,@body)))
+     `(if (find #\.
+                (string ',test-name))
+          (err (string "Test names can't have periods in them. "
+                       ',test-name
+                       " does."))
+        (inst 'test
+              'suite-name ',suite-name
+              'test-name ',test-name
+              'test-fn (make-test-fn ,suite-name ,test-name ,setup ,@body))))
 
 (mac make-test-fn (suite-name test-name setup . body)
      `(fn ()

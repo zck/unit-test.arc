@@ -62,7 +62,8 @@
                                                             'return-value))
                       reliant-variable-setup (assert-same 6
                                                           ((reliant-variable-setup!test-fn)
-                                                           'return-value)))
+                                                           'return-value))
+                      suite-names-cant-have-periods (assert-error (test sample test.name nil)))
 
 
 
