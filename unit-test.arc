@@ -5,14 +5,16 @@
   full-suite-name "")
 
 (mac suite (suite-name . children)
-     (ensure-globals)
-     `(= (*unit-tests* ',suite-name)
-         (make-suite ,suite-name nil nil ,@children)))
+     `(make-and-save-suite ,suite-name nil nil ,@children))
 
 (mac suite-w/setup (suite-name setup . children)
+     `(make-and-save-suite ,suite-name nil ,setup ,@children))
+
+(mac make-and-save-suite (suite-name parent-suite-name setup . children)
      (ensure-globals)
-     `(= (*unit-tests* ',suite-name)
-         (make-suite ,suite-name nil ,setup ,@children)))
+     `(= (*unit-tests* ',(make-full-suite-name parent-suite-name
+                                               suite-name))
+         (make-suite ,suite-name ,parent-suite-name ,setup ,@children)))
 
 (mac make-suite (suite-name parent-suite-name setup . children)
      (w/uniq processed-children
@@ -51,20 +53,20 @@
                                                     ,setup
                                                     ,@(cdr children))
                          (= ((,the-rest 'suites) ',(cadr (car children)))
-                            (make-suite ,(cadr (car children))
-                                        ,parent-suite-name
-                                        nil
-                                        ,@(cddr (car children))))
+                            (make-and-save-suite ,(cadr (car children))
+                                                 ,parent-suite-name
+                                                 nil
+                                                 ,@(cddr (car children))))
                          ,the-rest)
                    ;;here, children looks like: ((suite-w/setup suite-name (setup...) . body) . rest)
                    `(let ,the-rest (suite-partition ,parent-suite-name
                                                     ,setup
                                                     ,@(cdr children))
                          (= ((,the-rest 'suites) ',(cadr (car children)))
-                            (make-suite ,(cadr (car children))
-                                        ,parent-suite-name
-                                        ,((car children) 2)
-                                        ,@(nthcdr 3 (car children))))
+                            (make-and-save-suite ,(cadr (car children))
+                                                 ,parent-suite-name
+                                                 ,((car children) 2)
+                                                 ,@(nthcdr 3 (car children))))
                          ,the-rest)))
        `(obj tests (obj) suites (obj))))
 
