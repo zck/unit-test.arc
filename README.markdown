@@ -71,6 +71,8 @@ Put a nested suite anywhere inside its parent suite. You can intermingle tests a
                   good (assert-same 0 (- 2 2))
                   bad (assert-same 0 (- 2 42))))
 
+### Running nested suites
+
 If you run a suite, it also runs all nested suites inside it.
 
 
@@ -93,6 +95,20 @@ If you run a suite, it also runs all nested suites inside it.
 
     Oh dear, 3 of 6 failed.
     nil
+
+If you want to run only one suite that's nested inside another one, that's possible. Just call `run-suite` with the full name of the suite you want to run. The full name is simply the names of all the parents of the suite concatenated together, with a period between them, then the suite's name:
+
+    arc> (run-suite math.adding)
+
+    Running suite math.adding
+    math.adding.good passed!
+    math.adding.bad failed: (+ 2 2) should be 3 but instead was 4
+    In math.adding, 1 of 2 passed.
+
+    Oh dear, 1 of 2 failed.
+    nil
+
+
 
 ## Setup
 
