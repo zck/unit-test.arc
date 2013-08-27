@@ -133,8 +133,10 @@
                                (when results
                                    (++ tests (total-tests results))
                                    (++ passes (count-passes results)))))
-                    (if (is passes tests)
-                        (prn "\nYay! All " tests " tests pass! Get yourself a cookie.")
+                    (if (is tests 0)
+                        (prn "We didn't find any tests. Odd...")
+                      (is passes tests)
+                      (prn "\nYay! All " tests " tests pass! Get yourself a cookie.")
                       (prn "\nOh dear, " (- tests passes) " of " tests " failed.")))))
 
 (def total-tests (suite-results)
