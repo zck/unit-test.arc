@@ -173,8 +173,8 @@
 (def run-tests (cur-suite)
      (let cur-results ((*unit-test-results* cur-suite!full-suite-name) 'test-results)
           (each (name cur-test) cur-suite!tests
-                (pretty-results (= cur-results.name
-                                   (cur-test!test-fn))))))
+                (= cur-results.name
+                   (cur-test!test-fn)))))
 
 (def run-child-suites (cur-suite)
      (let cur-results ((*unit-test-results* cur-suite!full-suite-name)
@@ -187,6 +187,7 @@
      (with (tests 0
             passed 0)
            (each (test-name test-result) *unit-test-results*.suite-name!test-results
+                 (pretty-results test-result)
                  (++ tests)
                  (when (is test-result!status 'pass)
                    (++ passed)))
