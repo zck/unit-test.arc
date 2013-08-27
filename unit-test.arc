@@ -187,11 +187,14 @@
      (with (tests 0
             passed 0)
            (each (test-name test-result) *unit-test-results*.suite-name!test-results
-                 (pretty-results test-result)
                  (++ tests)
                  (when (is test-result!status 'pass)
                    (++ passed)))
-           (prn "In " suite-name ", " passed " of " tests " passed.")))
+           (if (is tests passed)
+               (prn "In suite " suite-name ", all " tests " tests passed!")
+             (do (each (test-name test-result) *unit-test-results*.suite-name!test-results
+                       (pretty-results test-result))
+                 (prn "In suite " suite-name ", " passed " of " tests " tests passed.")))))
 
 (def ensure-globals ()
      (unless (bound '*unit-tests*)
