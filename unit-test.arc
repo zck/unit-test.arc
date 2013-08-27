@@ -190,7 +190,9 @@
                  (++ tests)
                  (when (is test-result!status 'pass)
                    (++ passed)))
-           (if (is tests passed)
+           (if (is tests 0)
+               (prn "There are no tests directly in suite " suite-name ".")
+               (is tests passed)
                (prn "In suite " suite-name ", all " tests " tests passed!")
              (do (each (test-name test-result) *unit-test-results*.suite-name!test-results
                        (pretty-results test-result))
