@@ -36,8 +36,7 @@
 (mac suite-partition (parent-suite-name setup . children)
      (if children
          (w/uniq the-rest
-                 (if (isnt (type (car children))
-                           'cons) ;;test names can be anything but lists
+                 (if (atom (car children))  ;;test names can be anything but lists
                      `(let ,the-rest (suite-partition ,parent-suite-name
                                                       ,setup
                                                       ,@(cddr children))
@@ -227,8 +226,7 @@
      (if (isa val
               'string)
          (string #\' val #\') ;;use single quotes, because (err "a \"string\" here") looks weird
-       (isa val
-            'cons)
+       (acons val)
        (list-to-readable-string val)
        (isa val
             'table)
