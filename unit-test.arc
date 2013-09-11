@@ -5,10 +5,22 @@
   full-suite-name "")
 
 (mac suite (suite-name . children)
-     `(make-and-save-suite ,suite-name nil nil ,@children))
+     `(make-save-and-print-suite ,suite-name nil nil ,@children))
 
 (mac suite-w/setup (suite-name setup . children)
-     `(make-and-save-suite ,suite-name nil ,setup ,@children))
+     `(make-save-and-print-suite ,suite-name nil ,setup ,@children))
+
+(mac make-save-and-print-suite (suite-name parent-suite-name setup . children)
+     (w/uniq cur-suite
+             `(let ,cur-suite (make-and-save-suite ,suite-name nil ,setup ,@children)
+                   (prn "Successfully created "
+                        (,cur-suite 'suite-name)
+                        " with "
+                        (len (,cur-suite 'tests))
+                        " tests and "
+                        (len (,cur-suite 'nested-suites))
+                        " nested suites.")
+                   nil)))
 
 (mac make-and-save-suite (suite-name parent-suite-name setup . children)
      (ensure-globals)
