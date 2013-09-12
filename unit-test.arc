@@ -11,14 +11,18 @@
      `(summarize-suite-creation (make-and-save-suite ,suite-name nil ,setup ,@children)))
 
 (def summarize-suite-creation (cur-suite)
-     (prn "Successfully created "
-          cur-suite!suite-name
+     (summarize-single-suite cur-suite)
+     (each (suite-name nested-suite) cur-suite!nested-suites
+           (summarize-suite-creation nested-suite)))
+
+(def summarize-single-suite (cur-suite)
+     (prn "Successfully created suite "
+          cur-suite!full-suite-name
           " with "
           (plural (len cur-suite!tests) "test")
           " and "
           (plural (len cur-suite!nested-suites) "nested suite")
-          ".")
-     nil)
+          "."))
 
 (mac make-and-save-suite (suite-name parent-suite-name setup . children)
      (ensure-globals)
