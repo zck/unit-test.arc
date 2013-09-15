@@ -149,7 +149,9 @@
                     (if (is tests 0)
                         (prn "We didn't find any tests. Odd...")
                       (is passes tests)
-                      (prn "\nYay! All " tests " tests pass! Get yourself a cookie.")
+                      (if (is tests 1)
+                          (prn "Yay! The single test passed!")
+                        (prn "Yay! All " tests " tests passed!"))
                       (prn "\nOh dear, " (- tests passes) " of " tests " failed.")))))
 
 (def total-tests (suite-results)
