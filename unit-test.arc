@@ -103,8 +103,8 @@
      `(fn ()
           (on-err (fn (ex) (inst 'testresults 'suite-name ',suite-name 'test-name ',test-name 'status 'fail 'details (details ex)))
                   (fn ()
-                      (withs ,setup
-                             (inst 'test-results 'suite-name ',suite-name 'test-name ',test-name 'status 'pass 'return-value (do ,@body)))))))
+                      (eval '(withs ,setup
+                                   (inst 'test-results 'suite-name ',suite-name 'test-name ',test-name 'status 'pass 'return-value (do ,@body))))))))
 
 (deftem test-results
   test-name ""
