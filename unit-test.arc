@@ -294,7 +294,7 @@
 
 
 (mac assert-same (expected actual (o fail-message))
-     `(assert-two-vals iso ,expected ,actual ,fail-message))
+     `(assert-two-vals same ,expected ,actual ,fail-message))
 
 (mac assert-t (actual (o fail-message))
      `(assert-two-vals (fn (ex act) act) t ,actual ,fail-message))

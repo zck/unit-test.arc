@@ -50,8 +50,9 @@
 
        (suite assert-same
               equal-vals (assert-same 1 1 "equal values are good")
-              lists-are-iso (assert-same (list 1) (list 1) "equal lists are good")
-              different-vals (assert-error (assert-same 1 2)))
+              lists-are-same (assert-same (list 1) (list 1) "equal lists are good")
+              different-vals (assert-error (assert-same 1 2))
+              hashtables-are-same (assert-same (obj 1 2) (obj 1 2) "equal hashtables are good"))
 
        (suite assert-t
               t-is-good (assert-t t)
