@@ -120,7 +120,7 @@
 
 (mac make-test-fn (suite-name test-name setup . body)
      `(fn ()
-          (on-err (fn (ex) (inst 'testresults 'suite-name ',suite-name 'test-name ',test-name 'status 'fail 'details (details ex)))
+          (on-err (fn (ex) (prn (details ex)) (inst 'testresults 'suite-name ',suite-name 'test-name ',test-name 'status 'fail 'details (details ex)))
                   (fn ()
                       (eval '(withs ,setup
                                    (inst 'test-results 'suite-name ',suite-name 'test-name ',test-name 'status 'pass 'return-value (do ,@body))))))))
@@ -136,7 +136,9 @@
      (pr test-result!suite-name "." test-result!test-name " ")
      (if (is test-result!status 'pass)
          (prn  "passed!")
-       (prn "failed: " test-result!details)))
+       (do (prn "failed: " test-result!details)
+           (disp (string "failed: " test-result!details))
+           (write (string "failed: " test-result!details)))))
 
 (mac run-suites suite-names
      `(do
@@ -260,7 +262,7 @@
 (def to-readable-string (val)
      (if (isa val
               'string)
-         (string #\' val #\') ;;use single quotes, because (err "a \"string\" here") looks weird
+         (string #\" val #\") ;;use single quotes, because (err "a \"string\" here") looks weird
        (acons val)
        (list-to-readable-string val)
        (isa val
