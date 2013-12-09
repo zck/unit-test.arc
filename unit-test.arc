@@ -317,8 +317,8 @@
        (iso thing1 thing2)))
 
 (def hash-equal (hash1 hash2)
-     (and (is (len (keys hash1))
-              (len (keys hash2))) ;;only need to check the length here; if the keys differ, we'll find it below
+     (and (is (len hash1)
+              (len hash2)) ;;only need to check the length here; if the keys differ, we'll find it below
           (all idfn
                (map [is hash1._
                         hash2._]
