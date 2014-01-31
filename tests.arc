@@ -45,7 +45,11 @@
               cross-obj-and-number (assert-nil (same (obj 1 2)
                                                      1))
               cross-number-and-string (assert-nil (same 1
-                                                        "1")))
+                                                        "1"))
+              obj-as-key-of-obj-are-same (assert-t (same (w/table tbl (= (tbl (obj 1 2)) 'val))
+                                                         (w/table tbl (= (tbl (obj 1 2)) 'val))))
+              obj-as-val-of-obj-are-same (assert-t (same (obj 1 (obj))
+                                                         (obj 1 (obj)))))
 
 
        (suite assert-same
@@ -260,27 +264,27 @@
                                   (make-full-suite-name 'parent
                                                         'child)))
 
-       (suite hash-equal
-              empty (assert-t (hash-equal (obj)
-                                          (obj)))
-              single-elt-same (assert-t (hash-equal (obj 1 t)
-                                                    (obj 1 t)))
-              single-elt-different-val (assert-nil (hash-equal (obj 1 t)
-                                                               (obj 1 'pants)))
-              single-elt-different-key (assert-nil (hash-equal (obj 1 t)
-                                                               (obj 2 t)))
-              multiple-elts-same (assert-t (hash-equal (obj 1 t 2 'a (1) 2)
-                                                       (obj 1 t 2 'a (1) 2)))
-              multiple-elts-different-key (assert-nil (hash-equal (obj 1 t 2 t 3 t)
-                                                                  (obj 1 t 2 t 4 t)))
-              multiple-elts-different-val (assert-nil (hash-equal (obj 1 t 2 t 3 t)
-                                                                  (obj 1 t 2 t 3 4)))
-              extra-elt-on-left (assert-nil (hash-equal (obj 1 t 2 t)
-                                                        (obj 1 t 2 t 3 t)))
-              extra-elt-on-right (assert-nil (hash-equal (obj 1 t 2 t 3 t)
-                                                         (obj 1 t 2 t)))
-              does-order-matter? (assert-t (hash-equal (obj 1 t 2 t)
-                                                       (obj 2 t 1 t))))
+       (suite hash-same
+              empty (assert-t (hash-same (obj)
+                                         (obj)))
+              single-elt-same (assert-t (hash-same (obj 1 t)
+                                                   (obj 1 t)))
+              single-elt-different-val (assert-nil (hash-same (obj 1 t)
+                                                              (obj 1 'pants)))
+              single-elt-different-key (assert-nil (hash-same (obj 1 t)
+                                                              (obj 2 t)))
+              multiple-elts-same (assert-t (hash-same (obj 1 t 2 'a (1) 2)
+                                                      (obj 1 t 2 'a (1) 2)))
+              multiple-elts-different-key (assert-nil (hash-same (obj 1 t 2 t 3 t)
+                                                                 (obj 1 t 2 t 4 t)))
+              multiple-elts-different-val (assert-nil (hash-same (obj 1 t 2 t 3 t)
+                                                                 (obj 1 t 2 t 3 4)))
+              extra-elt-on-left (assert-nil (hash-same (obj 1 t 2 t)
+                                                       (obj 1 t 2 t 3 t)))
+              extra-elt-on-right (assert-nil (hash-same (obj 1 t 2 t 3 t)
+                                                        (obj 1 t 2 t)))
+              does-order-matter? (assert-t (hash-same (obj 1 t 2 t)
+                                                      (obj 2 t 1 t))))
 
        (suite assert-error
               err-is-ok (assert-error (err "oh dear!"))

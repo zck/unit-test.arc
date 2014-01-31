@@ -313,15 +313,15 @@
                    'table)
               (isa thing2
                    'table))
-         (hash-equal thing1 thing2)
+         (hash-same thing1 thing2)
        (iso thing1 thing2)))
 
-(def hash-equal (hash1 hash2)
+(def hash-same (hash1 hash2)
      (and (is (len hash1)
               (len hash2)) ;;only need to check the length here; if the keys differ, we'll find it below
           (all idfn
-               (map [is hash1._
-                        hash2._]
+               (map [same hash1._
+                          hash2._]
                     (keys hash1)))))
 
 (mac assert-error (actual (o expected-error))
