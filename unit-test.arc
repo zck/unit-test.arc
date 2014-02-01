@@ -139,28 +139,34 @@
        (prn "failed: " test-result!details)))
 
 (mac run-suites suite-names
-     `(do
-       (run-these-suites ,@suite-names)
-       (summarize-run ,@suite-names)
-       nil))
+     `(run-suite-list ',suite-names))
 
 (mac run-suite suite-names
      `(run-suites ,@suite-names))
 
-(mac run-these-suites suite-names
-     (w/uniq name
-             `(each ,name ',suite-names
-                    (aif (*unit-tests* ,name)
-                         (run-one-suite it)
-                         (prn "\nno suite found: " ,name " isn't a test suite.")))))
+(= *last-suites-run* nil)
+
+(def rerun-last-suites-run ()
+     (run-suite-list *last-suites-run*))
+
+(def run-suite-list (suite-names)
+     (= *last-suites-run* suite-names)
+     (run-these-suites suite-names)
+     (summarize-run suite-names))
+
+(def run-these-suites (suite-names)
+     (each name suite-names
+           (aif (*unit-tests* name)
+                (run-one-suite it)
+                (prn "\nno suite found: " name " isn't a test suite."))))
 
 ;; Summarize a given test run. That is, print out information about the overall
 ;; status of a set of suites.
-(mac summarize-run suite-names
+(mac summarize-run (suite-names)
      (w/uniq name
              `(with (tests 0
                      passes 0)
-                    (each ,name ',suite-names
+                    (each ,name ,suite-names
                           (let results (*unit-test-results* ,name)
                                (when results
                                    (++ tests (total-tests results))
