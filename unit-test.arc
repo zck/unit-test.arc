@@ -177,7 +177,8 @@
                       (if (is tests 1)
                           (prn "Yay! The single test passed!")
                         (prn "Yay! All " tests " tests passed!"))
-                      (prn "\nOh dear, " (- tests passes) " of " tests " failed.")))))
+                      (prn "\nOh dear, " (- tests passes) " of " tests " failed."))
+                    (list passes tests))))
 
 (def total-tests (suite-results)
      (apply +

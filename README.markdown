@@ -20,12 +20,12 @@ To declare a suite, give it a name, then a declare a bunch of tests. To declare 
     arc> (run-suite math)
 
     Running suite math
-    math.this-will-pass passed!
     math.this-will-fail failed: (+ 2 2) should be 3 but instead was 4
-    In math, 1 of 2 passed.
+    math.this-will-pass passed!
+    In suite math, 1 of 2 tests passed.
 
     Oh dear, 1 of 2 failed.
-    nil
+    (1 2)
 
 You can run multiple suites in `run-suite`, or call `run-suites`. They do the same thing.
 
@@ -81,33 +81,32 @@ If you run a suite, it also runs all nested suites inside it.
     Running suite math
     math.numbers-are-equal passed!
     math.this-test-will-fail failed: 4 should be 3 but instead was 4
-    In math, 1 of 2 passed.
+    In suite math, 1 of 2 tests passed.
 
     Running suite math.adding
-    math.adding.good passed!
     math.adding.bad failed: (+ 2 2) should be 3 but instead was 4
-    In math.adding, 1 of 2 passed.
+    math.adding.good passed!
+    In suite math.adding, 1 of 2 tests passed.
 
     Running suite math.subtracting
-    math.subtracting.good passed!
     math.subtracting.bad failed: (- 2 42) should be 0 but instead was -40
-    In math.subtracting, 1 of 2 passed.
+    math.subtracting.good passed!
+    In suite math.subtracting, 1 of 2 tests passed.
 
     Oh dear, 3 of 6 failed.
-    nil
+    (3 6)
 
 If you want to run only one suite that's nested inside another one, that's possible. Just call `run-suite` with the full name of the suite you want to run. The full name is simply the names of all the parents of the suite concatenated together, with a period between them, then the suite's name:
 
     arc> (run-suite math.adding)
 
     Running suite math.adding
-    math.adding.good passed!
     math.adding.bad failed: (+ 2 2) should be 3 but instead was 4
-    In math.adding, 1 of 2 passed.
+    math.adding.good passed!
+    In suite math.adding, 1 of 2 tests passed.
 
     Oh dear, 1 of 2 failed.
-    nil
-
+    (1 2)
 
 
 ## Setup
@@ -123,12 +122,10 @@ If you need to set up some values to share across tests, use `suite-w/setup`. Th
     arc> (run-suite math)
 
     Running suite math
-    math.multiplying-works passed!
-    math.adding-works passed!
-    In math, 2 of 2 passed.
+    In suite math, all 2 tests passed!
+    Yay! All 2 tests passed!
+    (2 2)
 
-    Yay! All 2 tests pass! Get yourself a cookie.
-    nil
 
 Under the hood, `suite-w/setup` uses `withs`, so variables can depend on earlier variables.
 
@@ -140,12 +137,22 @@ Under the hood, `suite-w/setup` uses `withs`, so variables can depend on earlier
     arc> (run-suite math)
 
     Running suite math
-    math.lets-multiply passed!
-    In math, 1 of 1 passed.
+    In suite math, all 1 tests passed!
+    Yay! The single test passed!
+    (1 1)
 
-    Yay! All 1 tests pass! Get yourself a cookie.
-    nil
 
 ## Testing macros
 
 Macros can be tested just like functions. The macro won't be expanded until the test is run, so the you can change it, re-run the test, and the test will use the up-to-date definition.
+
+## Rerunning the last set of suites ran
+
+You can rerun the last set of suites you ran with `(rerun-last-suites-run)`:
+
+    arc> (rerun-last-suites-run)
+
+    Running suite math
+    In suite math, all 1 tests passed!
+    Yay! The single test passed!
+    (1 1)
