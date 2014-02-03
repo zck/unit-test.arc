@@ -142,6 +142,10 @@
 (mac run-suite suite-names
      `(run-suites ,@suite-names))
 
+(def run-all-suites ()
+     (run-suite-list (keep is-valid-name
+                           (keys *unit-tests*))))
+
 (= *last-suites-run* nil)
 
 (def rerun-last-suites-run ()
