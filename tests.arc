@@ -309,4 +309,8 @@
               lists-containing-string (assert-same "(1 '2' 3)"
                                                    (to-readable-string '(1 "2" 3)))
               tables-containing-string (assert-same "#hash((1 . '2')('3' . 4))"
-                                                    (to-readable-string (obj 1 "2" "3" 4)))))
+                                                    (to-readable-string (obj 1 "2" "3" 4))))
+
+       (suite is-valid-name
+              periods-not-ok (assert-nil (is-valid-name "hi.there"))
+              no-period-is-ok (assert-t (is-valid-name "hi;there!mom:)"))))

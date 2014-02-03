@@ -51,8 +51,7 @@
 
 (mac make-suite (suite-name parent-suite-name setup . children)
      (w/uniq processed-children
-             `(if (find #\.
-                        (string ',suite-name))
+             `(if (no (is-valid-name ',suite-name))
                   (err (string "Suite names can't have periods in them. "
                                ',suite-name
                                " does."))
@@ -108,8 +107,7 @@
   test-fn (fn args (assert nil "You didn't give this test a body. So I'm making it fail.")))
 
 (mac test (suite-name test-name setup . body)
-     `(if (find #\.
-                (string ',test-name))
+     `(if (no (is-valid-name ',test-name))
           (err (string "Test names can't have periods in them. "
                        ',test-name
                        " does."))
@@ -196,6 +194,10 @@
 (def result-is-pass (test-result)
      (is test-result!status
          'pass))
+
+(def is-valid-name (name)
+     (no (find #\.
+               (string name))))
 
 (deftem suite-results
   suite-name ""
