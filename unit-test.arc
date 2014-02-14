@@ -316,7 +316,7 @@
 (def compare-anything (thing1 thing2)
      (if (is (type thing1)
              (type thing2))
-         (< (string thing1) ;;can't call (string (obj))
+         (< (string thing1) ;;can't call (string (obj)). Need to find some other way of sorting objects.
             (string thing2))
        (< (type thing1)
           (type thing2))))
