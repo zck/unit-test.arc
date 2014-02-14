@@ -300,9 +300,26 @@
 
 (def table-to-readable-string (tbl)
      (tostring (pr "#hash(")
-               (each (key val) tbl
-                     (pr (to-readable-string (cons key val))))
+               (each key (sort compare-anything
+                               (keys tbl))
+                     (pr (to-readable-string (cons key tbl.key))))
                (pr ")")))
+
+;; Enforce a unique ordering of all possible objects.
+;; We can't compare, using <, many kinds of things.
+;; This does mean that some orderings are confusing, e.g. "100"
+;; will be sorted before "3", because string comparison works
+;; character by character. But converting to a string is necessary,
+;; because some things can't be ordered within their own type,
+;; For example, (< '(1) '(1)) errors.
+
+(def compare-anything (thing1 thing2)
+     (if (is (type thing1)
+             (type thing2))
+         (< (string thing1)
+            (string thing2))
+       (< (type thing1)
+          (type thing2))))
 
 
 

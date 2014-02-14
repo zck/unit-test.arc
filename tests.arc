@@ -313,4 +313,12 @@
 
        (suite is-valid-name
               periods-not-ok (assert-nil (is-valid-name "hi.there"))
-              no-period-is-ok (assert-t (is-valid-name "hi;there!mom:)"))))
+              no-period-is-ok (assert-t (is-valid-name "hi;there!mom:)")))
+       (suite compare-anything
+              cons-before-int (assert-t (compare-anything '(1)
+                                                          3))
+              3-after-100 (assert-nil (compare-anything 3 100))
+              string-before-table (assert-t (compare-anything "str"
+                                                              (obj)))
+              strings-sort (assert-nil (compare-anything "tsra" "arst"))
+              sym-before-table (assert-t (compare-anything 'im-a-symbol (obj)))))
