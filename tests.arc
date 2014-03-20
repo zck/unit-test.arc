@@ -304,4 +304,6 @@
               lists-containing-string (assert-same "(1 \"2\" 3)"
                                                    (to-readable-string '(1 "2" 3)))
               tables-containing-string (assert-same "#hash((1 . \"2\")(\"3\" . 4))"
-                                                    (to-readable-string (obj 1 "2" "3" 4)))))
+                                                    (to-readable-string (obj 1 "2" "3" 4)))
+              strings-containing-quotes (assert-same "\"She said \\\"Hi, there,\\\" she said.\""
+                                                     (to-readable-string "She said \"Hi, there,\" she said.")))) ;;wtf should this test case be?

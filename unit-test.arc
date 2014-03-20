@@ -257,10 +257,11 @@
                                     (awhen ,fail-message
                                            (string ". " it)))))))
 
+;; (pr (to-readable-string any-string)) should look like any-string
 (def to-readable-string (val)
      (if (isa val
               'string)
-         (string #\" val #\") ;;use single quotes, because (err "a \"string\" here") looks weird
+         (string #\" (subst "\\\"" "\"" val) #\")
        (acons val)
        (list-to-readable-string val)
        (isa val
