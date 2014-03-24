@@ -346,3 +346,12 @@
                       (fn () ,actual
                              nil))
         (err "Expected an error to be thrown")))
+
+(def load-tests-from locations
+     (each location locations
+           (if (dir-exists location)
+               (load-tests-from (map [list location "/"] ;;how to do this platform-independently?
+                                     (dir location))) ;;(dir location) gets hidden files too.
+             (file-exists location) ;;works at least for files; need to test further
+             (load location) ;;also, this will load any Arc code, not just unit tests
+             (err (string "Nothing at " location)))))
