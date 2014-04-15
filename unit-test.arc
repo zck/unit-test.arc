@@ -346,3 +346,12 @@
                       (fn () ,actual
                              nil))
         (err "Expected an error to be thrown")))
+
+(def list-suites ()
+     "Prints out all suites that can be run."
+     (prn "Here are all the top-level suites that can be run.\nYou can also run nested suites directly.\n")
+     (each (suite-name cur-suite) *unit-tests*
+           (when (is-valid-name suite-name)
+             (prn suite-name)))
+     (prn)
+     nil) ;;we must return nil explicitly, because 'each over a table returns a long list
