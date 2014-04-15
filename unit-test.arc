@@ -350,8 +350,10 @@
 (def load-tests-from locations
      (each location locations
            (if (dir-exists location)
-               (load-tests-from (map [list location "/"] ;;how to do this platform-independently?
-                                     (dir location))) ;;(dir location) gets hidden files too.
+               (load-tests-from (map [list location "/" _] ;;how to do this platform-independently?
+                                     (remove [is (_ 0)
+                                                 #\.] ;;remove hidden files. This is also platform-dependent
+                                             (dir location)))) ;;(dir location) gets hidden files too.
              (file-exists location) ;;works at least for files; need to test further
              (load location) ;;also, this will load any Arc code, not just unit tests
              (err (string "Nothing at " location)))))
