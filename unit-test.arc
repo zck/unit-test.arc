@@ -349,7 +349,7 @@
 
 (def list-suites ()
      "Prints out all suites that can be run."
-     (prn "Here are all the suites that can be run.\nEach nested suites is indented under its parent.\n")
+     (prn "Here are all the suites that can be run.\nEach nested suite is indented under its parent.\n")
      (let helper (afn (cur-suite nesting-level)
                       (prn (newstring nesting-level #\tab)
                            cur-suite!suite-name)
