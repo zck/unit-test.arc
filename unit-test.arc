@@ -151,11 +151,6 @@
 (def rerun-last-suites-run ()
      (run-suite-list *last-suites-run*))
 
-(def run-suite-list (suite-names)
-     (= *last-suites-run* suite-names)
-     (run-these-suites suite-names)
-     (summarize-run suite-names))
-
 (def run-these-suites (suite-names)
      (each name suite-names
            (aif (*unit-tests* name)
@@ -181,6 +176,11 @@
                         (prn "Yay! All " tests " tests passed!"))
                       (prn "\nOh dear, " (- tests passes) " of " tests " failed."))
                     (list passes tests))))
+
+(def run-suite-list (suite-names)
+     (= *last-suites-run* suite-names)
+     (run-these-suites suite-names)
+     (summarize-run suite-names))
 
 (def total-tests (suite-results)
      (apply +
