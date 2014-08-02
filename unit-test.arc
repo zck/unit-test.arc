@@ -69,6 +69,8 @@
      (if children
          (w/uniq the-rest
                  (if (atom (car children))  ;;test names can be anything but lists
+                     ;; it must be a test, so children is
+                     ;; (testname test-body . everything-else)
                      `(let ,the-rest (suite-partition ,parent-suite-name
                                                       ,setup
                                                       ,@(cddr children))
@@ -80,6 +82,8 @@
                            ,the-rest)
                    (is (caar children)
                        'suite)
+                   ;; children is
+                   ;; ((suite . suite-body) . everything-else)
                    `(let ,the-rest (suite-partition ,parent-suite-name
                                                     ,setup
                                                     ,@(cdr children))
@@ -89,7 +93,8 @@
                                                  nil
                                                  ,@(cddr (car children))))
                          ,the-rest)
-                   ;;here, children looks like: ((suite-w/setup suite-name (setup...) . body) . rest)
+                   ;; here, children is
+                   ;; ((suite-w/setup suite-name (setup...) . body) . rest)
                    `(let ,the-rest (suite-partition ,parent-suite-name
                                                     ,setup
                                                     ,@(cdr children))
@@ -232,6 +237,7 @@
                 (= cur-results.child-suite-name
                    (run-one-suite child-suite)))))
 
+;;zck rename to summarize-suite-run
 (def summarize-suite (suite-name)
      (with (tests 0
             passed 0)
