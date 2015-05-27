@@ -174,11 +174,12 @@
 ;;if we found a suite, but not all nested suites, message about that
 ;;in make-test-fn, we inst 'testresults _and_ 'test-results. This is worrisome, but might be fixed in a later version.
 ;;should we return something other than nil?
-;;proper error checking?
+;;proper error checking? What does this mean?
 ;;throw results into results obj
 ;;store last-run again.
 ;;rename run-last-thing to support running a single test. Am I up to date?
-;;refactor make-full-suite-name to use this
+;;make-full-name
+
 (def make-full-name args
      (sym (string (intersperse #\.
                                (keep idfn ;;for when called with nil, as in make-and-save-suite of top-level suites
@@ -368,11 +369,6 @@
 
 (mac assert-nil (actual (o fail-message))
      `(assert-two-vals is nil ,actual ,fail-message))
-
-(def make-full-suite-name (parent-suite-name child-suite-name)
-     (sym (string (when parent-suite-name
-                    (string parent-suite-name "."))
-                  child-suite-name)))
 
 (def same (thing1 thing2)
      (if (and (isa thing1
