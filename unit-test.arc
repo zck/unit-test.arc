@@ -45,7 +45,7 @@
 
 (mac make-and-save-suite (suite-name parent-suite-name setup . children)
      (ensure-globals)
-     `(= (*unit-tests* ',(make-full-suite-name parent-suite-name
+     `(= (*unit-tests* ',(make-full-name parent-suite-name
                                                suite-name))
          (make-suite ,suite-name ,parent-suite-name ,setup ,@children)))
 
@@ -55,14 +55,14 @@
                   (err (string "Suite names can't have periods in them. "
                                ',suite-name
                                " does."))
-                (let ,processed-children (suite-partition ,(make-full-suite-name parent-suite-name
+                (let ,processed-children (suite-partition ,(make-full-name parent-suite-name
                                                                                  suite-name)
                                                           ,setup
                                                           ,@children)
                      (inst 'suite 'suite-name ',suite-name
                            'nested-suites (,processed-children 'suites)
                            'tests (,processed-children 'tests)
-                           'full-suite-name (make-full-suite-name ',parent-suite-name
+                           'full-suite-name (make-full-name ',parent-suite-name
                                                                   ',suite-name))))))
 
 (mac suite-partition (parent-suite-name setup . children)
@@ -146,6 +146,53 @@
 
 (mac run-suite suite-names
      `(run-suites ,@suite-names))
+
+;;this is test stuff, which isn't working yet.
+;; (run-test a b c)
+;; =>
+;; (make-full-name 'a 'b 'c)
+;; (mac run-test args
+;;      (let test-name (apply make-full-name args)
+;;           (prn "at macroexpansion time, we got " test-name)
+;;           3))
+(mac run-test args
+     (withs (test-full-name (apply make-full-name args)
+             test-name (get-test-name test-full-name)
+             suite-name (get-suite-name test-full-name))
+          (w/uniq (suite test)
+                  `(do
+                    (ensure-globals)
+                    (let ,suite (*unit-tests* ',suite-name)
+                         (if ,suite
+                             (let ,test ((,suite 'tests) ',test-name)
+                                  (if ,test
+                                      (let results ((,test 'test-fn))
+                                           (pretty-results results))
+                                    (prn "we found a suite named " ',suite-name ", but no test named " ',test-name)))
+                           (prn "we didn't find a suite named " ',suite-name)))
+                    nil))))
+;;if we found a suite, but not all nested suites, message about that
+;;in make-test-fn, we inst 'testresults _and_ 'test-results. This is worrisome, but might be fixed in a later version.
+;;should we return something other than nil?
+;;proper error checking?
+;;throw results into results obj
+;;store last-run again.
+;;rename run-last-thing to support running a single test. Am I up to date?
+;;refactor make-full-suite-name to use this
+(def make-full-name args
+     (sym (string (intersperse #\.
+                               (keep idfn ;;for when called with nil, as in make-and-save-suite of top-level suites
+                                     args)))))
+
+;;maybe name this "butlast name"
+(def get-suite-name (test-full-name)
+     (let string-name (string test-full-name)
+          (sym (cut string-name 0 (last (positions #\. string-name))))))
+
+(def get-test-name (test-full-name)
+     (let string-name (string test-full-name)
+          (sym (cut string-name (+ 1
+                                   (last (positions #\. string-name)))))))
 
 (def run-all-suites ()
      (run-suite-list (keep is-valid-name
