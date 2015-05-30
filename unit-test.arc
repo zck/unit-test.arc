@@ -171,6 +171,25 @@
                                     (prn "we found a suite named " ',suite-name ", but no test named " ',test-name)))
                            (prn "we didn't find a suite named " ',suite-name)))
                     nil))))
+
+
+(def find-nested-suite-that-exists-and-next-one (full-suite-name)
+     "Take FULL-SUITE-NAME, and parse it into its component suite names, if there are any nested ones.
+Then, for each sequence of component suite names, see if there is a suite with that name.
+So, for full-suite-name of math.adding.whatever, check if there's a suite named math, then if there's one
+named math.adding, then one named math.adding.whatever.
+
+Return a list where the first element is the longest suite name we checked this way that exists,
+and the second element is the symbol that isn't a nested suite under the first element. Either element of the list can be nil. A possible return value would be '(math.adding whatever)."
+     (let helper (afn (existing-suite-name nested-names)
+                      (prn "called helper with existing: " existing-suite-name " and nested-names: " nested-names)
+                      (if (no nested-names)
+                          (list existing-suite-name nil)
+                        (let next-name (make-full-name existing-suite-name (car nested-names))
+                             (if *unit-tests*.next-name
+                                 (self next-name (cdr nested-names))
+                               (list existing-suite-name (sym (car nested-names)))))))
+          (helper nil (tokens (string full-suite-name) #\.))))
 ;;if we found a suite, but not all nested suites, message about that
 ;;in make-test-fn, we inst 'testresults _and_ 'test-results. This is worrisome, but might be fixed in a later version.
 ;;should we return something other than nil?
