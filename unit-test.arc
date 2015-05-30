@@ -147,14 +147,6 @@
 (mac run-suite suite-names
      `(run-suites ,@suite-names))
 
-;;this is test stuff, which isn't working yet.
-;; (run-test a b c)
-;; =>
-;; (make-full-name 'a 'b 'c)
-;; (mac run-test args
-;;      (let test-name (apply make-full-name args)
-;;           (prn "at macroexpansion time, we got " test-name)
-;;           3))
 (mac run-test args
      (withs (test-full-name (apply make-full-name args)
              test-name (get-test-name test-full-name)
@@ -169,7 +161,10 @@
                                       (let results ((,test 'test-fn))
                                            (pretty-results results))
                                     (prn "we found a suite named " ',suite-name ", but no test named " ',test-name)))
-                           (prn "we didn't find a suite named " ',suite-name)))
+                           (let (existing-suite-name absent-suite-name) (find-nested-suite-that-exists-and-next-one ',suite-name)
+                                (if existing-suite-name
+                                    (prn "we found a suite named " existing-suite-name ", but it doesn't contain a nested suite named " absent-suite-name)
+                                  (prn "we didn't find a suite named " existing-suite-name)))))
                     nil))))
 
 
@@ -182,7 +177,6 @@ named math.adding, then one named math.adding.whatever.
 Return a list where the first element is the longest suite name we checked this way that exists,
 and the second element is the symbol that isn't a nested suite under the first element. Either element of the list can be nil. A possible return value would be '(math.adding whatever)."
      (let helper (afn (existing-suite-name nested-names)
-                      (prn "called helper with existing: " existing-suite-name " and nested-names: " nested-names)
                       (if (no nested-names)
                           (list existing-suite-name nil)
                         (let next-name (make-full-name existing-suite-name (car nested-names))
@@ -190,7 +184,8 @@ and the second element is the symbol that isn't a nested suite under the first e
                                  (self next-name (cdr nested-names))
                                (list existing-suite-name (sym (car nested-names)))))))
           (helper nil (tokens (string full-suite-name) #\.))))
-;;if we found a suite, but not all nested suites, message about that
+
+;;if user doesn't pass a test name at all, notify about that (possibly with "did you want to run-suite?")
 ;;in make-test-fn, we inst 'testresults _and_ 'test-results. This is worrisome, but might be fixed in a later version.
 ;;should we return something other than nil?
 ;;proper error checking? What does this mean?
@@ -211,8 +206,9 @@ and the second element is the symbol that isn't a nested suite under the first e
 
 (def get-test-name (test-full-name)
      (let string-name (string test-full-name)
-          (sym (cut string-name (+ 1
-                                   (last (positions #\. string-name)))))))
+          (when (pos #\. string-name)
+            (sym (cut string-name (+ 1
+                                     (last (positions #\. string-name))))))))
 
 (def run-all-suites ()
      (run-suite-list (keep is-valid-name
