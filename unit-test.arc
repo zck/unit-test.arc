@@ -147,6 +147,14 @@
 (mac run-suite suite-names
      `(run-suites ,@suite-names))
 
+(= *last-test-run* nil)
+
+;;is this consistent with rerun-last-suite?
+(def rerun-last-test ()
+     (if *last-test-run*
+         (run-test *last-test-run*) ;;this macroexpands badly. we probably want to separate the run-test command parsing from the actual body, which doesn't require a function. Something like mac run-test, and def run-test-innards, which does the body of the work.
+       (prn "There wasn't a test run previously.")))
+
 (mac run-test args
      (withs (test-full-name (apply make-full-name args)
              test-name (get-test-name test-full-name)
@@ -159,6 +167,7 @@
                              (let ,test ((,suite 'tests) ',test-name)
                                   (if ,test
                                       (let results ((,test 'test-fn))
+                                           (= *last-test-run* ',test-full-name)
                                            (pretty-results results))
                                     (prn "we found a suite named " ',suite-name ", but no test named " ',test-name)))
                            (let (existing-suite-name absent-suite-name) (find-nested-suite-that-exists-and-next-one ',suite-name)
@@ -186,6 +195,7 @@ and the second element is the symbol that isn't a nested suite under the first e
           (helper nil (tokens (string full-suite-name) #\.))))
 
 ;;if user doesn't pass a test name at all, notify about that (possibly with "did you want to run-suite?")
+;;rename find-nested-suite-that-exists-and-next-one to something shorter and more obvious
 ;;in make-test-fn, we inst 'testresults _and_ 'test-results. This is worrisome, but might be fixed in a later version.
 ;;should we return something other than nil?
 ;;proper error checking? What does this mean?
