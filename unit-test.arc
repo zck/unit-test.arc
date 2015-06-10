@@ -43,8 +43,19 @@
           (plural (len cur-suite!nested-suites) "nested suite")
           "."))
 
+(mac ensure-bound (place default)
+     `(unless (bound ',place)
+       (= ,place ,default)))
+
+(ensure-bound *unit-tests* (obj))
+(ensure-bound *unit-test-results* (obj))
+
+(def make-full-name args
+     (sym (string (intersperse #\.
+                               (keep idfn ;;for when called with nil, as in make-and-save-suite of top-level suites
+                                     args)))))
+
 (mac make-and-save-suite (suite-name parent-suite-name setup . children)
-     (ensure-globals)
      `(= (*unit-tests* ',(make-full-name parent-suite-name
                                                suite-name))
          (make-suite ,suite-name ,parent-suite-name ,setup ,@children)))
@@ -75,10 +86,10 @@
                                                       ,setup
                                                       ,@(cddr children))
                            (= ((,the-rest 'tests) ',(car children))
-                              (test ,parent-suite-name
-                                    ,(car children)
-                                    ,setup
-                                    ,(cadr children)))
+                              (make-test ,parent-suite-name
+                                         ,(car children)
+                                         ,setup
+                                         ,(cadr children)))
                            ,the-rest)
                    (is (caar children)
                        'suite)
@@ -111,7 +122,7 @@
   suite-name "no-suitename mcgee"
   test-fn (fn args (assert nil "You didn't give this test a body. So I'm making it fail.")))
 
-(mac test (suite-name test-name setup . body)
+(mac make-test (suite-name test-name setup . body)
      `(if (no (is-valid-name ',test-name))
           (err (string "Test names can't have periods in them. "
                        ',test-name
@@ -147,37 +158,65 @@
 (mac run-suite suite-names
      `(run-suites ,@suite-names))
 
-(= *last-test-run* nil)
+;;this should be either 'test or 'suite
+(ensure-bound *last-thing-run* nil)
 
-;;is this consistent with rerun-last-suite?
+(ensure-bound *last-test-run* nil)
+(ensure-bound *last-suites-run* nil)
+
+;;zck figure out better name scheme for "rerun" things and "run" things
+(def rerun-last-tests ()
+     (if (is *last-thing-run* 'test)
+         (rerun-last-test)
+       (is *last-thing-run* 'suite)
+       (rerun-last-suites-run)
+       (prn "You haven't run any tests or suites yet!")))
+
 (def rerun-last-test ()
      (if *last-test-run*
-         (run-test *last-test-run*) ;;this macroexpands badly. we probably want to separate the run-test command parsing from the actual body, which doesn't require a function. Something like mac run-test, and def run-test-innards, which does the body of the work.
+         (run-single-test *last-test-run*)
        (prn "There wasn't a test run previously.")))
 
+(def rerun-last-suites-run ()
+     (if *last-suites-run*
+         (run-suite-list *last-suites-run*)
+       (prn "There wasn't a suite run previously.")))
+
 (mac run-test args
-     (withs (test-full-name (apply make-full-name args)
+     `(run-single-test ',(apply make-full-name args)))
+
+(def run-single-test (test-full-name)
+     (withs (suite-name (get-suite-name test-full-name)
              test-name (get-test-name test-full-name)
-             suite-name (get-suite-name test-full-name))
-          (w/uniq (suite test)
-                  `(do
-                    (ensure-globals)
-                    (let ,suite (*unit-tests* ',suite-name)
-                         (if ,suite
-                             (let ,test ((,suite 'tests) ',test-name)
-                                  (if ,test
-                                      (let results ((,test 'test-fn))
-                                           (= *last-test-run* ',test-full-name)
-                                           (pretty-results results))
-                                    (prn "we found a suite named " ',suite-name ", but no test named " ',test-name)))
-                           (let (existing-suite-name absent-suite-name) (find-nested-suite-that-exists-and-next-one ',suite-name)
-                                (if existing-suite-name
-                                    (prn "we found a suite named " existing-suite-name ", but it doesn't contain a nested suite named " absent-suite-name)
-                                  (prn "we didn't find a suite named " existing-suite-name)))))
-                    nil))))
+             the-suite (*unit-tests* suite-name))
+            (if the-suite
+                (let the-test ((the-suite 'tests) test-name)
+                     (if the-test
+                         (let results ((the-test 'test-fn))
+                              (= *last-test-run* test-full-name)
+                              (= *last-thing-run* 'test)
+                              (pretty-results results)
+                              (is results!status 'pass))
+                       (do (if *unit-tests*.test-full-name
+                               (prn "There's a suite named " test-full-name ", not a test.\nIf you want to run the suite, call (run-suite " test-full-name ").")
+                             (do (prn "we found a suite named " suite-name ", but no test named " test-name ".")
+                                 (prn "Inside it, there are tests named: "
+                                      (string (intersperse ", "
+                                                           (keys *unit-tests*.suite-name!tests)))
+                                      ".")))
+                           nil)))
+              (let (existing-suite-name absent-suite-name) (verify-suite-name suite-name)
+                   (if existing-suite-name
+                       (do (prn "we found a suite named " existing-suite-name ", but it doesn't contain a nested suite named " absent-suite-name ".")
+                           (prn "It does contain nested suites named: "
+                                (string (intersperse ", "
+                                                     (keys *unit-tests*.existing-suite-name!nested-suites)))
+                                "."))
+                     (prn "we didn't find a suite named " absent-suite-name "."))
+                   nil))))
+;;in make-test-fn, we inst 'testresults _and_ 'test-results. This is worrisome, but might be fixed in a later version.
 
-
-(def find-nested-suite-that-exists-and-next-one (full-suite-name)
+(def verify-suite-name (full-suite-name)
      "Take FULL-SUITE-NAME, and parse it into its component suite names, if there are any nested ones.
 Then, for each sequence of component suite names, see if there is a suite with that name.
 So, for full-suite-name of math.adding.whatever, check if there's a suite named math, then if there's one
@@ -194,21 +233,6 @@ and the second element is the symbol that isn't a nested suite under the first e
                                (list existing-suite-name (sym (car nested-names)))))))
           (helper nil (tokens (string full-suite-name) #\.))))
 
-;;if user doesn't pass a test name at all, notify about that (possibly with "did you want to run-suite?")
-;;rename find-nested-suite-that-exists-and-next-one to something shorter and more obvious
-;;in make-test-fn, we inst 'testresults _and_ 'test-results. This is worrisome, but might be fixed in a later version.
-;;should we return something other than nil?
-;;proper error checking? What does this mean?
-;;throw results into results obj
-;;store last-run again.
-;;rename run-last-thing to support running a single test. Am I up to date?
-;;make-full-name
-
-(def make-full-name args
-     (sym (string (intersperse #\.
-                               (keep idfn ;;for when called with nil, as in make-and-save-suite of top-level suites
-                                     args)))))
-
 ;;maybe name this "butlast name"
 (def get-suite-name (test-full-name)
      (let string-name (string test-full-name)
@@ -224,16 +248,15 @@ and the second element is the symbol that isn't a nested suite under the first e
      (run-suite-list (keep is-valid-name
                            (keys *unit-tests*))))
 
-(= *last-suites-run* nil)
-
-(def rerun-last-suites-run ()
-     (run-suite-list *last-suites-run*))
-
+;;Return t if any suites are found, nil otherwise.
 (def run-these-suites (suite-names)
-     (each name suite-names
-           (aif (*unit-tests* name)
-                (run-one-suite it)
-                (prn "\nno suite found: " name " isn't a test suite."))))
+     (let suite-found nil
+          (each name suite-names
+                (aif (*unit-tests* name)
+                     (do (= suite-found t)
+                         (run-one-suite it))
+                     (prn "\nno suite found: " name " isn't a test suite.")))
+          suite-found))
 
 ;; Summarize a given test run. That is, print out information about the overall
 ;; status of a set of suites.
@@ -256,9 +279,10 @@ and the second element is the symbol that isn't a nested suite under the first e
                     (list passes tests))))
 
 (def run-suite-list (suite-names)
-     (= *last-suites-run* suite-names)
-     (run-these-suites suite-names)
-     (summarize-run suite-names))
+     (when (run-these-suites suite-names)
+       (= *last-suites-run* suite-names)
+       (= *last-thing-run* 'suite)
+       (summarize-run suite-names)))
 
 (def total-tests (suite-results)
      (apply +
@@ -287,12 +311,11 @@ and the second element is the symbol that isn't a nested suite under the first e
   nested-suite-results (obj)) ;;nested-suite-fullname -> suite-result
 
 (def run-one-suite (cur-suite)
-     (ensure-globals)
      (prn "\nRunning suite " cur-suite!full-suite-name)
      (= (*unit-test-results* cur-suite!full-suite-name)
         (inst 'suite-results 'suite-name cur-suite!full-suite-name))
      (run-tests cur-suite)
-     (summarize-suite cur-suite!full-suite-name)
+     (print-suite-run-summary cur-suite!full-suite-name)
      (run-child-suites cur-suite)
      (*unit-test-results* cur-suite!full-suite-name))
 
@@ -310,8 +333,7 @@ and the second element is the symbol that isn't a nested suite under the first e
                 (= cur-results.child-suite-name
                    (run-one-suite child-suite)))))
 
-;;zck rename to summarize-suite-run
-(def summarize-suite (suite-name)
+(def print-suite-run-summary (suite-name)
      (with (tests 0
             passed 0)
            (each (test-name test-result) *unit-test-results*.suite-name!test-results
@@ -325,12 +347,6 @@ and the second element is the symbol that isn't a nested suite under the first e
              (do (each (test-name test-result) *unit-test-results*.suite-name!test-results
                        (pretty-results test-result))
                  (prn "In suite " suite-name ", " passed " of " tests " tests passed.")))))
-
-(def ensure-globals ()
-     (unless (bound '*unit-tests*)
-       (= *unit-tests* (obj)))
-     (unless (bound '*unit-test-results*)
-       (= *unit-test-results* (obj))))
 
 (mac assert (test fail-message)
      `(unless ,test

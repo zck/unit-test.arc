@@ -68,11 +68,11 @@
               nil-is-good (assert-nil nil)
               3-is-treated-as-bad (assert-error (assert-nil 3)))
 
-       (suite-w/setup test
-                      (sample-test (test sample-suite sample-test nil 3)
-                      simple-setup (test sample-suite simple-setup (x 3) x)
-                      multiple-variable-setup (test sample-suite multiple-variable-setup (x 3 y 4) (+ x y))
-                      reliant-variable-setup (test sample-suite reliant-variable-setup (x 3 y x) (+ x y)))
+       (suite-w/setup make-test
+                      (sample-test (make-test sample-suite sample-test nil 3)
+                      simple-setup (make-test sample-suite simple-setup (x 3) x)
+                      multiple-variable-setup (make-test sample-suite multiple-variable-setup (x 3 y 4) (+ x y))
+                      reliant-variable-setup (make-test sample-suite reliant-variable-setup (x 3 y x) (+ x y)))
                       test-name (assert-same 'sample-test sample-test!test-name)
                       suite-name (assert-same 'sample-suite sample-test!suite-name)
                       test-fn (assert-same 3
@@ -256,13 +256,13 @@
               fail (assert-nil (result-is-pass (inst 'test-results
                                                      'status 'fail))))
 
-       (suite make-full-suite-name
+       (suite make-full-name
               regular (assert-same 'pants
-                                   (make-full-suite-name nil
-                                                         'pants))
+                                   (make-full-name nil
+                                                   'pants))
               nested (assert-same 'parent.child
-                                  (make-full-suite-name 'parent
-                                                        'child)))
+                                  (make-full-name 'parent
+                                                  'child)))
 
        (suite hash-same
               empty (assert-t (hash-same (obj)
