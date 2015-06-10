@@ -313,4 +313,16 @@
 
        (suite is-valid-name
               periods-not-ok (assert-nil (is-valid-name "hi.there"))
-              no-period-is-ok (assert-t (is-valid-name "hi;there!mom:)"))))
+              no-period-is-ok (assert-t (is-valid-name "hi;there!mom:)")))
+       (suite get-suite-name
+              only-suite-name (assert-same 'base
+                                           (get-suite-name 'base))
+              with-test-name (assert-same 'base
+                                          (get-suite-name 'base.test))
+              nested-suites (assert-same 'base.nested
+                                         (get-suite-name 'base.nested.test)))
+       (suite get-test-name
+              simple-test-name (assert-same 'test-name
+                                          (get-test-name 'base.test-name))
+              nested-suites (assert-same 'test-name
+                                         (get-test-name 'base.nested.test-name))))
