@@ -216,6 +216,8 @@
                    nil))))
 ;;in make-test-fn, we inst 'testresults _and_ 'test-results. This is worrisome, but might be fixed in a later version.
 
+;;; functions dealing with symbol manipulation
+
 (def verify-suite-name (full-suite-name)
      "Take FULL-SUITE-NAME, and parse it into its component suite names, if there are any nested ones.
 Then, for each sequence of component suite names, see if there is a suite with that name.
@@ -233,16 +235,20 @@ and the second element is the symbol that isn't a nested suite under the first e
                                (list existing-suite-name (sym (car nested-names)))))))
           (helper nil (tokens (string full-suite-name) #\.))))
 
-;;maybe name this "butlast name"
+(def get-suite-and-test-name (test-full-name)
+     "Return (suite-name test-name), as a list."
+     (withs (string-name (string test-full-name)
+             pivot (last (positions #\. string-name)))
+            (list (sym (cut string-name 0 pivot))
+                  (when pivot (sym (cut string-name (+ 1 pivot)))))))
+
 (def get-suite-name (test-full-name)
-     (let string-name (string test-full-name)
-          (sym (cut string-name 0 (last (positions #\. string-name))))))
+     "This takes a test full name, and returns the suite that would hold the test.
+      Note that you can pass in a suite name, and get that suite's parent suite."
+     (car (get-suite-and-test-name test-full-name)))
 
 (def get-test-name (test-full-name)
-     (let string-name (string test-full-name)
-          (when (pos #\. string-name)
-            (sym (cut string-name (+ 1
-                                     (last (positions #\. string-name))))))))
+     (cadr (get-suite-and-test-name test-full-name)))
 
 (def run-all-suites ()
      (run-suite-list (keep is-valid-name

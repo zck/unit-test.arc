@@ -325,4 +325,13 @@
               simple-test-name (assert-same 'test-name
                                           (get-test-name 'base.test-name))
               nested-suites (assert-same 'test-name
-                                         (get-test-name 'base.nested.test-name))))
+                                         (get-test-name 'base.nested.test-name)))
+       (suite get-suite-and-test-name
+              no-test-name (assert-same '(suite nil)
+                                        (get-suite-and-test-name 'suite))
+              simple-test-name (assert-same '(suite test)
+                                            (get-suite-and-test-name 'suite.test))
+              nested-suites (assert-same '(suite.nested test)
+                                         (get-suite-and-test-name 'suite.nested.test))
+              deeply-nested-suites (assert-same '(suite.nested1.nested2.nested3 test)
+                                                (get-suite-and-test-name 'suite.nested1.nested2.nested3.test))))
