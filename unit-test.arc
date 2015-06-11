@@ -152,6 +152,10 @@
          (prn  "passed!")
        (prn "failed: " test-result!details)))
 
+;;if no names, run all suites
+(mac test names
+     `(run-these-things ',names))
+
 (mac run-suites suite-names
      `(run-suite-list ',suite-names))
 
@@ -263,6 +267,22 @@ and the second element is the symbol that isn't a nested suite under the first e
                          (run-one-suite it))
                      (prn "\nno suite found: " name " isn't a test suite.")))
           suite-found))
+
+(def run-these-things (names)
+     "Each name in names can either be a suite or a test.
+      Return t if at least one of the names is found, nil otherwise."
+     (let at-least-one-found nil
+          (each name names
+                (aif *unit-tests*.name
+                     (do (run-one-suite it)
+                         (= at-least-one-found t))
+                     (let (suite-name test-name) (get-suite-and-test-name name)
+                          (aif (aand *unit-tests*.suite-name
+                                     it!tests.test-name)
+                               (do (= at-least-one-found t)
+                                   (it!test-fn);;what is proper way to run test?
+                                 )))))
+          at-least-one-found))
 
 ;; Summarize a given test run. That is, print out information about the overall
 ;; status of a set of suites.
