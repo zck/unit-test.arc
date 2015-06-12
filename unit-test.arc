@@ -152,9 +152,21 @@
          (prn  "passed!")
        (prn "failed: " test-result!details)))
 
-;;if no names, run all suites
-(mac test names
-     `(run-these-things ',names))
+;;return value?
+(mac test names-list
+     (w/uniq names
+             `(let ,names ',names-list
+                   (if (no ,names)
+                       (run-all-suites)
+                     (let test-result (run-these-things ,names)
+                          (if test-result
+                              (= *last-thing-run* ,names)
+                            (prn "There are no tests with names " ,names))
+                          test-result)))))
+;;numbers come from summarize-run, in run-suite-list
+
+(def retest ()
+     nil)
 
 ;;deprecated
 (mac run-suites suite-names
