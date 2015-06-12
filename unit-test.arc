@@ -156,19 +156,25 @@
 (mac test names
      `(run-these-things ',names))
 
+;;deprecated
 (mac run-suites suite-names
      `(run-suite-list ',suite-names))
 
+;;deprecated
 (mac run-suite suite-names
      `(run-suites ,@suite-names))
 
 ;;this should be either 'test or 'suite
 (ensure-bound *last-thing-run* nil)
 
+
+;;deprecated
 (ensure-bound *last-test-run* nil)
+
+;;deprecated
 (ensure-bound *last-suites-run* nil)
 
-;;zck figure out better name scheme for "rerun" things and "run" things
+;;deprecated
 (def rerun-last-tests ()
      (if (is *last-thing-run* 'test)
          (rerun-last-test)
@@ -176,19 +182,23 @@
        (rerun-last-suites-run)
        (prn "You haven't run any tests or suites yet!")))
 
+;;deprecated
 (def rerun-last-test ()
      (if *last-test-run*
          (run-single-test *last-test-run*)
        (prn "There wasn't a test run previously.")))
 
+;;deprecated
 (def rerun-last-suites-run ()
      (if *last-suites-run*
          (run-suite-list *last-suites-run*)
        (prn "There wasn't a suite run previously.")))
 
+;;deprecated?
 (mac run-test args
      `(run-single-test ',(apply make-full-name args)))
 
+;;deprecated?
 (def run-single-test (test-full-name)
      (withs (suite-name (get-suite-name test-full-name)
              test-name (get-test-name test-full-name)
@@ -258,6 +268,7 @@ and the second element is the symbol that isn't a nested suite under the first e
      (run-suite-list (keep is-valid-name
                            (keys *unit-tests*))))
 
+;;deprecated
 ;;Return t if any suites are found, nil otherwise.
 (def run-these-suites (suite-names)
      (let suite-found nil
