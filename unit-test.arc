@@ -156,14 +156,30 @@
 (mac test names-list
      (w/uniq names
              `(let ,names ',names-list
-                   (if (no ,names)
-                       (run-all-suites)
-                     (let test-result (run-these-things ,names)
-                          (if test-result
-                              (= *last-thing-run* ,names)
-                            (prn "There are no tests with names " ,names))
-                          test-result)))))
+                   (if (if (no ,names)
+                           (run-all-tests)
+                         (let test-result (run-these-things ,names) ;;right now, returns whether any tests were found
+                              (if test-result
+                                  (= *last-thing-run* ,names);;store this in each one, or below?
+                                (prn "There are no tests with names " ,names))
+                              test-result))
+                       (do ;;zck store value into *last-thing-run* here?
+                           (prn "we found tests!"))
+                     (prn "We didn't find any tests.")))))
 ;;numbers come from summarize-run, in run-suite-list
+
+(mac test names-list
+     `(do-test ',names-list))
+
+(def do-test (names)
+     (if (no names)
+         (run-all-tests)
+       (run-these-things names)))
+
+;;how do I summarize run?
+;;  -> differently for running all tests vs running specified tests?
+;;where should "no things found" be printed out?
+;;does run-these-things set *last-things-run* ?
 
 (def retest ()
      nil)
@@ -179,6 +195,9 @@
 ;;this should be either 'test or 'suite
 (ensure-bound *last-thing-run* nil)
 
+;; This should be either a list of names, or nil.
+;; nil means the last thing run was all tests.
+(ensure-bound *last-things-run* nil)
 
 ;;deprecated
 (ensure-bound *last-test-run* nil)
@@ -276,6 +295,14 @@ and the second element is the symbol that isn't a nested suite under the first e
 (def get-test-name (test-full-name)
      (cadr (get-suite-and-test-name test-full-name)))
 
+;;runs all tests. Returns t if any were found, nil if none were.
+(def run-all-tests ()
+     (if (run-these-things (keep is-valid-name
+                                 (keys *unit-tests*)))
+         (do (prn "yay! tests found!")
+             (= *last-things-run* nil))
+       (prn "boo! no tests found")))
+
 (def run-all-suites ()
      (run-suite-list (keep is-valid-name
                            (keys *unit-tests*))))
@@ -329,8 +356,6 @@ and the second element is the symbol that isn't a nested suite under the first e
 
 (def run-suite-list (suite-names)
      (when (run-these-suites suite-names)
-       (= *last-suites-run* suite-names)
-       (= *last-thing-run* 'suite)
        (summarize-run suite-names)))
 
 (def total-tests (suite-results)
