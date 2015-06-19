@@ -153,12 +153,13 @@
        (prn "failed: " test-result!details)))
 
 ;;return value?
-(mac test names-list
+;;deprecated
+(mac test-old names-list
      (w/uniq names
              `(let ,names ',names-list
                    (if (if (no ,names)
                            (run-all-tests)
-                         (let test-result (run-these-things ,names) ;;right now, returns whether any tests were found
+                         (let test-result (run-specific-things ,names) ;;right now, returns whether any tests were found
                               (if test-result
                                   (= *last-thing-run* ,names);;store this in each one, or below?
                                 (prn "There are no tests with names " ,names))
@@ -173,8 +174,10 @@
 
 (def do-test (names)
      (if (no names)
-         (run-all-tests)
-       (run-these-things names)))
+         (do (run-all-tests)
+             (summarize-run-of-all-tests));;what does this do when there are tests?
+       (do (run-specific-things names) ;;if some tests aren't found, should we complain about that?
+           (summarize-run names))))
 
 ;;how do I summarize run?
 ;;  -> differently for running all tests vs running specified tests?
@@ -297,12 +300,17 @@ and the second element is the symbol that isn't a nested suite under the first e
 
 ;;runs all tests. Returns t if any were found, nil if none were.
 (def run-all-tests ()
-     (if (run-these-things (keep is-valid-name
+     (when (run-specific-things (keep is-valid-name
                                  (keys *unit-tests*)))
-         (do (prn "yay! tests found!")
-             (= *last-things-run* nil))
-       (prn "boo! no tests found")))
+       (= *last-things-run* nil)
+       t))
 
+;;replace usages with this
+(def get-all-top-level-suite-names ()
+     (keep is-valid-name
+           (keys *unit-tests*)))
+
+;;zck deprecated? Maybe.
 (def run-all-suites ()
      (run-suite-list (keep is-valid-name
                            (keys *unit-tests*))))
@@ -317,6 +325,13 @@ and the second element is the symbol that isn't a nested suite under the first e
                          (run-one-suite it))
                      (prn "\nno suite found: " name " isn't a test suite.")))
           suite-found))
+
+(def run-specific-things (names)
+     "Run the things in names, then if there were any, store that in *last-things-run*.
+      Return t if at least one of the names is found, nil otherwise."
+     (when (run-these-things names)
+       (= *last-things-run* names)
+       t))
 
 (def run-these-things (names)
      "Each name in names can either be a suite or a test.
@@ -334,26 +349,32 @@ and the second element is the symbol that isn't a nested suite under the first e
                                  )))))
           at-least-one-found))
 
+;;zck does this work for functions? if names includes a function name, is that result in *unit-test-results*?
+
 ;; Summarize a given test run. That is, print out information about the overall
 ;; status of a set of suites.
-(mac summarize-run (suite-names)
-     (w/uniq name
-             `(with (tests 0
-                     passes 0)
-                    (each ,name ,suite-names
-                          (let results (*unit-test-results* ,name)
-                               (when results
-                                   (++ tests (total-tests results))
-                                   (++ passes (count-passes results)))))
-                    (if (is tests 0)
-                        (prn "We didn't find any tests. Odd...")
-                      (is passes tests)
-                      (if (is tests 1)
-                          (prn "Yay! The single test passed!")
-                        (prn "Yay! All " tests " tests passed!"))
-                      (prn "\nOh dear, " (- tests passes) " of " tests " failed."))
-                    (list passes tests))))
+(def summarize-run (names)
+     (with (tests 0
+            passes 0)
+           (each name names
+                 (let results (*unit-test-results* name)
+                      (when results
+                        (++ tests (total-tests results))
+                        (++ passes (count-passes results)))))
+           (if (is tests 0)
+               (prn "We didn't find any tests. Odd...")
+             (is passes tests)
+             (if (is tests 1)
+                 (prn "Yay! The single test passed!")
+               (prn "Yay! All " tests " tests passed!"))
+             (prn "\nOh dear, " (- tests passes) " of " tests " failed."))
+           (list passes tests)))
 
+(def summarize-run-of-all-tests ()
+     (summarize-run (get-all-top-level-suite-names)))
+
+
+;;zck deprecated? Maybe.
 (def run-suite-list (suite-names)
      (when (run-these-suites suite-names)
        (summarize-run suite-names)))
