@@ -152,23 +152,6 @@
          (prn  "passed!")
        (prn "failed: " test-result!details)))
 
-;;return value?
-;;deprecated
-(mac test-old names-list
-     (w/uniq names
-             `(let ,names ',names-list
-                   (if (if (no ,names)
-                           (run-all-tests)
-                         (let test-result (run-specific-things ,names) ;;right now, returns whether any tests were found
-                              (if test-result
-                                  (= *last-thing-run* ,names);;store this in each one, or below?
-                                (prn "There are no tests with names " ,names))
-                              test-result))
-                       (do ;;zck store value into *last-thing-run* here?
-                           (prn "we found tests!"))
-                     (prn "We didn't find any tests.")))))
-;;numbers come from summarize-run, in run-suite-list
-
 (mac test names-list
      `(do-test ',names-list))
 
@@ -187,14 +170,6 @@
 (def retest ()
      nil)
 
-;;deprecated
-(mac run-suites suite-names
-     `(run-suite-list ',suite-names))
-
-;;deprecated
-(mac run-suite suite-names
-     `(run-suites ,@suite-names))
-
 ;;this should be either 'test or 'suite
 (ensure-bound *last-thing-run* nil)
 
@@ -202,66 +177,6 @@
 ;; nil means the last thing run was all tests.
 (ensure-bound *last-things-run* nil)
 
-;;deprecated
-(ensure-bound *last-test-run* nil)
-
-;;deprecated
-(ensure-bound *last-suites-run* nil)
-
-;;deprecated
-(def rerun-last-tests ()
-     (if (is *last-thing-run* 'test)
-         (rerun-last-test)
-       (is *last-thing-run* 'suite)
-       (rerun-last-suites-run)
-       (prn "You haven't run any tests or suites yet!")))
-
-;;deprecated
-(def rerun-last-test ()
-     (if *last-test-run*
-         (run-single-test *last-test-run*)
-       (prn "There wasn't a test run previously.")))
-
-;;deprecated
-(def rerun-last-suites-run ()
-     (if *last-suites-run*
-         (run-suite-list *last-suites-run*)
-       (prn "There wasn't a suite run previously.")))
-
-;;deprecated?
-(mac run-test args
-     `(run-single-test ',(apply make-full-name args)))
-
-;;deprecated?
-(def run-single-test (test-full-name)
-     (withs (suite-name (get-suite-name test-full-name)
-             test-name (get-test-name test-full-name)
-             the-suite (*unit-tests* suite-name))
-            (if the-suite
-                (let the-test ((the-suite 'tests) test-name)
-                     (if the-test
-                         (let results ((the-test 'test-fn))
-                              (= *last-test-run* test-full-name)
-                              (= *last-thing-run* 'test)
-                              (pretty-results results)
-                              (is results!status 'pass))
-                       (do (if *unit-tests*.test-full-name
-                               (prn "There's a suite named " test-full-name ", not a test.\nIf you want to run the suite, call (run-suite " test-full-name ").")
-                             (do (prn "we found a suite named " suite-name ", but no test named " test-name ".")
-                                 (prn "Inside it, there are tests named: "
-                                      (string (intersperse ", "
-                                                           (keys *unit-tests*.suite-name!tests)))
-                                      ".")))
-                           nil)))
-              (let (existing-suite-name absent-suite-name) (verify-suite-name suite-name)
-                   (if existing-suite-name
-                       (do (prn "we found a suite named " existing-suite-name ", but it doesn't contain a nested suite named " absent-suite-name ".")
-                           (prn "It does contain nested suites named: "
-                                (string (intersperse ", "
-                                                     (keys *unit-tests*.existing-suite-name!nested-suites)))
-                                "."))
-                     (prn "we didn't find a suite named " absent-suite-name "."))
-                   nil))))
 ;;in make-test-fn, we inst 'testresults _and_ 'test-results. This is worrisome, but might be fixed in a later version.
 
 ;;; functions dealing with symbol manipulation
@@ -305,26 +220,10 @@ and the second element is the symbol that isn't a nested suite under the first e
        (= *last-things-run* nil)
        t))
 
-;;replace usages with this
+;;zck replace usages with this
 (def get-all-top-level-suite-names ()
      (keep is-valid-name
            (keys *unit-tests*)))
-
-;;zck deprecated? Maybe.
-(def run-all-suites ()
-     (run-suite-list (keep is-valid-name
-                           (keys *unit-tests*))))
-
-;;deprecated
-;;Return t if any suites are found, nil otherwise.
-(def run-these-suites (suite-names)
-     (let suite-found nil
-          (each name suite-names
-                (aif (*unit-tests* name)
-                     (do (= suite-found t)
-                         (run-one-suite it))
-                     (prn "\nno suite found: " name " isn't a test suite.")))
-          suite-found))
 
 (def run-specific-things (names)
      "Run the things in names, then if there were any, store that in *last-things-run*.
@@ -373,11 +272,6 @@ and the second element is the symbol that isn't a nested suite under the first e
 (def summarize-run-of-all-tests ()
      (summarize-run (get-all-top-level-suite-names)))
 
-
-;;zck deprecated? Maybe.
-(def run-suite-list (suite-names)
-     (when (run-these-suites suite-names)
-       (summarize-run suite-names)))
 
 (def total-tests (suite-results)
      (apply +
