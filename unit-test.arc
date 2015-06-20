@@ -215,12 +215,10 @@ and the second element is the symbol that isn't a nested suite under the first e
 
 ;;runs all tests. Returns t if any were found, nil if none were.
 (def run-all-tests ()
-     (when (run-specific-things (keep is-valid-name
-                                 (keys *unit-tests*)))
+     (when (run-specific-things (get-all-top-level-suite-names))
        (= *last-things-run* nil)
        t))
 
-;;zck replace usages with this
 (def get-all-top-level-suite-names ()
      (keep is-valid-name
            (keys *unit-tests*)))
