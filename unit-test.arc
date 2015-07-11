@@ -180,8 +180,9 @@
      (if (no names)
          (do (run-all-tests)
              (summarize-run-of-all-tests));;what does this do when there are tests?
-       (do (run-specific-things names t) ;;if some tests aren't found, should we complain about that?
-           (summarize-run names))))
+       (let unique-names (dedup names)
+            (do (run-specific-things unique-names t) ;;if some tests aren't found, should we complain about that?
+                (summarize-run unique-names)))))
 
 (def retest ()
      (do-test *last-things-run*))
