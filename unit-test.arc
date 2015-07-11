@@ -120,10 +120,10 @@
                                                     ,setup
                                                     ,@(cdr children))
                          (= ((,the-rest 'suites) ',(cadr (car children)))
-                            (make-and-save-suite ,(cadr (car children))
-                                                 ,parent-suite-name
-                                                 nil
-                                                 ,@(cddr (car children))))
+                            (make-suite ,(cadr (car children))
+                                        ,parent-suite-name
+                                        nil
+                                        ,@(cddr (car children))))
                          ,the-rest)
                    ;; here, children is
                    ;; ((suite-w/setup suite-name (setup...) . body) . rest)
@@ -131,10 +131,10 @@
                                                     ,setup
                                                     ,@(cdr children))
                          (= ((,the-rest 'suites) ',(cadr (car children)))
-                            (make-and-save-suite ,(cadr (car children))
-                                                 ,parent-suite-name
-                                                 ,((car children) 2)
-                                                 ,@(nthcdr 3 (car children))))
+                            (make-suite ,(cadr (car children))
+                                        ,parent-suite-name
+                                        ,((car children) 2)
+                                        ,@(nthcdr 3 (car children))))
                          ,the-rest)))
        `(obj tests (obj) suites (obj))))
 
