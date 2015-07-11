@@ -183,17 +183,8 @@
        (do (run-specific-things names t) ;;if some tests aren't found, should we complain about that?
            (summarize-run names))))
 
-;;how do I summarize run?
-;;  -> differently for running all tests vs running specified tests?
-;;where should "no things found" be printed out?
-;;does run-these-things set *last-things-run* ?
-
 (def retest ()
-     nil);;zck fill me out
-
-;;zck probably obsolete?
-;;this should be either 'test or 'suite
-(ensure-bound *last-thing-run* nil)
+     (do-test *last-things-run*))
 
 ;; This should be either a list of names, or nil.
 ;; nil means the last thing run was all tests.
@@ -220,6 +211,15 @@ and the second element is the symbol that isn't a nested suite under the first e
                                (list existing-suite-name (sym (car nested-names)))))))
           (helper nil (tokens (string full-suite-name) #\.))))
 
+(def get-name-fragments (name)
+     "Take a full suite name NAME, and return the fragments of it as a list of symbols.
+      For example, (get-name-fragments 'math.integers.subtracting)
+      returns '(math integers subtracting).
+      This function will also work for test names"
+     (map sym
+          (tokens (string name)
+                  #\.)))
+
 (def get-suite-and-test-name (test-full-name)
      "Return (suite-name test-name), as a list."
      (withs (string-name (string test-full-name)
@@ -236,16 +236,27 @@ and the second element is the symbol that isn't a nested suite under the first e
      (cadr (get-suite-and-test-name test-full-name)))
 
 
-;;zck Eventually, we'll have to make this look up the suite recursively, and not assume all suites are stored at the top-level of *unit-tests*.
 (def get-suite (name)
-     "Get the suite obj referred to by NAME, or nil if it isn't found."
-     *unit-tests*.name)
+     "Get the suite with full name NAME out of *unit-tests*
+      This method looks at nested suites; that is, for a NAME of math.adding,
+      it gets the 'math suite out of *unit-tests*, then looks for a nested
+      suite 'adding inside it, rather than looking for a suite named math.adding
+      at the top level of *unit-tests*."
+     (withs (fragments (get-name-fragments name)
+             helper (afn (cur-suite leftover-fragments)
+                         (aif (no leftover-fragments)
+                              cur-suite
+                              (cur-suite!nested-suites (car leftover-fragments))
+                              (self it (cdr leftover-fragments)))))
+            (aand fragments
+                  (*unit-tests* (car fragments))
+                  (helper it (cdr fragments)))))
 
 (def get-test (name)
      "Get the test obj referred to by NAME, or nil if it isn't found."
-     (let (suite-name test-name (break-apart-name name))
+     (let (suite-name test-name) (get-suite-and-test-name name)
        (aand (get-suite suite-name)
-             it!tests.name)))
+             it!tests.test-name)))
 
 ;;runs all tests. Returns t if any were found, nil if none were.
 (def run-all-tests ()
@@ -260,12 +271,11 @@ and the second element is the symbol that isn't a nested suite under the first e
 (def run-specific-things (names (o store-result nil))
      "Run the things in names, then if there were any, store that in *last-things-run*.
       Return t if at least one of the names is found, nil otherwise."
-     (when (run-these-things-functionally names store-result)
+     (when (run-these-things names store-result)
        (= *last-things-run* names)
        t))
 
-;;zck obsoletes run-these-things
-(def run-these-things-functionally (names (o store-result nil))
+(def run-these-things (names (o store-result nil))
      "Each name in NAMES can either be a suite or a test.
       If STORE-RESULT is t, store the result of each function in *test-results* or *suite-results*
       Return t if at least one of the names is found, nil otherwise."
@@ -274,10 +284,7 @@ and the second element is the symbol that isn't a nested suite under the first e
           (each name names
                 (when (run-this-thing name store-result)
                   (= at-least-one-found t)))
-          at-least-one-found
-
-
-          ))
+          at-least-one-found))
 
 (def run-this-thing (name (o store-result nil))
      "If NAME is a test or a suite, run it and return the template result.
@@ -288,23 +295,6 @@ and the second element is the symbol that isn't a nested suite under the first e
           (run-test it store-result)
           nil))
 
-(def run-these-things (names)
-     "Each name in names can either be a suite or a test.
-      Return t if at least one of the names is found, nil otherwise."
-     (let at-least-one-found nil
-          (each name names
-                (aif (get-suite name)
-                     (do (run-one-suite it)
-                         (= at-least-one-found t))
-                     (let (suite-name test-name) (get-suite-and-test-name name)
-                          (aif (aand (get-suite suite-name)
-                                     it!tests.test-name)
-                               (do (= at-least-one-found t)
-                                   (run-one-test it))))))
-          at-least-one-found))
-
-;;zck does this work for functions? if names includes a function name, is that result in *suite-results*?
-
 ;; Summarize a given test run. That is, print out information about the overall
 ;; status of a set of suites.
 (def summarize-run (names)
@@ -312,21 +302,18 @@ and the second element is the symbol that isn't a nested suite under the first e
             passes 0
             names-not-found nil)
            (each name names
-                 (print-suite-run-summary name)
+                 (print-run-summary name)
                  (aif (get-suite-result name)
-                      ;;zck finish this thing.
-                      (prn "it's a suite!")
+                      (do (++ tests (total-tests it))
+                          (++ passes (count-passes it)))
                       (get-test-result name)
-                      (prn "it's a test!")
-                      (prn "it's nonexistant!")
-                      )
-                 (let results (get-suite-result name)
-                      (if results
-                          (do (++ tests (total-tests results))
-                              (++ passes (count-passes results)))
-                        (push name names-not-found))))
+                      (do (++ tests)
+                          (when (result-is-pass it)
+                            (++ passes)))
+                      (push name names-not-found)))
+           (prn)
            (when names-not-found
-             (prn "\nThe following suites were not found:")
+             (prn "The following suites were not found:")
              (each name names-not-found
                    (prn name))
              (prn))
@@ -369,21 +356,7 @@ and the second element is the symbol that isn't a nested suite under the first e
   test-results (obj) ;;hash of test-name -> test-result
   nested-suite-results (obj)) ;;nested-suite-fullname -> suite-result
 
-;;zck after loading the math suite from README, and running (test), do I get math.subtracting, math.adding, and math in *suite-results*? Shouldn't it just be math?
-;;zck obsoleted by run-suite-and-children
-(def run-one-suite (cur-suite)
-     (= (*suite-results* cur-suite!full-suite-name)
-        (inst 'suite-results 'suite-name cur-suite!full-suite-name))
 
-     ;;should run-tests return the template? Probably. And then it should recurse.
-     (run-tests cur-suite)
-     ;; (prn "\nRunning suite " cur-suite!full-suite-name)
-     ;; (print-suite-run-summary cur-suite!full-suite-name)
-     (run-child-suites cur-suite)
-     (get-suite-result cur-suite!full-suite-name))
-
-
-;;zck this should obsolete run-one-suite
 (def run-suite-and-children (cur-suite (o store-result nil))
      (let results (inst 'suite-results 'suite-name cur-suite!full-suite-name)
           ;;run these tests, store
@@ -398,82 +371,35 @@ and the second element is the symbol that isn't a nested suite under the first e
 
           results))
 
-;;zck this should obsolete run-tests
 (def run-this-suite (cur-suite)
      (let test-results (obj)
           (each (test-name test-template) cur-suite!tests
                 (= test-results.test-name
-                   (test-template!test-fn)))))
+                   (test-template!test-fn)))
+          test-results))
 
 
-
-;;zck obsoleted by run-test
-(def run-one-test (cur-test)
-     (prn "\nRunning test " cur-test!suite-name "." cur-test!test-name)
-     ;;run test
-     ;;store in *suite-results* as name
-     (= (*test-results* (make-full-name cur-test!suite-name cur-test!test-name))
-        (cur-test!test-fn)))
-
-
-;;zck obsoletes run-one-test?
 (def run-test (cur-test (o store-result nil))
      (let result (cur-test!test-fn)
           (when store-result
             (store-test-result result))
           result))
 
-(def run-suite-or-test (name)
-     (aif (get-suite name)
-          (run-suite-and-children it)
-          (let (suite-name test-name (get-suite-and-test-name name)))))
+(def print-run-summary (name)
+     "This should work on both suite and test names"
+     (aif (get-suite-result name)
+          (print-suite-run-summary it)
+          (get-test-result name)
+          (print-test-run-summary it)))
 
-;; Runs all the tests inside cur-suite. Does not recurse.
-(def run-tests (cur-suite)
-     (let cur-results ((get-suite-result cur-suite!full-suite-name) 'test-results) ;; zck does this modify the existing thing inside *suite-results*? Where does it get reset?
-          (each (name cur-test) cur-suite!tests
-                (= cur-results.name
-                   (cur-test!test-fn)))))
+(def print-test-run-summary (test-result)
+     (prn)
+     (prn "Running test " (make-full-name test-result!suite-name test-result!test-name))
+     (if (result-is-pass test-result)
+         (prn "It passed!")
+       (prn "It failed.")))
 
-(def run-child-suites (cur-suite)
-     ;;should this put it into *suite-results*?
-     (prn "getting results for " cur-suite!full-suite-name)
-     (let cur-results ((get-suite-result cur-suite!full-suite-name)
-                       'nested-suite-results)
-          (each (child-suite-name child-suite) cur-suite!nested-suites
-                (= cur-results.child-suite-name
-                   (run-one-suite child-suite)))))
-
-;;why is this just for suites? It doesn't work for tests.
-(def print-suite-run-summary-no-recurse (suite-name)
-     "Prints out summary information for the suite, but not any child suites."
-     (prn "\nRunning suite " suite-name)
-     (with (tests 0
-            passed 0)
-           (each (test-name test-result) (get-suite-result suite-name!test-results)
-                 (++ tests)
-                 (when (is test-result!status 'pass)
-                   (++ passed)))
-           (if (is tests 0)
-               (prn "There are no tests directly in suite " suite-name ".")
-             (is tests passed)
-             (prn "In suite " suite-name ", all " tests " tests passed!")
-             (do (each (test-name test-result) (get-suite-result suite-name!test-results)  ;;zck this assumes it's a suite, not a test
-                       (pretty-results test-result))
-                 (prn "In suite " suite-name ", " passed " of " tests " tests passed.")))))
-
-;; (def print-suite-run-summary (suite-name)
-;;      (prn "Summarizing suite " suite-name)
-;;      (each (nested-name nested-results) *suite-results*.suite-name!nested-suite-results
-;;            (prn "A nested suite! " nested-name)
-;;            (print-suite-run-summary nested-name))
-;;      nil)
-
-(def print-suite-run-summary (suite-name)
-     (print-suite-run-summary-helper (get-suite-result suite-name))
-     nil) ;;zck what should return value be?
-
-(def print-suite-run-summary-helper (suite-results-template)
+(def print-suite-run-summary (suite-results-template)
      (when suite-results-template
        (with (tests 0
               passed 0)
@@ -484,14 +410,16 @@ and the second element is the symbol that isn't a nested suite under the first e
                (prn)
                (if (is tests 0)
                    (prn "There are no tests directly in suite " suite-results-template!suite-name ".")
+                 (is tests passed 1)
+                 (prn "In suite " suite-results-template!suite-name ", the single test passed!")
                  (is tests passed)
-                 (prn "In suite " suite-results-template!suite-name ", all " tests " tests passed!") ;;zck pluralize properly
+                 (prn "In suite " suite-results-template!suite-name ", the " tests " tests passed!")
                  (do (prn "Suite " suite-results-template!suite-name ":")
                      (each (test-name test-result) suite-results-template!test-results
                            (pretty-results test-result))
                    (prn "In suite " suite-results-template!suite-name ", " passed " of " tests " tests passed."))))
        (each (nested-name nested-results) suite-results-template!nested-suite-results
-             (print-suite-run-summary-helper nested-results))))
+             (print-suite-run-summary nested-results))))
 
 (mac assert (test fail-message)
      `(unless ,test

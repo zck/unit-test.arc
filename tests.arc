@@ -334,4 +334,11 @@
               nested-suites (assert-same '(suite.nested test)
                                          (get-suite-and-test-name 'suite.nested.test))
               deeply-nested-suites (assert-same '(suite.nested1.nested2.nested3 test)
-                                                (get-suite-and-test-name 'suite.nested1.nested2.nested3.test))))
+                                                (get-suite-and-test-name 'suite.nested1.nested2.nested3.test)))
+       (suite get-name-fragments
+              simple (assert-same '(top-level)
+                                  (get-name-fragments 'top-level))
+              one-nested (assert-same '(top-level single)
+                                      (get-name-fragments 'top-level.single))
+              two-nested (assert-same '(top-level nested-1 nested-2)
+                                      (get-name-fragments 'top-level.nested-1.nested-2))))
