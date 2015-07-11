@@ -313,7 +313,7 @@ and the second element is the symbol that isn't a nested suite under the first e
                       (push name names-not-found)))
            (prn)
            (when names-not-found
-             (prn "The following suites were not found:")
+             (prn "The following names were not found:")
              (each name names-not-found
                    (prn name))
              (prn))
