@@ -15,11 +15,11 @@ To declare a suite, give it a name, then a declare a bunch of tests. To declare 
            this-will-fail (assert-same 3 (+ 2 2)))
 
 
-### Running a suite
+### Running tests
 
-    arc> (run-suite math)
+    arc> (test math)
 
-    Running suite math
+    Suite math:
     math.this-will-fail failed: (+ 2 2) should be 3 but instead was 4
     math.this-will-pass passed!
     In suite math, 1 of 2 tests passed.
@@ -27,7 +27,15 @@ To declare a suite, give it a name, then a declare a bunch of tests. To declare 
     Oh dear, 1 of 2 failed.
     (1 2)
 
-You can run multiple suites in `run-suite`, or call `run-suites`. They do the same thing.
+You can run multiple suites in `test`, or even call specific tests by name:
+
+    arc> (test math.this-will-pass)
+
+    Running test math.this-will-pass
+    It passed!
+
+    Yay! The single test passed!
+    (1 1)
 
 ## Asserts
 
@@ -75,20 +83,19 @@ Put a nested suite anywhere inside its parent suite. You can intermingle tests a
 
 If you run a suite, it also runs all nested suites inside it.
 
+    arc> (test math)
 
-    arc> (run-suite math)
-
-    Running suite math
+    Suite math:
     math.numbers-are-equal passed!
     math.this-test-will-fail failed: 4 should be 3 but instead was 4
     In suite math, 1 of 2 tests passed.
 
-    Running suite math.adding
+    Suite math.adding:
     math.adding.bad failed: (+ 2 2) should be 3 but instead was 4
     math.adding.good passed!
     In suite math.adding, 1 of 2 tests passed.
 
-    Running suite math.subtracting
+    Suite math.subtracting:
     math.subtracting.bad failed: (- 2 42) should be 0 but instead was -40
     math.subtracting.good passed!
     In suite math.subtracting, 1 of 2 tests passed.
@@ -96,18 +103,17 @@ If you run a suite, it also runs all nested suites inside it.
     Oh dear, 3 of 6 failed.
     (3 6)
 
-If you want to run only one suite that's nested inside another one, that's possible. Just call `run-suite` with the full name of the suite you want to run. The full name is simply the names of all the parents of the suite concatenated together, with a period between them, then the suite's name:
+If you want to run only one suite that's nested inside another one, that's possible. Just call `test` with the full name of the suite you want to run. The full name is simply the names of all the parents of the suite concatenated together, with a period between them, then the suite's name:
 
-    arc> (run-suite math.adding)
+    arc> (test math.adding)
 
-    Running suite math.adding
+    Suite math.adding:
     math.adding.bad failed: (+ 2 2) should be 3 but instead was 4
     math.adding.good passed!
     In suite math.adding, 1 of 2 tests passed.
 
     Oh dear, 1 of 2 failed.
     (1 2)
-
 
 ## Setup
 
@@ -119,10 +125,10 @@ If you need to set up some values to share across tests, use `suite-w/setup`. Th
                    multiplying-works (assert-same 12
                                                   (* x y)))
 
-    arc> (run-suite math)
+    arc> (test math)
 
-    Running suite math
-    In suite math, all 2 tests passed!
+    Suite math: the 2 tests passed!
+
     Yay! All 2 tests passed!
     (2 2)
 
@@ -134,10 +140,10 @@ Under the hood, `suite-w/setup` uses `withs`, so variables can depend on earlier
                    lets-multiply (assert-same 15
                                               (* x y)))
 
-    arc> (run-suite math)
+    arc> (test math)
 
-    Running suite math
-    In suite math, all 1 tests passed!
+    Suite math: the single test passed!
+
     Yay! The single test passed!
     (1 1)
 
@@ -148,11 +154,11 @@ Macros can be tested just like functions. The macro won't be expanded until the 
 
 ## Rerunning the last set of suites ran
 
-You can rerun the last set of suites you ran with `(rerun-last-suites-run)`:
+You can rerun the last set of suites you ran with `(retest)`:
 
-    arc> (rerun-last-suites-run)
+    arc> (retest)
 
-    Running suite math
-    In suite math, all 1 tests passed!
+    Suite math: the single test passed!
+
     Yay! The single test passed!
     (1 1)

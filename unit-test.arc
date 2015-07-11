@@ -411,9 +411,9 @@ and the second element is the symbol that isn't a nested suite under the first e
                (if (is tests 0)
                    (prn "There are no tests directly in suite " suite-results-template!suite-name ".")
                  (is tests passed 1)
-                 (prn "In suite " suite-results-template!suite-name ", the single test passed!")
+                 (prn "Suite " suite-results-template!suite-name ": the single test passed!")
                  (is tests passed)
-                 (prn "In suite " suite-results-template!suite-name ", the " tests " tests passed!")
+                 (prn "Suite " suite-results-template!suite-name ": the " tests " tests passed!")
                  (do (prn "Suite " suite-results-template!suite-name ":")
                      (each (test-name test-result) suite-results-template!test-results
                            (pretty-results test-result))
