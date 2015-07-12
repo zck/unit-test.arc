@@ -8,11 +8,11 @@ Yeah, everyone wants examples first, so here they are:
 
 ### Defining a suite
 
-To declare a suite, give it a name, then a declare a bunch of tests. To declare a test, give it a name, then the code to run it. Use asserts (see below) when you want to throw if the two things aren't equal to each other.
+To declare a suite, give it a name, then a declare a bunch of tests. Tests are written as: `(test your-test-name your-test-body)` Use asserts (explained below) when you want to throw if the two things aren't equal to each other.
 
     (suite math
-           this-will-pass (assert-same 4 (+ 2 2))
-           this-will-fail (assert-same 3 (+ 2 2)))
+           (test this-will-pass (assert-same 4 (+ 2 2)))
+           (test this-will-fail (assert-same 3 (+ 2 2))))
 
 
 ### Running tests
@@ -70,35 +70,35 @@ Suites can be nested, for the sake of organization, and to make them easier to r
 Put a nested suite anywhere inside its parent suite. You can intermingle tests and suites, and it'll deal with it just fine:
 
     (suite math
-           numbers-are-equal (assert-same 2 2)
+           (test numbers-are-equal (assert-same 2 2))
            (suite adding
-                  good (assert-same 4 (+ 2 2))
-                  bad (assert-same 3 (+ 2 2)))
-           this-test-will-fail (assert-same 3 4)
+                  (test good (assert-same 4 (+ 2 2)))
+                  (test bad (assert-same 3 (+ 2 2))))
+           (test this-test-will-fail (assert-same 3 4))
            (suite subtracting
-                  good (assert-same 0 (- 2 2))
-                  bad (assert-same 0 (- 2 42))))
+                  (test good (assert-same 0 (- 2 2)))
+                  (test bad (assert-same 0 (- 2 42)))))
 
 ### Running nested suites
 
 If you run a suite, it also runs all nested suites inside it.
 
-    arc> (test math)
+arc> (test math)
 
     Suite math:
-    math.numbers-are-equal passed!
     math.this-test-will-fail failed: 4 should be 3 but instead was 4
+    math.numbers-are-equal passed!
     In suite math, 1 of 2 tests passed.
-
-    Suite math.adding:
-    math.adding.bad failed: (+ 2 2) should be 3 but instead was 4
-    math.adding.good passed!
-    In suite math.adding, 1 of 2 tests passed.
 
     Suite math.subtracting:
     math.subtracting.bad failed: (- 2 42) should be 0 but instead was -40
     math.subtracting.good passed!
     In suite math.subtracting, 1 of 2 tests passed.
+
+    Suite math.adding:
+    math.adding.bad failed: (+ 2 2) should be 3 but instead was 4
+    math.adding.good passed!
+    In suite math.adding, 1 of 2 tests passed.
 
     Oh dear, 3 of 6 failed.
     (3 6)
@@ -120,10 +120,10 @@ If you want to run only one suite that's nested inside another one, that's possi
 If you need to set up some values to share across tests, use `suite-w/setup`. The method signature is `(suite-w/setup suite-name setup . children)`. Just like a `with` block, insert a list containing `var val` pairs. For example:
 
     (suite-w/setup math (x 6 y 2)
-                   adding-works (assert-same 8
-                                             (+ x y))
-                   multiplying-works (assert-same 12
-                                                  (* x y)))
+                   (test adding-works (assert-same 8
+                                                   (+ x y)))
+                   (test multiplying-works (assert-same 12
+                                                        (* x y))))
 
     arc> (test math)
 
@@ -137,8 +137,8 @@ Under the hood, `suite-w/setup` uses `withs`, so variables can depend on earlier
 
     (suite-w/setup math (x 3
                          y (+ x 2))
-                   lets-multiply (assert-same 15
-                                              (* x y)))
+                   (test lets-multiply (assert-same 15
+                                                    (* x y))))
 
     arc> (test math)
 
