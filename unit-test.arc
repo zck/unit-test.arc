@@ -98,45 +98,58 @@
                                                                   ',suite-name))))))
 
 (mac suite-partition (parent-suite-name setup . children)
+     "Return an obj with two values: 'tests and 'suites.
+      Each of these is an obj of names to templates."
      (if children
          (w/uniq the-rest
-                 (if (atom (car children))  ;;test names can be anything but lists
-                     ;; it must be a test, so children is
-                     ;; (testname test-body . everything-else)
-                     `(let ,the-rest (suite-partition ,parent-suite-name
-                                                      ,setup
-                                                      ,@(cddr children))
-                           (= ((,the-rest 'tests) ',(car children))
-                              (make-test ,parent-suite-name
-                                         ,(car children)
-                                         ,setup
-                                         ,(cadr children)))
-                           ,the-rest)
-                   (is (caar children)
-                       'suite)
-                   ;; children is
-                   ;; ((suite . suite-body) . everything-else)
-                   `(let ,the-rest (suite-partition ,parent-suite-name
-                                                    ,setup
-                                                    ,@(cdr children))
-                         (= ((,the-rest 'suites) ',(cadr (car children)))
-                            (make-suite ,(cadr (car children))
-                                        ,parent-suite-name
-                                        nil
-                                        ,@(cddr (car children))))
-                         ,the-rest)
-                   ;; here, children is
-                   ;; ((suite-w/setup suite-name (setup...) . body) . rest)
-                   `(let ,the-rest (suite-partition ,parent-suite-name
-                                                    ,setup
-                                                    ,@(cdr children))
-                         (= ((,the-rest 'suites) ',(cadr (car children)))
-                            (make-suite ,(cadr (car children))
-                                        ,parent-suite-name
-                                        ,((car children) 2)
-                                        ,@(nthcdr 3 (car children))))
-                         ,the-rest)))
+                 (let this-form (car children)
+                      (if (caris this-form
+                                 'test)
+                          ;;children is:
+                          ;;((test test-name . test-body) . suite-rest)
+                          (let test-name (cadr this-form);;replace with (this-form #)
+                               `(let ,the-rest (suite-partition ,parent-suite-name
+                                                                ,setup
+                                                                ,@(cdr children))
+                                     (= ((,the-rest 'tests) ',test-name)
+                                        (make-test ,parent-suite-name
+                                                   ,test-name
+                                                   ,setup
+                                                   ,@(cddr this-form)))
+                                     ,the-rest))
+
+                        (caris this-form
+                               'suite)
+                        ;;children is:
+                        ;;((suite suite-name . suite-body) . suite-rest)
+                        (let suite-name (this-form 1)
+                             `(let ,the-rest (suite-partition ,parent-suite-name
+                                                                ,setup
+                                                                ,@(cdr children))
+                                    (= ((,the-rest 'suites) ',suite-name)
+                                       (make-suite ,suite-name
+                                                   ,parent-suite-name
+                                                   nil
+                                                   ,@(cddr this-form)))
+                                    ,the-rest))
+                        (caris this-form
+                               'suite-w/setup)
+                        ;;children is:
+                        ;;((suite suite-name setup . suite-body) . suite-rest)
+                        (let suite-name (this-form 1)
+                             `(let ,the-rest (suite-partition ,parent-suite-name
+                                                              ,setup
+                                                              ,@(cdr children))
+                                   (= ((,the-rest 'suites) ',suite-name)
+                                      (make-suite ,suite-name
+                                                  ,parent-suite-name
+                                                  ,(this-form 2)
+                                                  ,@(nthcdr 3 this-form)))
+                                   ,the-rest))
+                        (err "That's an invalid suite form.")) ;;zck explain? Or return empty stuff, print error?
+                      ))
        `(obj tests (obj) suites (obj))))
+
 
 (deftem test
   test-name "no-testname mcgee"
