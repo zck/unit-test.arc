@@ -146,8 +146,7 @@
                                                   ,(this-form 2)
                                                   ,@(nthcdr 3 this-form)))
                                    ,the-rest))
-                        (err "That's an invalid suite form.")) ;;zck explain? Or return empty stuff, print error?
-                      ))
+                        (err (string "We can't parse this as a suite body: " this-form)))))
        `(obj tests (obj) suites (obj))))
 
 
