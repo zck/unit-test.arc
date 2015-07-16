@@ -107,7 +107,7 @@
                                  'test)
                           ;;children is:
                           ;;((test test-name . test-body) . suite-rest)
-                          (let test-name (cadr this-form);;replace with (this-form #)
+                          (let test-name (this-form 1)
                                `(let ,the-rest (suite-partition ,parent-suite-name
                                                                 ,setup
                                                                 ,@(cdr children))
