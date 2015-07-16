@@ -289,8 +289,8 @@ and the second element is the symbol that isn't a nested suite under the first e
        (aand (get-suite suite-name)
              it!tests.test-name)))
 
-;;runs all tests. Returns t if any were found, nil if none were.
 (def run-all-tests ()
+     "Run all tests. Return t if any were found, nil if none were."
      (when (run-specific-things (get-all-top-level-suite-names) t)
        (= *last-things-run* nil)
        t))
@@ -326,9 +326,10 @@ and the second element is the symbol that isn't a nested suite under the first e
           (run-test it store-result)
           nil))
 
-;; Summarize a given test run. That is, print out information about the overall
-;; status of a set of suites.
 (def summarize-run (names)
+     "Summarize a given test run.
+      That is, print out information about the overall status
+      of a set of suites."
      (with (tests 0
             passes 0
             names-not-found nil)
