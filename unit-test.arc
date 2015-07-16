@@ -191,9 +191,9 @@
 (def do-test (names)
      (if (no names)
          (do (run-all-tests)
-             (summarize-run-of-all-tests));;what does this do when there are tests?
+             (summarize-run-of-all-tests))
        (let unique-names (filter-unique-names names)
-            (do (run-specific-things unique-names t) ;;if some tests aren't found, should we complain about that?
+            (do (run-specific-things unique-names t)
                 (summarize-run unique-names)))))
 
 (def retest ()
