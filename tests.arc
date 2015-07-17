@@ -263,7 +263,9 @@
                                                          'pants)))
               (test nested (assert-same 'parent.child
                                         (make-full-name 'parent
-                                                        'child))))
+                                                        'child)))
+              (test multi-nested (assert-same 'parent.child.grandchild
+                                              (make-full-name 'parent 'child 'grandchild))))
 
        (suite hash-same
               (test empty (assert-t (hash-same (obj)
