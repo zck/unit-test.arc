@@ -264,6 +264,7 @@ and the second element is the symbol that isn't a nested suite under the first e
      (car (get-suite-and-test-name test-full-name)))
 
 (def get-test-name (test-full-name)
+     "This takes a test full name, and returns the test's name."
      (cadr (get-suite-and-test-name test-full-name)))
 
 
