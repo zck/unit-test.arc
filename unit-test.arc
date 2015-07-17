@@ -390,16 +390,16 @@ and the second element is the symbol that isn't a nested suite under the first e
 
 
 (def run-suite-and-children (cur-suite (o store-result nil))
-     (let results (inst 'suite-results 'suite-name cur-suite!full-suite-name)
-          ;;run these tests, store
-          (= results!test-results (run-this-suite cur-suite))
-          (when store-result
-            (store-suite-result results))
+     (let results (inst 'suite-results
+                        'suite-name cur-suite!full-suite-name
+                        'test-results (run-this-suite cur-suite))
 
-          ;;run children
           (each (nested-name nested-suite) cur-suite!nested-suites
                 (= results!nested-suite-results.nested-name
                    (run-suite-and-children nested-suite)))
+
+          (when store-result
+            (store-suite-result results))
 
           results))
 
