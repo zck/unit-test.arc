@@ -18,56 +18,92 @@
 
 
 (suite unit-test-tests
-       (suite assert
-              (test t-doesnt-error (assert t "shouldn't throw"))
-              (test nil-errors (assert-error (assert nil "should throw"))))
+       (suite comparisons
+              (suite same
+                     (test numbers-same (assert-t (same 1 1)))
+                     (test numbers-diff (assert-nil (same 1 2)))
+                     (test strings-same (assert-t (same "Now Mary" "Now Mary")))
+                     (test strings-diff (assert-nil (same "Now Mary" "Mow Nary")))
+                     (test lists-same (assert-t (same '(1 2 3)
+                                                      '(1 2 3))))
+                     (test lists-diff (assert-nil (same '(1 2 3)
+                                                        '(1 3 3))))
+                     (test lists-sub-lists-of-the-second (assert-nil (same '(1 2 3)
+                                                                           '(1 2 3 4))))
+                     (test tables-same (assert-t (same (obj 1 2)
+                                                       (obj 1 2))))
+                     (test tables-different-vals (assert-nil (same (obj 1 2)
+                                                                   (obj 1 1))))
+                     (test tables-different-keys (assert-nil (same (obj 1 1)
+                                                                   (obj 2 1))))
+                     (test tables-extra-keys (assert-nil (same (obj 1 2)
+                                                               (obj 1 2 3 4))))
+                     (test cross-number-and-obj (assert-nil (same 1
+                                                                  (obj 1 2))))
+                     (test cross-obj-and-number (assert-nil (same (obj 1 2)
+                                                                  1)))
+                     (test cross-number-and-string (assert-nil (same 1
+                                                                     "1")))
+                     (test obj-as-key-of-obj-are-same (assert-t (same (w/table tbl (= (tbl (obj 1 2)) 'val))
+                                                                      (w/table tbl (= (tbl (obj 1 2)) 'val)))))
+                     (test obj-as-val-of-obj-are-same (assert-t (same (obj 1 (obj))
+                                                                      (obj 1 (obj))))))
 
-       (suite same
-              (test numbers-same (assert-t (same 1 1)))
-              (test numbers-diff (assert-nil (same 1 2)))
-              (test strings-same (assert-t (same "Now Mary" "Now Mary")))
-              (test strings-diff (assert-nil (same "Now Mary" "Mow Nary")))
-              (test lists-same (assert-t (same '(1 2 3)
-                                               '(1 2 3))))
-              (test lists-diff (assert-nil (same '(1 2 3)
-                                                 '(1 3 3))))
-              (test lists-sub-lists-of-the-second (assert-nil (same '(1 2 3)
-                                                                    '(1 2 3 4))))
-              (test tables-same (assert-t (same (obj 1 2)
-                                                (obj 1 2))))
-              (test tables-different-vals (assert-nil (same (obj 1 2)
-                                                            (obj 1 1))))
-              (test tables-different-keys (assert-nil (same (obj 1 1)
-                                                            (obj 2 1))))
-              (test tables-extra-keys (assert-nil (same (obj 1 2)
-                                                        (obj 1 2 3 4))))
-              (test cross-number-and-obj (assert-nil (same 1
-                                                           (obj 1 2))))
-              (test cross-obj-and-number (assert-nil (same (obj 1 2)
-                                                           1)))
-              (test cross-number-and-string (assert-nil (same 1
-                                                              "1")))
-              (test obj-as-key-of-obj-are-same (assert-t (same (w/table tbl (= (tbl (obj 1 2)) 'val))
-                                                               (w/table tbl (= (tbl (obj 1 2)) 'val)))))
-              (test obj-as-val-of-obj-are-same (assert-t (same (obj 1 (obj))
-                                                               (obj 1 (obj))))))
+              (suite hash-same
+                     (test empty (assert-t (hash-same (obj)
+                                                      (obj))))
+                     (test single-elt-same (assert-t (hash-same (obj 1 t)
+                                                                (obj 1 t))))
+                     (test single-elt-different-val (assert-nil (hash-same (obj 1 t)
+                                                                           (obj 1 'pants))))
+                     (test single-elt-different-key (assert-nil (hash-same (obj 1 t)
+                                                                           (obj 2 t))))
+                     (test multiple-elts-same (assert-t (hash-same (obj 1 t 2 'a (1) 2)
+                                                                   (obj 1 t 2 'a (1) 2))))
+                     (test multiple-elts-different-key (assert-nil (hash-same (obj 1 t 2 t 3 t)
+                                                                              (obj 1 t 2 t 4 t))))
+                     (test multiple-elts-different-val (assert-nil (hash-same (obj 1 t 2 t 3 t)
+                                                                              (obj 1 t 2 t 3 4))))
+                     (test extra-elt-on-left (assert-nil (hash-same (obj 1 t 2 t)
+                                                                    (obj 1 t 2 t 3 t))))
+                     (test extra-elt-on-right (assert-nil (hash-same (obj 1 t 2 t 3 t)
+                                                                     (obj 1 t 2 t))))
+                     (test does-order-matter? (assert-t (hash-same (obj 1 t 2 t)
+                                                                   (obj 2 t 1 t))))))
+
+       (suite asserts
+              (suite assert
+                     (test t-doesnt-error (assert t "shouldn't throw"))
+                     (test nil-errors (assert-error (assert nil "should throw"))))
 
 
-       (suite assert-same
-              (test equal-vals (assert-same 1 1 "equal values are good"))
-              (test lists-are-same (assert-same (list 1) (list 1) "equal lists are good"))
-              (test different-vals (assert-error (assert-same 1 2)))
-              (test hashtables-are-same (assert-same (obj 1 2) (obj 1 2) "equal hashtables are good")))
+              (suite assert-same
+                     (test equal-vals (assert-same 1 1 "equal values are good"))
+                     (test lists-are-same (assert-same (list 1) (list 1) "equal lists are good"))
+                     (test different-vals (assert-error (assert-same 1 2)))
+                     (test hashtables-are-same (assert-same (obj 1 2) (obj 1 2) "equal hashtables are good")))
 
-       (suite assert-t
-              (test t-is-good (assert-t t))
-              (test nil-throws (assert-error (assert-t nil)))
-              (test 3-is-treated-as-good (assert-t 3)))
+              (suite assert-t
+                     (test t-is-good (assert-t t))
+                     (test nil-throws (assert-error (assert-t nil)))
+                     (test 3-is-treated-as-good (assert-t 3)))
 
-       (suite assert-nil
-              (test t-is-good (assert-error (assert-nil t)))
-              (test nil-is-good (assert-nil nil))
-              (test 3-is-treated-as-bad (assert-error (assert-nil 3))))
+              (suite assert-nil
+                     (test t-is-good (assert-error (assert-nil t)))
+                     (test nil-is-good (assert-nil nil))
+                     (test 3-is-treated-as-bad (assert-error (assert-nil 3))))
+              (suite assert-error
+                     (test err-is-ok (assert-error (err "oh dear!")))
+                     (test no-err-fails (assert-nil (errsafe (do (assert-error "no error")
+                                                                 t))))
+                     (test checks-error-message (assert-nil (errsafe (do (assert-error (err "this is bad")
+                                                                                       "this is the wrong message")
+                                                                         t))))
+                     (test valid-error-message-passes (assert-error (err "oh no...")
+                                                                    "oh no..."))
+                     (test no-error-fails-when-error-message-given (assert-nil (errsafe (do (assert-error "no error" "error message")
+                                                                                            t))
+                                                                               "Even when an error message is given, not having an error should fail assert-error."))))
 
        (suite-w/setup make-test
                       (sample-test (make-test sample-suite sample-test nil 3)
@@ -257,51 +293,6 @@
               (test fail (assert-nil (result-is-pass (inst 'test-results
                                                            'status 'fail)))))
 
-       (suite make-full-name
-              (test regular (assert-same 'pants
-                                         (make-full-name nil
-                                                         'pants)))
-              (test nested (assert-same 'parent.child
-                                        (make-full-name 'parent
-                                                        'child)))
-              (test multi-nested (assert-same 'parent.child.grandchild
-                                              (make-full-name 'parent 'child 'grandchild))))
-
-       (suite hash-same
-              (test empty (assert-t (hash-same (obj)
-                                               (obj))))
-              (test single-elt-same (assert-t (hash-same (obj 1 t)
-                                                         (obj 1 t))))
-              (test single-elt-different-val (assert-nil (hash-same (obj 1 t)
-                                                                    (obj 1 'pants))))
-              (test single-elt-different-key (assert-nil (hash-same (obj 1 t)
-                                                                    (obj 2 t))))
-              (test multiple-elts-same (assert-t (hash-same (obj 1 t 2 'a (1) 2)
-                                                            (obj 1 t 2 'a (1) 2))))
-              (test multiple-elts-different-key (assert-nil (hash-same (obj 1 t 2 t 3 t)
-                                                                       (obj 1 t 2 t 4 t))))
-              (test multiple-elts-different-val (assert-nil (hash-same (obj 1 t 2 t 3 t)
-                                                                       (obj 1 t 2 t 3 4))))
-              (test extra-elt-on-left (assert-nil (hash-same (obj 1 t 2 t)
-                                                             (obj 1 t 2 t 3 t))))
-              (test extra-elt-on-right (assert-nil (hash-same (obj 1 t 2 t 3 t)
-                                                              (obj 1 t 2 t))))
-              (test does-order-matter? (assert-t (hash-same (obj 1 t 2 t)
-                                                            (obj 2 t 1 t)))))
-
-       (suite assert-error
-              (test err-is-ok (assert-error (err "oh dear!")))
-              (test no-err-fails (assert-nil (errsafe (do (assert-error "no error")
-                                                          t))))
-              (test checks-error-message (assert-nil (errsafe (do (assert-error (err "this is bad")
-                                                                                "this is the wrong message")
-                                                                  t))))
-              (test valid-error-message-passes (assert-error (err "oh no...")
-                                                             "oh no..."))
-              (test no-error-fails-when-error-message-given (assert-nil (errsafe (do (assert-error "no error" "error message")
-                                                                                     t))
-                                                                        "Even when an error message is given, not having an error should fail assert-error.")))
-
        (suite to-readable-string
               (test strings-are-quoted (assert-same "'string!'"
                                                     (to-readable-string "string!")))
@@ -314,45 +305,61 @@
               (test tables-containing-string (assert-same "#hash((1 . '2')('3' . 4))"
                                                           (to-readable-string (obj 1 "2" "3" 4)))))
 
-       (suite is-valid-name
-              (test periods-not-ok (assert-nil (is-valid-name "hi.there")))
-              (test no-period-is-ok (assert-t (is-valid-name "hi;there!mom:)"))))
-       (suite get-suite-name
-              (test only-suite-name (assert-same 'base
-                                                 (get-suite-name 'base)))
-              (test with-test-name (assert-same 'base
-                                                (get-suite-name 'base.test)))
-              (test nested-suites (assert-same 'base.nested
-                                               (get-suite-name 'base.nested.test))))
-       (suite get-test-name
-              (test simple-test-name (assert-same 'test-name
-                                                  (get-test-name 'base.test-name)))
-              (test nested-suites (assert-same 'test-name
-                                               (get-test-name 'base.nested.test-name))))
-       (suite get-suite-and-test-name
-              (test no-test-name (assert-same '(suite nil)
-                                              (get-suite-and-test-name 'suite)))
-              (test simple-test-name (assert-same '(suite test)
-                                                  (get-suite-and-test-name 'suite.test)))
-              (test nested-suites (assert-same '(suite.nested test)
-                                               (get-suite-and-test-name 'suite.nested.test)))
-              (test deeply-nested-suites (assert-same '(suite.nested1.nested2.nested3 test)
-                                                      (get-suite-and-test-name 'suite.nested1.nested2.nested3.test))))
-       (suite get-name-fragments
-              (test simple (assert-same '(top-level)
-                                        (get-name-fragments 'top-level)))
-              (test one-nested (assert-same '(top-level single)
-                                            (get-name-fragments 'top-level.single)))
-              (test two-nested (assert-same '(top-level nested-1 nested-2)
-                                            (get-name-fragments 'top-level.nested-1.nested-2))))
-       (suite filter-unique-names
-              (test empty (assert-nil (filter-unique-names '())))
-              (test one-thing (assert-same '(my-name) (filter-unique-names '(my-name))))
-              (test different-things (assert-same '(one two) (filter-unique-names '(one two))))
-              (test removes-duplicates (assert-same '(one) (filter-unique-names '(one one one one))))
-              (test leading-differs (assert-same '(hell hello) (filter-unique-names '(hell hello))))
-              (test keeps-more-general (assert-same '(top-scope) (filter-unique-names '(top-scope top-scope.nested))))
-              (test keeps-nested-names (assert-same '(a.b.c.d) (filter-unique-names '(a.b.c.d))))
-              (test many-items (assert-same '(a math top.one top.three.nested top.two)
-                                            (filter-unique-names '(math top.one a.b top.three.nested top.two a math.adding))))
-              (test multiple-removals (assert-same '(math xyzzy) (filter-unique-names '(math xyzzy math.adding xyzzy math))))))
+       (suite names
+              (suite make-full-name
+                     (test regular (assert-same 'pants
+                                                (make-full-name nil
+                                                                'pants)))
+                     (test nested (assert-same 'parent.child
+                                               (make-full-name 'parent
+                                                               'child)))
+                     (test multi-nested (assert-same 'parent.child.grandchild
+                                                     (make-full-name 'parent 'child 'grandchild))))
+
+              (suite is-valid-name
+                     (test periods-not-ok (assert-nil (is-valid-name "hi.there")))
+                     (test no-period-is-ok (assert-t (is-valid-name "hi;there!mom:)"))))
+
+              (suite get-suite-name
+                     (test only-suite-name (assert-same 'base
+                                                        (get-suite-name 'base)))
+                     (test with-test-name (assert-same 'base
+                                                       (get-suite-name 'base.test)))
+                     (test nested-suites (assert-same 'base.nested
+                                                      (get-suite-name 'base.nested.test))))
+
+              (suite get-test-name
+                     (test simple-test-name (assert-same 'test-name
+                                                         (get-test-name 'base.test-name)))
+                     (test nested-suites (assert-same 'test-name
+                                                      (get-test-name 'base.nested.test-name))))
+
+              (suite get-suite-and-test-name
+                     (test no-test-name (assert-same '(suite nil)
+                                                     (get-suite-and-test-name 'suite)))
+                     (test simple-test-name (assert-same '(suite test)
+                                                         (get-suite-and-test-name 'suite.test)))
+                     (test nested-suites (assert-same '(suite.nested test)
+                                                      (get-suite-and-test-name 'suite.nested.test)))
+                     (test deeply-nested-suites (assert-same '(suite.nested1.nested2.nested3 test)
+                                                             (get-suite-and-test-name 'suite.nested1.nested2.nested3.test))))
+
+              (suite get-name-fragments
+                     (test simple (assert-same '(top-level)
+                                               (get-name-fragments 'top-level)))
+                     (test one-nested (assert-same '(top-level single)
+                                                   (get-name-fragments 'top-level.single)))
+                     (test two-nested (assert-same '(top-level nested-1 nested-2)
+                                                   (get-name-fragments 'top-level.nested-1.nested-2))))
+
+              (suite filter-unique-names
+                     (test empty (assert-nil (filter-unique-names '())))
+                     (test one-thing (assert-same '(my-name) (filter-unique-names '(my-name))))
+                     (test different-things (assert-same '(one two) (filter-unique-names '(one two))))
+                     (test removes-duplicates (assert-same '(one) (filter-unique-names '(one one one one))))
+                     (test leading-differs (assert-same '(hell hello) (filter-unique-names '(hell hello))))
+                     (test keeps-more-general (assert-same '(top-scope) (filter-unique-names '(top-scope top-scope.nested))))
+                     (test keeps-nested-names (assert-same '(a.b.c.d) (filter-unique-names '(a.b.c.d))))
+                     (test many-items (assert-same '(a math top.one top.three.nested top.two)
+                                                   (filter-unique-names '(math top.one a.b top.three.nested top.two a math.adding))))
+                     (test multiple-removals (assert-same '(math xyzzy) (filter-unique-names '(math xyzzy math.adding xyzzy math)))))))
