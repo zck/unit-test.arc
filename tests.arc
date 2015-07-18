@@ -133,7 +133,10 @@
                        fail-test-val ((make-test-fn sample-suite fail-test nil (err "failing...")))
                        simple-setup ((make-test-fn sample-suite w/setup (x 3) x))
                        multiple-variable-setup ((make-test-fn sample-suite multiple-variable-setup (x 3 y 4) (+ x y)))
-                      reliant-variable-setup ((make-test-fn sample-suite reliant-variable-setup (x 3 y x) (+ x y))))
+                       reliant-variable-setup ((make-test-fn sample-suite reliant-variable-setup (x 3 y x) (+ x y)))
+                       multiple-asserts-all-pass-val ((make-test-fn sample-suite multiple-asserts-all-pass-val nil (assert-same 2 2) (assert-same 1 1)))
+                       multiple-asserts-first-fails-val ((make-test-fn sample-suite multiple-asserts-first-fails-val nil (assert-same 2 1) (assert-same 1 1)))
+                       multiple-asserts-second-fails-val ((make-test-fn sample-suite multiple-asserts-second-fails-val nil (assert-same 2 2) (assert-same 1 42))))
                       (test pass-has-right-return-value (assert-same 3 pass-test-val!return-value))
                       (test pass-has-test-name (assert-same 'pass-test pass-test-val!test-name))
                       (test fail-has-test-name (assert-same 'fail-test fail-test-val!test-name))
@@ -144,7 +147,10 @@
                       (test fail-has-proper-details (assert-same "failing..." fail-test-val!details))
                       (test setup-has-right-value (assert-same 3 simple-setup!return-value))
                       (test multiple-variables-are-setup-properly (assert-same 7 multiple-variable-setup!return-value))
-                      (test reliant-variables-are-setup-properly (assert-same 6 reliant-variable-setup!return-value)))
+                      (test reliant-variables-are-setup-properly (assert-same 6 reliant-variable-setup!return-value))
+                      (test multiple-asserts-work (assert-t (result-is-pass multiple-asserts-all-pass-val)))
+                      (test multiple-asserts-first-fails (assert-nil (result-is-pass multiple-asserts-first-fails-val)))
+                      (test multiple-asserts-second-fails (assert-nil (result-is-pass multiple-asserts-second-fails-val))))
 
        (suite-w/setup suite-partition
                       (single-test (suite-partition test-suite-1 nil (test a 3))
