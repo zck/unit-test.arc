@@ -18,10 +18,10 @@
 
 
 (deftem suite
-  suite-name ""
-  tests nil ;;zck should this start out as an obj?
-  nested-suites nil ;; zck should this start out as an obj?
-  full-suite-name "")
+  suite-name 'suite-with-no-name
+  tests (obj)
+  nested-suites (obj)
+  full-suite-name 'suite-with-no-full-name)
 
 (mac suite (suite-name . children)
      `(summarize-suite-creation (make-and-save-suite ,suite-name nil nil ,@children)))
@@ -151,8 +151,8 @@
 
 
 (deftem test
-  test-name "no-testname mcgee"
-  suite-name "no-suitename mcgee"
+  test-name 'test-with-no-name
+  suite-name 'test-with-no-suite-name
   test-fn (fn args (assert nil "You didn't give this test a body. So I'm making it fail.")))
 
 (mac make-test (suite-name test-name setup . body)
@@ -173,10 +173,10 @@
                                    (inst 'test-results 'suite-name ',suite-name 'test-name ',test-name 'status 'pass 'return-value (w/stdout (outstring) ,@body))))))))
 
 (deftem test-results
-  test-name ""
-  suite-name ""
+  test-name 'test-results-with-no-test-name
+  suite-name 'test-results-with-no-suite-name
   status 'fail
-  details ""
+  details "test results with no details"
   return-value nil)
 
 (def pretty-results (test-result)
@@ -385,7 +385,7 @@ and the second element is the symbol that isn't a nested suite under the first e
                (string name))))
 
 (deftem suite-results
-  suite-name ""
+  suite-name 'suite-results-with-no-suite-name
   test-results (obj) ;;hash of test-name -> test-result
   nested-suite-results (obj)) ;;nested-suite-fullname -> suite-result
 
