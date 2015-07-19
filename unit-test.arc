@@ -200,21 +200,26 @@
      (do-test *last-things-run*))
 
 (def filter-unique-names (names)
-     (with (names-fragments (map get-name-fragments
-                                 (sort < (dedup names)))
-            helper (afn (names) (if (len< names 2)
-                                    names
-                                  (with (first-name (names 0)
-                                                    second-name (names 1)
-                                                    other-names (nthcdr 2 names))
-                                        (if (begins first-name second-name)
-                                            (self (cons second-name other-names))
-                                          (begins second-name first-name)
-                                          (self (cons first-name other-names))
-                                          (cons first-name
-                                                (self (cdr names))))))))
-          (map [apply make-full-name _]
-               (helper names-fragments))))
+     (withs (names-fragments (map get-name-fragments
+                                  (sort < (dedup names)))
+             helper (afn (names) (if (len< names 2)
+                                     names
+                                   (with (first-name (names 0)
+                                                     second-name (names 1)
+                                                     other-names (nthcdr 2 names))
+                                         (if (begins first-name second-name)
+                                             (self (cons second-name other-names))
+                                           (begins second-name first-name)
+                                           (self (cons first-name other-names))
+                                           (cons first-name
+                                                 (self (cdr names)))))))
+             unique-names (memtable (map [apply make-full-name _]
+                                         (helper names-fragments))))
+            (keep idfn
+                  (map [when unique-names._
+                             (wipe unique-names._)
+                             _]
+                       names))))
 
 
 ;; This should be either a list of names, or nil.
