@@ -87,16 +87,42 @@
                   (err (string "Suite names can't have periods in them. "
                                ',suite-name
                                " does."))
-                (let ,processed-children (suite-partition ,(make-full-name parent-suite-name
-                                                                                 suite-name)
-                                                          ,setup
-                                                          ,@children)
-                     (inst 'suite 'suite-name ',suite-name
-                           'nested-suites (,processed-children 'suites)
-                           'tests (,processed-children 'tests)
-                           'full-suite-name (make-full-name ',parent-suite-name
-                                                                  ',suite-name))))))
+                (withs (,processed-children (suite-partition ,(make-full-name parent-suite-name
+                                                                              suite-name)
+                                                             ,setup
+                                                             ,@children)
+                        cur-suite (inst 'suite 'suite-name ',suite-name
+                                        'nested-suites (,processed-children 'suites)
+                                        'tests (,processed-children 'tests)
+                                        'full-suite-name (make-full-name ',parent-suite-name
+                                                                         ',suite-name)))
+                       (check-for-shadowing cur-suite)
+                       cur-suite))))
 
+;;should this recurse? Where should it get called from?
+;; (def check-for-shadowing (suite-name parent-suite-name nested-suites tests)
+;;      (let suite-names (memtable (keys nested-suites))
+;;           (each test-name (keys tests)
+;;                 (when suite-names.test-name
+;;                   (err (string "In the suite "
+;;                                (make-full-name parent-suite-name suite-name)
+;;                                ", both a nested suite and a test are named "
+;;                                test-name))))))
+
+
+;;zck test this more
+;;we can add a bunch of unit tests to make sure errors are thrown.
+;;so (in make-suite), instantiate template, then check for shadowing
+(def check-for-shadowing (cur-suite)
+     (let suite-names (memtable (keys cur-suite!nested-suites))
+          (each test-name (keys cur-suite!tests)
+                (when suite-names.test-name
+                  (err (string "In the suite "
+                               cur-suite!full-suite-name
+                               ", both a nested suite and a test are named "
+                               test-name))))
+          (each (suite-name suite-template) cur-suite!nested-suites
+                (check-for-shadowing suite-template))))
 (mac suite-partition (parent-suite-name setup . children)
      "Return an obj with two values: 'tests and 'suites.
       Each of these is an obj of names to templates."
