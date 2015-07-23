@@ -152,89 +152,89 @@
                       (test multiple-asserts-first-fails (assert-nil (result-is-pass multiple-asserts-first-fails-val)))
                       (test multiple-asserts-second-fails (assert-nil (result-is-pass multiple-asserts-second-fails-val))))
 
-       (suite-w/setup suite-partition
-                      (single-test (suite-partition test-suite-1 nil (test a 3))
-                       single-suite (suite-partition test-suite-2 nil (suite a (test b 3)))
-                       two-of-each (suite-partition test-suite-3 nil (test a 3) (suite b (test c 4)) (test d 5) (suite e (test f 6) (test g 7)))
-                       none-of-either (suite-partition test-suite-4 nil)
-                       test-after-nested-suite (suite-partition test-suite-4 nil (suite a (test b 1)) (test c 2))
-                       test-with-setup (suite-partition test-suite-5 (x 3) (test a x))
-                       nested-test-with-setup (suite-partition test-suite-6 nil (suite-w/setup a (x 3) (test b x))))
-                      (test nothing (assert-t (empty none-of-either!tests))
-                                    (assert-t (empty none-of-either!suites)))
-                      (test single-test-has-no-suite (assert-t (empty single-test!suites)))
-                      (test single-test-has-one-test (assert-same 1
-                                                                  (len single-test!tests)))
-                      (test single-test-has-right-test (assert-same 'a
-                                                                    single-test!tests!a!test-name))
-                      (test single-test-has-right-suite (assert-same 'test-suite-1
-                                                                     single-test!tests!a!suite-name))
-                      (test single-suite-has-no-tests (assert-t (empty single-suite!tests)))
-                      (test single-suite-has-one-suite (assert-same 1
-                                                                    (len single-suite!suites)))
-                      (test single-suite-contains-one-test (assert-same 1
-                                                                        (len single-suite!suites!a!tests)))
-                      (test single-suite-contains-right-test (assert-same 'b
-                                                                          single-suite!suites!a!tests!b!test-name))
-                      (test two-of-each-has-two-tests (assert-same 2
-                                                                   (len two-of-each!tests)))
-                      (test two-of-each-has-two-suites (assert-same 2
-                                                                    (len two-of-each!suites)))
-                      (test nested-suite-has-right-name (assert-same 'a
-                                                                     single-suite!suites!a!suite-name))
-                      (test nested-suite-has-right-full-name (assert-same 'test-suite-2.a
-                                                                          single-suite!suites!a!full-suite-name))
-                      (test test-after-nested-suite-has-correct-parent-name (assert-same 'test-suite-4
-                                                                                         test-after-nested-suite!tests!c!suite-name))
-                      (test test-fn-returns-right-value (assert-same 3
-                                                                     ((single-test!tests!a!test-fn) 'return-value)))
-                      (test nested-test-fn-returns-right-value (assert-same 3
-                                                                            ((single-suite!suites!a!tests!b!test-fn) 'return-value)))
-                      (test test-with-setup-returns-right-value (assert-same 3
-                                                                             ((test-with-setup!tests!a!test-fn)
-                                                                              'return-value)))
-                      (test nested-test-with-setup-returns-right-value (assert-same 3
-                                                                                    ((nested-test-with-setup!suites!a!tests!b!test-fn)
-                                                                                     'return-value))))
+       (suite suite-creation
+              (suite-w/setup suite-partition
+                             (single-test (suite-partition test-suite-1 nil (test a 3))
+                                          single-suite (suite-partition test-suite-2 nil (suite a (test b 3)))
+                                          two-of-each (suite-partition test-suite-3 nil (test a 3) (suite b (test c 4)) (test d 5) (suite e (test f 6) (test g 7)))
+                                          none-of-either (suite-partition test-suite-4 nil)
+                                          test-after-nested-suite (suite-partition test-suite-4 nil (suite a (test b 1)) (test c 2))
+                                          test-with-setup (suite-partition test-suite-5 (x 3) (test a x))
+                                          nested-test-with-setup (suite-partition test-suite-6 nil (suite-w/setup a (x 3) (test b x))))
+                             (test nothing (assert-t (empty none-of-either!tests))
+                                   (assert-t (empty none-of-either!suites)))
+                             (test single-test-has-no-suite (assert-t (empty single-test!suites)))
+                             (test single-test-has-one-test (assert-same 1
+                                                                         (len single-test!tests)))
+                             (test single-test-has-right-test (assert-same 'a
+                                                                           single-test!tests!a!test-name))
+                             (test single-test-has-right-suite (assert-same 'test-suite-1
+                                                                            single-test!tests!a!suite-name))
+                             (test single-suite-has-no-tests (assert-t (empty single-suite!tests)))
+                             (test single-suite-has-one-suite (assert-same 1
+                                                                           (len single-suite!suites)))
+                             (test single-suite-contains-one-test (assert-same 1
+                                                                               (len single-suite!suites!a!tests)))
+                             (test single-suite-contains-right-test (assert-same 'b
+                                                                                 single-suite!suites!a!tests!b!test-name))
+                             (test two-of-each-has-two-tests (assert-same 2
+                                                                          (len two-of-each!tests)))
+                             (test two-of-each-has-two-suites (assert-same 2
+                                                                           (len two-of-each!suites)))
+                             (test nested-suite-has-right-name (assert-same 'a
+                                                                            single-suite!suites!a!suite-name))
+                             (test nested-suite-has-right-full-name (assert-same 'test-suite-2.a
+                                                                                 single-suite!suites!a!full-suite-name))
+                             (test test-after-nested-suite-has-correct-parent-name (assert-same 'test-suite-4
+                                                                                                test-after-nested-suite!tests!c!suite-name))
+                             (test test-fn-returns-right-value (assert-same 3
+                                                                            ((single-test!tests!a!test-fn) 'return-value)))
+                             (test nested-test-fn-returns-right-value (assert-same 3
+                                                                                   ((single-suite!suites!a!tests!b!test-fn) 'return-value)))
+                             (test test-with-setup-returns-right-value (assert-same 3
+                                                                                    ((test-with-setup!tests!a!test-fn)
+                                                                                     'return-value)))
+                             (test nested-test-with-setup-returns-right-value (assert-same 3
+                                                                                           ((nested-test-with-setup!suites!a!tests!b!test-fn)
+                                                                                            'return-value))))
 
-
-       (suite-w/setup make-suite
-                      (single-test (make-suite test-suite-1 nil nil (test a 3))
-                       single-suite (make-suite test-suite-2 nil nil (suite a (test b 3)))
-                       two-of-each (make-suite test-suite-3 nil nil (test a 3) (suite b (test c 4)) (test d 5) (suite e (test f 6) (test g 7)))
-                       test-w/setup (make-suite test-suite-4 nil (x 3) (test a x)))
-                      (test single-test-has-no-suite (assert-t (empty single-test!suites)))
-                      (test single-test-has-one-test (assert-same 1
-                                                                  (len single-test!tests)))
-                      (test single-test-has-right-test (assert-same 'a
-                                                                    single-test!tests!a!test-name))
-                      (test single-test-has-right-suite (assert-same 'test-suite-1
-                                                                     single-test!tests!a!suite-name))
-                      (test single-suite-has-no-tests (assert-t (empty single-suite!tests)))
-                      (test single-suite-has-one-suite (assert-same 1
-                                                                    (len single-suite!nested-suites)))
-                      (test single-suites-nested-suite-has-right-suite-name (assert-same 'a
-                                                                                         single-suite!nested-suites!a!suite-name))
-                      (test single-suites-nested-suite-has-right-full-suite-name (assert-same 'test-suite-2.a
-                                                                                              single-suite!nested-suites!a!full-suite-name))
-                      (test single-suite-has-right-name (assert-same 'test-suite-2
-                                                                     single-suite!suite-name))
-                      (test single-suite-has-right-full-suite-name (assert-same 'test-suite-2
-                                                                                single-suite!full-suite-name))
-                      (test single-suite-contains-one-test (assert-same 1
-                                                                        (len single-suite!nested-suites!a!tests)))
-                      (test single-suite-contains-right-test (assert-same 'b
-                                                                          single-suite!nested-suites!a!tests!b!test-name))
-                      (test single-suite-test-in-nested-suite-has-right-suite-name (assert-same 'test-suite-2.a
-                                                                                                single-suite!nested-suites!a!tests!b!suite-name))
-                      (test two-of-each-has-two-tests (assert-same 2
-                                                                   (len two-of-each!tests)))
-                      (test two-of-each-has-two-suites (assert-same 2
-                                                                    (len two-of-each!nested-suites)))
-                      (test setup-is-done-properly (assert-same 3
-                                                                ((test-w/setup!tests!a!test-fn)
-                                                                 'return-value)))
-                      (test periods-in-suite-names-error (assert-error (make-suite suite.name nil nil))))
+              (suite-w/setup make-suite
+                             (single-test (make-suite test-suite-1 nil nil (test a 3))
+                                           single-suite (make-suite test-suite-2 nil nil (suite a (test b 3)))
+                                           two-of-each (make-suite test-suite-3 nil nil (test a 3) (suite b (test c 4)) (test d 5) (suite e (test f 6) (test g 7)))
+                                           test-w/setup (make-suite test-suite-4 nil (x 3) (test a x)))
+                             (test single-test-has-no-suite (assert-t (empty single-test!suites)))
+                             (test single-test-has-one-test (assert-same 1
+                                                                         (len single-test!tests)))
+                             (test single-test-has-right-test (assert-same 'a
+                                                                           single-test!tests!a!test-name))
+                             (test single-test-has-right-suite (assert-same 'test-suite-1
+                                                                            single-test!tests!a!suite-name))
+                             (test single-suite-has-no-tests (assert-t (empty single-suite!tests)))
+                             (test single-suite-has-one-suite (assert-same 1
+                                                                           (len single-suite!nested-suites)))
+                             (test single-suites-nested-suite-has-right-suite-name (assert-same 'a
+                                                                                                single-suite!nested-suites!a!suite-name))
+                             (test single-suites-nested-suite-has-right-full-suite-name (assert-same 'test-suite-2.a
+                                                                                                     single-suite!nested-suites!a!full-suite-name))
+                             (test single-suite-has-right-name (assert-same 'test-suite-2
+                                                                            single-suite!suite-name))
+                             (test single-suite-has-right-full-suite-name (assert-same 'test-suite-2
+                                                                                       single-suite!full-suite-name))
+                             (test single-suite-contains-one-test (assert-same 1
+                                                                               (len single-suite!nested-suites!a!tests)))
+                             (test single-suite-contains-right-test (assert-same 'b
+                                                                                 single-suite!nested-suites!a!tests!b!test-name))
+                             (test single-suite-test-in-nested-suite-has-right-suite-name (assert-same 'test-suite-2.a
+                                                                                                       single-suite!nested-suites!a!tests!b!suite-name))
+                             (test two-of-each-has-two-tests (assert-same 2
+                                                                          (len two-of-each!tests)))
+                             (test two-of-each-has-two-suites (assert-same 2
+                                                                           (len two-of-each!nested-suites)))
+                             (test setup-is-done-properly (assert-same 3
+                                                                       ((test-w/setup!tests!a!test-fn)
+                                                                        'return-value)))
+                             (test periods-in-suite-names-error (assert-error (make-suite suite.name nil nil)))))
 
 
        (suite count-passes
