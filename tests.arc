@@ -103,7 +103,16 @@
                                                                     "oh no..."))
                      (test no-error-fails-when-error-message-given (assert-nil (errsafe (do (assert-error "no error" "error message")
                                                                                             t))
-                                                                               "Even when an error message is given, not having an error should fail assert-error."))))
+                                                                               "Even when an error message is given, not having an error should fail assert-error.")))
+
+              (suite assert-no-error
+                     (test no-error-is-ok (assert-no-error 3))
+
+                     ;;errsafe returns nil if error happens, so if assert-no-error properly errors
+                     ;;(because there was an error in its body), errsafe will return nil.
+                     ;;If there's no error, it'll return t and not error
+                     (test error-fails (assert-nil (errsafe (do (assert-no-error (err "error!"))
+                                                                t))))))
 
        (suite-w/setup make-test
                       (sample-test (make-test sample-suite sample-test nil 3)

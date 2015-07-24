@@ -574,6 +574,13 @@ and the second element is the symbol that isn't a nested suite under the first e
                              nil))
         (err "Expected an error to be thrown")))
 
+(mac assert-no-error (actual)
+     `(on-err (fn (exception)
+                  (err (string "We got an error with details: "
+                                 (details exception))
+                         ))
+              (fn () ,actual)))
+
 (def list-suites ()
      "Prints out all suites that can be run."
      (prn "Here are all the suites that can be run.\nEach nested suite is indented under its parent.\n")
