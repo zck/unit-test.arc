@@ -244,7 +244,10 @@
                              (test setup-is-done-properly (assert-same 3
                                                                        ((test-w/setup!tests!a!test-fn)
                                                                         'return-value)))
-                             (test periods-in-suite-names-error (assert-error (make-suite suite.name nil nil)))))
+                             (test periods-in-suite-names-error (assert-error (make-suite suite.name nil nil))))
+
+              (suite check-for-shadowing
+                     (test empty-suite-is-ok (assert-no-error (check-for-shadowing (inst 'suite))))))
 
 
        (suite count-passes
