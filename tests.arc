@@ -92,6 +92,7 @@
                      (test t-is-good (assert-error (assert-nil t)))
                      (test nil-is-good (assert-nil nil))
                      (test 3-is-treated-as-bad (assert-error (assert-nil 3))))
+
               (suite assert-error
                      (test err-is-ok (assert-error (err "oh dear!")))
                      (test no-err-fails (assert-nil (errsafe (do (assert-error "no error")
