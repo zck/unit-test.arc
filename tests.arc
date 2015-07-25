@@ -246,8 +246,36 @@
                                                                         'return-value)))
                              (test periods-in-suite-names-error (assert-error (make-suite suite.name nil nil))))
 
-              (suite check-for-shadowing
-                     (test empty-suite-is-ok (assert-no-error (check-for-shadowing (inst 'suite))))))
+              (suite-w/setup check-for-shadowing
+                             (empty-suite (inst 'suite 'suite-name 'empty-suite)
+                              suite-with-tests (inst 'suite
+                                                     'suite-name 'suite-with-tests
+                                                     'tests (obj test1 t test2 t))
+                              suite-with-nested-suites (inst 'suite
+                                                             'suite-name 'suite-with-nested-suites
+                                                             'nested-suites (obj empty-suite empty-suite))
+                              suite-with-no-shadows (inst 'suite
+                                                          'suite-name 'no-shadows
+                                                          'tests (obj test-name t)
+                                                          'nested-suites (obj empty-suite empty-suite))
+                              suite-with-shadows (inst 'suite
+                                                       'suite-name 'suite-with-shadows
+                                                       'tests (obj shadow t)
+                                                       'nested-suites (obj shadow (inst 'suite 'suite-name 'shadow)))
+                              nested-suite-with-no-shadows (inst 'suite
+                                                                 'suite-name 'parent
+                                                                 'nested-suites (obj suite-with-no-shadows suite-with-no-shadows)
+                                                                 'tests (obj test-name t))
+                              nested-suite-with-shadows (inst 'suite
+                                                              'suite-name 'parent
+                                                              'nested-suites (obj suite-with-shadows suite-with-no-shadows)
+                                                              'tests (obj suite-with-shadows t)))
+                             (test empty-suite-is-ok (assert-no-error (check-for-shadowing empty-suite)))
+                             (test suite-with-nested-suite-is-ok (assert-no-error (check-for-shadowing suite-with-nested-suites)))
+                             (test suite-with-no-shadows-is-ok (assert-no-error (check-for-shadowing suite-with-no-shadows)))
+                             (test suite-with-shadows-errors (assert-error (check-for-shadowing suite-with-shadows)))
+                             (test nested-suite-with-shadows-errors (assert-error (check-for-shadowing nested-suite-with-shadows)))
+                             (test nested-suite-with-no-shadows-is-ok (assert-no-error (check-for-shadowing nested-suite-with-no-shadows)))))
 
 
        (suite count-passes

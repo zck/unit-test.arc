@@ -99,20 +99,7 @@
                        (check-for-shadowing cur-suite)
                        cur-suite))))
 
-;;should this recurse? Where should it get called from?
-;; (def check-for-shadowing (suite-name parent-suite-name nested-suites tests)
-;;      (let suite-names (memtable (keys nested-suites))
-;;           (each test-name (keys tests)
-;;                 (when suite-names.test-name
-;;                   (err (string "In the suite "
-;;                                (make-full-name parent-suite-name suite-name)
-;;                                ", both a nested suite and a test are named "
-;;                                test-name))))))
 
-
-;;zck test this more
-;;we can add a bunch of unit tests to make sure errors are thrown.
-;;so (in make-suite), instantiate template, then check for shadowing
 (def check-for-shadowing (cur-suite)
      (let suite-names (memtable (keys cur-suite!nested-suites))
           (each test-name (keys cur-suite!tests)
@@ -123,6 +110,7 @@
                                test-name))))
           (each (suite-name suite-template) cur-suite!nested-suites
                 (check-for-shadowing suite-template))))
+
 (mac suite-partition (parent-suite-name setup . children)
      "Return an obj with two values: 'tests and 'suites.
       Each of these is an obj of names to templates."
