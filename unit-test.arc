@@ -181,7 +181,7 @@
 
 (mac make-test-fn (suite-name test-name setup . body)
      `(fn ()
-          (on-err (fn (ex) (inst 'testresults 'suite-name ',suite-name 'test-name ',test-name 'status 'fail 'details (details ex)))
+          (on-err (fn (ex) (inst 'test-results 'suite-name ',suite-name 'test-name ',test-name 'status 'fail 'details (details ex)))
                   (fn ()
                       (eval '(withs ,setup
                                    (inst 'test-results 'suite-name ',suite-name 'test-name ',test-name 'status 'pass 'return-value (w/stdout (outstring) ,@body))))))))
@@ -240,7 +240,6 @@
 ;; nil means the last thing run was all tests.
 (ensure-bound *last-things-run* nil)
 
-;;in make-test-fn, we inst 'testresults _and_ 'test-results. This is worrisome, but might be fixed in a later version.
 
 ;;; functions dealing with symbol manipulation
 
