@@ -23,9 +23,14 @@
   nested-suites (obj)
   full-suite-name 'suite-with-no-full-name)
 
-(mac suite (suite-name . children)
+;;zck make all old-* macros use other old-* macros, make sure it still works
+(mac old-suite (suite-name . children)
      `(summarize-suite-creation (make-and-save-suite ,suite-name nil nil ,@children)))
 
+(mac suite args
+     `(summarize-suite-creation (make-and-save-suite (suite ,@args))))
+
+;;zck old
 (mac suite-w/setup (suite-name setup . children)
      `(summarize-suite-creation (make-and-save-suite ,suite-name nil ,setup ,@children)))
 
@@ -76,12 +81,25 @@
                                (keep idfn ;;for when called with nil, as in make-and-save-suite of top-level suites
                                      args)))))
 
-(mac make-and-save-suite (suite-name parent-suite-name setup . children)
+(mac make-and-save-suite (suite-body)
+     `(let this-suite (make-suite nil ,suite-body)
+           (= (*unit-tests* this-suite!full-suite-name)
+              this-suite)))
+
+(mac old-make-and-save-suite (suite-name parent-suite-name setup . children)
      `(= (*unit-tests* ',(make-full-name parent-suite-name
                                                suite-name))
          (make-suite ,suite-name ,parent-suite-name ,setup ,@children)))
 
-(mac make-suite (suite-name parent-suite-name setup . children)
+;;update usages of make-suite
+(mac make-suite (parent-suite-name suite-body)
+     (w/uniq processed-children
+             `(withs (,processed-children (suite-partition ,parent-suite-name
+                                                           nil
+                                                           ,suite-body))
+                     (car (vals ,processed-children))))) ;;zck error checking? Necessary? Check for shadowing?
+
+(mac old-make-suite (suite-name parent-suite-name setup . children)
      (w/uniq processed-children
              `(if (no (is-valid-name ',suite-name))
                   (err (string "Suite names can't have periods in them. "
@@ -111,6 +129,103 @@
           (each (suite-name suite-template) cur-suite!nested-suites
                 (check-for-shadowing suite-template))))
 
+;;form is either:
+;;top-level: (suite foo ...)
+;;or the rest of a nested form: ((suite bar ...))
+;;this "rest" is from taking the cddr of (suite foo (suite bar))
+;;zck should I separate these two things into different functions?
+(mac new-suite-partition (form)
+     (if (atom form)
+         (err "what is this?")
+       (atom (car form))
+       `(suite-partition-top-level ,form)
+       ''nested))
+
+;; (mac new-suite-partition (this-form parent-suite-name setup)
+;;      (if (caris this-form
+;;                 'test)
+;;          (if (len< this-form 3)
+;;            (err (string "Tests must have a name and a body. This doesn't: "
+;;                         (to-readable-string this-form)))
+;;            (let test-name (this-form 1)  ;;zck this part seems to work, but is it different enough from the existing suite-partition?
+;;                 (w/uniq ret-val
+;;                         `(let ,ret-val ,obj-to-update ;;zck we don't have obj-to-update
+;;                               (= (,ret-val ',test-name)
+;;                                  (make-test ,parent-suite-name
+;;                                             ,test-name
+;;                                             ,setup
+;;                                             ,@(cddr this-form)))
+;;                               ,ret-val))))
+
+;;        ;;this-form is (suite name . body)
+;;        (caris this-form
+;;               'suite)
+;;        (if (len< this-form 3)
+;;            (err (string "Suites must have a name and a body. This doesn't:"
+;;                         (to-readable-string this-form)))
+;;          (let suite-name (this-form 1)
+;;               `(let )
+;; (let ,the-rest (suite-partition ,parent-suite-name
+;;                                                ,setup
+;;                                                ,@(cdr children))
+;;                     (= ((,the-rest 'suites) ',suite-name)
+;;                        (make-suite ,suite-name
+;;                                    ,parent-suite-name
+;;                                    nil
+;;                                    ,@(cddr this-form)))
+;;                     ,the-rest)))
+;;        (caris this-form
+;;               'suite-w/setup)
+;;        ''its-a-suite-w/setup
+;;        (err (string "what is this? " this-form))))
+;;zck finish error part
+
+;;zck what if we just passed the top-level form to the existing suite-partition?
+;;zck if test, need parent-suite-name, setup
+;;if suite, need parent-suite-name
+;;if suite-w/setup, need parent-suite-name
+;;if suites, need
+(mac suite-partition-top-level (this-form parent-suite-name setup obj-to-update)
+     "Take a form and parse it. This form must have a symbol as its first element.
+      Return an obj with two values: 'tests and 'suites.
+      Each is an obj of names to templates."
+     (if (caris this-form
+                'test)
+         (if (len< this-form 3)
+           (err (string "Tests must have a name and a body. This doesn't: "
+                        (to-readable-string this-form)))
+           (let test-name (this-form 1)  ;;zck this part seems to work, but is it different enough from the existing suite-partition?
+                (w/uniq ret-val
+                        `(let ,ret-val ,obj-to-update
+                              (= (,ret-val ',test-name)
+                                 (make-test ,parent-suite-name
+                                            ,test-name
+                                            ,setup
+                                            ,@(cddr this-form)))
+                              ,ret-val))))
+
+       (caris this-form
+              'suite)
+       ;; (if (len< this-form 3)
+       ;;     (err (string "Suites must have a name and a body. This doesn't:"
+       ;;                  (to-readable-string this-form)))
+       ;;                      (let suite-name (this-form 1)
+       ;;                           `(let ,the-rest (suite-partition ,parent-suite-name
+       ;;                                                            ,setup
+       ;;                                                            ,@(cdr children))
+       ;;                                 (= ((,the-rest 'suites) ',suite-name)
+       ;;                                    (make-suite ,suite-name
+       ;;                                                ,parent-suite-name
+       ;;                                                nil
+       ;;                                                ,@(cddr this-form)))
+       ;;                                 ,the-rest)))
+       ''its-a-suite
+       (caris this-form
+              'suite-w/setup)
+       ''its-a-suite-w/setup
+       ''unknown))
+
+
 (mac suite-partition (parent-suite-name setup . children)
      "Return an obj with two values: 'tests and 'suites.
       Each of these is an obj of names to templates."
@@ -121,45 +236,64 @@
                                  'test)
                           ;;children is:
                           ;;((test test-name . test-body) . suite-rest)
-                          (let test-name (this-form 1)
-                               `(let ,the-rest (suite-partition ,parent-suite-name
-                                                                ,setup
-                                                                ,@(cdr children))
-                                     (= ((,the-rest 'tests) ',test-name)
-                                        (make-test ,parent-suite-name
-                                                   ,test-name
-                                                   ,setup
-                                                   ,@(cddr this-form)))
-                                     ,the-rest))
+                          (if (len< this-form 3)
+                              (err (string "Tests must have a name and a body. This doesn't: "
+                                         (to-readable-string this-form)))
+                            (let test-name (this-form 1)
+                                   `(let ,the-rest (suite-partition ,parent-suite-name
+                                                                    ,setup
+                                                                    ,@(cdr children))
+                                         (= ((,the-rest 'tests) ',test-name)
+                                            (make-test ,parent-suite-name
+                                                       ,test-name
+                                                       ,setup
+                                                       ,@(cddr this-form)))
+                                         ,the-rest)))
 
                         (caris this-form
                                'suite)
                         ;;children is:
                         ;;((suite suite-name . suite-body) . suite-rest)
-                        (let suite-name (this-form 1)
-                             `(let ,the-rest (suite-partition ,parent-suite-name
-                                                                ,setup
-                                                                ,@(cdr children))
-                                    (= ((,the-rest 'suites) ',suite-name)
-                                       (make-suite ,suite-name
-                                                   ,parent-suite-name
-                                                   nil
-                                                   ,@(cddr this-form)))
-                                    ,the-rest))
+
+                        ;;zck this doesn't work for suites at the top level. E.g.,
+                        ;; arc> (suite a)
+                        ;; Successfully created suite a with 0 tests and 0 nested suites.
+                        ;; #hash()
+                        ;;can we make the suite macro (and suite-w/setup) take args,
+                        ;;and somehow pass the args to suite-partition, because
+                        ;;this is what does error handling?
+                        (if (len< this-form 3)
+                            (err (string "Suites must have a name and a body. This doesn't:"
+                                         (to-readable-string this-form)))
+                            (let suite-name (this-form 1)
+                                 `(let ,the-rest (suite-partition ,parent-suite-name
+                                                                  ,setup
+                                                                  ,@(cdr children))
+                                       (= ((,the-rest 'suites) ',suite-name)
+                                          (make-suite ;; ,suite-name
+                                                      ,parent-suite-name
+                                                      ;; nil
+                                                      ,@(cddr this-form)))
+                                       ,the-rest)))
                         (caris this-form
                                'suite-w/setup)
                         ;;children is:
                         ;;((suite suite-name setup . suite-body) . suite-rest)
-                        (let suite-name (this-form 1)
-                             `(let ,the-rest (suite-partition ,parent-suite-name
-                                                              ,setup
-                                                              ,@(cdr children))
-                                   (= ((,the-rest 'suites) ',suite-name)
-                                      (make-suite ,suite-name
-                                                  ,parent-suite-name
-                                                  ,(this-form 2)
-                                                  ,@(nthcdr 3 this-form)))
-                                   ,the-rest))
+
+                        ;;zck this doesn't work for suites at the top level
+                        (if len< this-form 4
+                            (err (string "Suites with setup must have a name, a setup, and a body. This doesn't:"
+                                         (to-readable-string this-form)))
+                            (let suite-name (this-form 1)
+                                 `(let ,the-rest (suite-partition ,parent-suite-name
+                                                                  ,setup
+                                                                  ,@(cdr children))
+                                       (= ((,the-rest 'suites) ',suite-name)
+                                          (make-suite ,suite-name
+                                                      ,parent-suite-name
+                                                      ,(this-form 2)
+                                                      ,@(nthcdr 3 this-form))) ;;zck can make-suite pull out the setup itself? Why do we do it here? What are the valid values of args here?
+                                       ,the-rest)))
                         (err (string "We can't parse this as a suite body: " this-form)))))
        `(obj tests (obj) suites (obj))))
 
