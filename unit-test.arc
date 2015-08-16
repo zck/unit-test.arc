@@ -86,11 +86,13 @@
 
       PARENT-SUITE-NAME is the full name of the parent suite, or nil.
       FULL-SUITE is the full s-exp for the suite; something like (suite my-name (test...) ...). "
-     (w/uniq processed-children
-             `(let ,processed-children (suite-partition ,parent-suite-name
-                                                        nil
-                                                        ,full-suite)
-                   (car (vals (,processed-children 'suites)))))) ;;zck error checking? Necessary? Check for shadowing?
+     (w/uniq (processed-children cur-suite)
+             `(withs (,processed-children (suite-partition ,parent-suite-name
+                                                           nil
+                                                           ,full-suite)
+                      ,cur-suite (car (vals (,processed-children 'suites))))
+                    (check-for-shadowing ,cur-suite)
+                    ,cur-suite)))
 
 
 (def check-for-shadowing (cur-suite)
@@ -100,14 +102,15 @@
                   (err (string "In the suite "
                                cur-suite!full-suite-name
                                ", both a nested suite and a test are named "
-                               test-name))))
+                               test-name
+                               "."))))
           (each (suite-name suite-template) cur-suite!nested-suites
                 (check-for-shadowing suite-template))))
 
-;;this is the suite-analogue of make-test.
-;;perhaps it should be called make-suite? But then what would make-suite be?
 (mac handle-suite-body (parent-suite-name suite-name setup body)
-
+     "Take PARENT-SUITE-NAME SUITE-NAME, and SETUP, and parse BODY into a suite.
+      BODY should be everything in the suite body that isn't the initial 'suite' or 'suite-w/setup',
+      the name of the suite, or its setup. It could be something like ((test basic (assert-same 2 2)))."
          (let full-suite-name (make-full-name parent-suite-name suite-name)
               (if body
                   `(with (first-thing (suite-partition ,full-suite-name
@@ -123,7 +126,7 @@
                          (each (test-name the-test) first-thing!tests
                                (= the-rest-of-body!tests.test-name
                                   the-test))
-                         the-rest-of-body);;zck test this.
+                         the-rest-of-body)
                 `(if (no (is-valid-name ',suite-name))
                      ;;this test is inside the macroexpansion so we can test it.
                      ;;We know we'll always get to this case, because handle-suite-body recurses.
@@ -136,14 +139,11 @@
                          'nested-suites (obj)
                          'full-suite-name ',full-suite-name)))))
 
-;;form is either:
-;;top-level: (suite foo ...)
-;;or the rest of a nested form: ((suite bar ...)) ;;zck is this still an option?
-;;this "rest" is from taking the cddr of (suite foo (suite bar))
-;;zck should I separate these two things into different functions?
 (mac suite-partition (parent-suite-name setup . children)
      "Return an obj with two values: 'tests and 'suites.
-      Each of these is an obj of names to templates."
+      Each of these is an obj of names to templates.
+      CHILDREN is a list of things that can be in the body of a suite: other suites or tests.
+      An example call is: (suite-partition parent-name nil (suite a (test b t)))."
      (if children
          (w/uniq the-rest
                  (let this-form (car children)
@@ -155,7 +155,7 @@
                               (err (string "Tests must have a name and a body. This doesn't: "
                                            (to-readable-string this-form)))
                             (let test-name (this-form 1)
-                                 `(let ,the-rest (suite-partition ,(make-full-name ',parent-suite-name 'what) ;;how do we get the current suite's name?
+                                 `(let ,the-rest (suite-partition ,(make-full-name ',parent-suite-name 'what)
                                                                       ,setup
                                                                       ,@(cdr children))
                                        (= ((,the-rest 'tests) ',test-name)
@@ -171,14 +171,6 @@
                         ;; (suite suite-name . body)
                         ;;children is:
                         ;;((suite suite-name . suite-body) . suite-rest)
-
-                        ;;zck this doesn't work for suites at the top level. E.g.,
-                        ;; arc> (suite a)
-                        ;; Successfully created suite a with 0 tests and 0 nested suites.
-                        ;; #hash()
-                        ;;can we make the suite macro (and suite-w/setup) take args,
-                        ;;and somehow pass the args to suite-partition, because
-                        ;;this is what does error handling?
                         (if (len< this-form 3)
                             (err (string "Suites must have a name and a body. This doesn't: "
                                          (to-readable-string this-form)))
@@ -187,11 +179,6 @@
                                                                     ,setup
                                                                     ,@(cdr children))
                                      (= ((,the-rest 'suites) ',suite-name)
-                                        ;;zck what do I do here? What is the second argument
-                                        ;;to make-suite really?
-                                        ;;We need to cdr down the list, but how do we go from
-                                        ;;this-form to the next one?
-                                        ;;this-form is (suite suite-name . body)
                                         (handle-suite-body ,parent-suite-name
                                                            ,suite-name
                                                            nil
@@ -201,8 +188,6 @@
                                'suite-w/setup)
                         ;;children is:
                         ;;((suite suite-name setup . suite-body) . suite-rest)
-
-                        ;;zck this doesn't work for suites at the top level
                         (if (len< this-form 4)
                             (err (string "Suites with setup must have a name, a setup, and a body. This doesn't: "
                                          (to-readable-string this-form)))

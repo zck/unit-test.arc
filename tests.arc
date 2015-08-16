@@ -245,7 +245,9 @@
                                                                        ((test-w/setup!tests!a!test-fn)
                                                                         'return-value)))
                              (test periods-in-suite-names-error (assert-error (make-suite nil (suite bad.name (test whatever t)))
-                                                                              "Suite names can't have periods in them. bad.name does.")))
+                                                                              "Suite names can't have periods in them. bad.name does."))
+                             (test checks-for-shadowing (assert-error (make-suite nil (suite a (test b t) (suite b (test c t))))
+                                                                      "In the suite a, both a nested suite and a test are named b.")))
 
               (suite-w/setup check-for-shadowing
                              (empty-suite (inst 'suite 'suite-name 'empty-suite)
