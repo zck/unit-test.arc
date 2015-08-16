@@ -171,8 +171,8 @@
                                           test-after-nested-suite (suite-partition test-suite-4 nil (suite a (test b 1)) (test c 2))
                                           test-with-setup (suite-partition test-suite-5 (x 3) (test a x))
                                           nested-test-with-setup (suite-partition test-suite-6 nil (suite-w/setup a (x 3) (test b x))))
-                             (test nothing (assert-t (empty none-of-either!tests))
-                                   (assert-t (empty none-of-either!suites)))
+                             (test none-of-either-has-no-tests (assert-t (empty none-of-either!tests)))
+                             (test none-of-either-has-no-suites (assert-t (empty none-of-either!suites)))
                              (test single-test-has-no-suite (assert-t (empty single-test!suites)))
                              (test single-test-has-one-test (assert-same 1
                                                                          (len single-test!tests)))
