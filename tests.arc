@@ -344,15 +344,15 @@
                                                            'status 'fail)))))
 
        (suite to-readable-string
-              (test strings-are-quoted (assert-same "'string!'"
+              (test strings-are-quoted (assert-same "\"string!\""
                                                     (to-readable-string "string!")))
               (test numbers-are-ok (assert-same "42"
                                                 (to-readable-string 42)))
               (test lists-are-ok (assert-same "(1 (2 3) . 4)"
                                               (to-readable-string '(1 (2 3) . 4))))
-              (test lists-containing-string (assert-same "(1 '2' 3)"
+              (test lists-containing-string (assert-same "(1 \"2\" 3)"
                                                          (to-readable-string '(1 "2" 3))))
-              (test tables-containing-string (assert-same "#hash((1 . '2')('3' . 4))"
+              (test tables-containing-string (assert-same "#hash((1 . \"2\")(\"3\" . 4))"
                                                           (to-readable-string (obj 1 "2" "3" 4)))))
 
        (suite names

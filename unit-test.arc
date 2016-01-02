@@ -533,7 +533,7 @@ and the second element is the symbol that isn't a nested suite under the first e
 (def to-readable-string (val)
      (if (isa val
               'string)
-         (string #\' val #\') ;;use single quotes, because (err "a \"string\" here") looks weird
+         (string #\" val #\")
        (acons val)
        (list-to-readable-string val)
        (isa val
