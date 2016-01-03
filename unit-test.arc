@@ -569,10 +569,11 @@ and the second element is the symbol that isn't a nested suite under the first e
                     (to-readable-string (cdr val))))))))
 
 (def table-to-readable-string (tbl)
-     (tostring (pr "#hash(")
-               (each (key val) tbl
-                     (pr (to-readable-string (cons key val))))
-               (pr ")")))
+     (let sorted-table (sort < (map to-readable-string (tablist tbl)))
+          (tostring (pr "(obj ")
+                    (each ele sorted-table
+                          (pr ele))
+                    (pr ")"))))
 
 
 

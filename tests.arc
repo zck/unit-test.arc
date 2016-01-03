@@ -352,8 +352,8 @@
                                               (to-readable-string '(1 (2 3) . 4))))
               (test lists-containing-string (assert-same "(1 \"2\" 3)"
                                                          (to-readable-string '(1 "2" 3))))
-              (test tables-containing-string (assert-same "#hash((1 . \"2\")(\"3\" . 4))"
-                                                          (to-readable-string (obj 1 "2" "3" 4)))))
+              (test tables-containing-string (assert-same "(obj (\"3\" 4)(\"5\" 6)(0 14)(1 \"2\"))"
+                                                          (to-readable-string (obj 1 "2" "3" 4 "5" 6 0 14)))))
 
        (suite names
               (suite make-full-name
