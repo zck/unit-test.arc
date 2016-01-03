@@ -531,6 +531,16 @@ and the second element is the symbol that isn't a nested suite under the first e
                                            (string ". " it)))))))
 
 (def to-readable-string (val)
+     "Return a readable version of VAL."
+     ;; It is intended to be readable when printed.
+     ;; This matters, for example, when dealing with strings.
+     ;; The return value from this function isn't as readable as it is printed:
+
+     ;; arc> (to-readable-string "hi")
+     ;; "\"hi\""
+     ;; arc> (prn (to-readable-string "hi"))
+     ;; "hi"
+     ;; "\"hi\""
      (if (isa val
               'string)
          (string #\" val #\")
