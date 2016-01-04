@@ -251,6 +251,19 @@
             (do (run-specific-things unique-names t)
                 (summarize-run unique-names)))))
 
+(mac test-and-error-on-failure names
+     `(do-test-and-error-on-failure ',names))
+
+(def do-test-and-error-on-failure (names)
+     "Run the tests in NAMES, as in do-test.
+
+However, if there are any test failures, throw an error.
+This is intended for use in scripts, where the exit code
+from racket is needed to tell if all tests passed or not"
+     (let (passes total) (do-test names)
+          (unless (is passes total)
+            (err "Not all tests passed."))))
+
 (def retest ()
      (do-test *last-things-run*))
 
