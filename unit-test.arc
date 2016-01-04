@@ -35,13 +35,17 @@
            (summarize-suite-creation nested-suite)))
 
 (def summarize-single-suite (cur-suite)
-     (prn "Successfully created suite "
-          cur-suite!full-suite-name
-          " with "
-          (plural (len cur-suite!tests) "test")
-          " and "
-          (plural (len cur-suite!nested-suites) "nested suite")
-          "."))
+     (let padding (newstring (* 4
+                                (count #\.
+                                       (string cur-suite!full-suite-name)))
+                             #\space)
+          (prn padding
+               cur-suite!suite-name
+               ":  \t"
+               (plural (len cur-suite!tests) "test")
+               ",  \t"
+               (plural (len cur-suite!nested-suites) "nested suite")
+               ".")))
 
 (mac ensure-bound (place default)
      `(unless (bound ',place)
