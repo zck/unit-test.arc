@@ -36,8 +36,7 @@
 
 (def summarize-single-suite (cur-suite)
      (let padding (newstring (* 4
-                                (count #\.
-                                       (string cur-suite!full-suite-name)))
+                                (get-nesting-level cur-suite!full-suite-name))
                              #\space)
           (prn padding
                cur-suite!suite-name
@@ -326,6 +325,12 @@ and the second element is the symbol that isn't a nested suite under the first e
      (map sym
           (tokens (string name)
                   #\.)))
+
+(def get-nesting-level (name)
+     "Return how nested NAME is, where a top-level suite is level 0.
+      Each period in the name increases the level by one."
+     (count #\.
+            (string name)))
 
 (def get-suite-and-test-name (test-full-name)
      "Return (suite-name test-name), as a list."

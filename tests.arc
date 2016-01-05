@@ -402,6 +402,14 @@
                      (test two-nested (assert-same '(top-level nested-1 nested-2)
                                                    (get-name-fragments 'top-level.nested-1.nested-2))))
 
+              (suite get-nesting-level
+                     (test 0 (assert-same 0
+                                          (get-nesting-level 'top-level-suite)))
+                     (test 1 (assert-same 1
+                                          (get-nesting-level 'top-level-suite.single-nested)))
+                     (test 2 (assert-same 2
+                                          (get-nesting-level 'top-level-suite.single-nested.again))))
+
               (suite filter-unique-names
                      (test empty (assert-nil (filter-unique-names '())))
                      (test one-thing (assert-same '(my-name) (filter-unique-names '(my-name))))
