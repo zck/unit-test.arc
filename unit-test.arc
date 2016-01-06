@@ -225,13 +225,24 @@
 
 (mac make-test-fn (suite-name test-name setup . body)
      `(fn ()
-          (on-err (fn (ex) (inst 'test-results 'suite-name ',suite-name 'test-name ',test-name 'status 'fail 'details (details ex)))
+          (on-err (fn (ex) (inst 'test-result
+                                 'suite-name ',suite-name
+                                 'test-name ',test-name
+                                 'full-test-name ',(make-full-name suite-name test-name)
+                                 'status 'fail
+                                 'details (details ex)))
                   (fn ()
                       (eval '(withs ,setup
-                                   (inst 'test-results 'suite-name ',suite-name 'test-name ',test-name 'status 'pass 'return-value (w/stdout (outstring) ,@body))))))))
+                                    (inst 'test-result
+                                          'suite-name ',suite-name
+                                          'test-name ',test-name
+                                          'full-test-name ',(make-full-name suite-name test-name)
+                                          'status 'pass
+                                          'return-value (w/stdout (outstring) ,@body))))))))
 
-(deftem test-results
+(deftem test-result
   test-name 'test-results-with-no-test-name
+  full-test-name 'test-results-with-no-suite-name.test-results-with-no-test-name
   suite-name 'test-results-with-no-suite-name
   status 'fail
   details "test results with no details"
