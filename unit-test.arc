@@ -518,11 +518,16 @@ and the second element is the symbol that isn't a nested suite under the first e
           (print-test-run-summary it)))
 
 (def print-test-run-summary (test-result)
-     (prn)
-     (prn "Running test " (make-full-name test-result!suite-name test-result!test-name))
-     (if (result-is-pass test-result)
-         (prn "It passed!")
-       (prn "It failed.")))
+     (prn (newstring (* 4
+                        (count #\.
+                               (string test-result!full-test-name)))
+                     #\space)
+          "Test "
+          test-result!full-test-name
+          ": "
+          (if (result-is-pass test-result)
+              "passed!"
+            "failed.")))
 
 (def print-suite-run-summary (suite-results-template)
      (when suite-results-template
@@ -532,7 +537,12 @@ and the second element is the symbol that isn't a nested suite under the first e
                      (++ tests)
                      (when (is test-result!status 'pass)
                        (++ passed)))
-               (prn)
+               ;;zck this padding doesn't work so well for things like:
+               ;; (test unit-test-tests.make-test-fn)
+               (pr (newstring (* 4
+                                 (count #\.
+                                        (string suite-results-template!suite-name)))
+                              #\space))
                (if (is tests 0)
                    (prn "There are no tests directly in suite " suite-results-template!suite-name ".")
                  (is tests passed 1)
