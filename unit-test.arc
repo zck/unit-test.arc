@@ -518,11 +518,7 @@ and the second element is the symbol that isn't a nested suite under the first e
           (print-test-run-summary it)))
 
 (def print-test-run-summary (test-result)
-     (prn (newstring (* 4
-                        (count #\.
-                               (string test-result!full-test-name)))
-                     #\space)
-          "Test "
+     (prn "Test "
           test-result!full-test-name
           ": "
           (if (result-is-pass test-result)
