@@ -513,7 +513,7 @@ and the second element is the symbol that isn't a nested suite under the first e
 (def print-run-summary (name)
      "This should work on both suite and test names"
      (aif (get-suite-result name)
-          (print-suite-run-summary it)
+          (print-suite-run-summary it (get-nesting-level name))
           (get-test-result name)
           (print-test-run-summary it)))
 
@@ -525,7 +525,7 @@ and the second element is the symbol that isn't a nested suite under the first e
               "passed!"
             "failed.")))
 
-(def print-suite-run-summary (suite-results-template)
+(def print-suite-run-summary (suite-results-template (o nesting-dedent-level 0))
      (when suite-results-template
        (with (tests 0
               passed 0)
@@ -533,11 +533,10 @@ and the second element is the symbol that isn't a nested suite under the first e
                      (++ tests)
                      (when (is test-result!status 'pass)
                        (++ passed)))
-               ;;zck this padding doesn't work so well for things like:
-               ;; (test unit-test-tests.make-test-fn)
                (pr (newstring (* 4
-                                 (count #\.
-                                        (string suite-results-template!suite-name)))
+                                 (- (count #\.
+                                           (string suite-results-template!suite-name))
+                                    nesting-dedent-level))
                               #\space))
                (if (is tests 0)
                    (prn "There are no tests directly in suite " suite-results-template!suite-name ".")
@@ -550,7 +549,7 @@ and the second element is the symbol that isn't a nested suite under the first e
                            (pretty-results test-result))
                    (prn "In suite " suite-results-template!suite-name ", " passed " of " tests " tests passed."))))
        (each (nested-name nested-results) suite-results-template!nested-suite-results
-             (print-suite-run-summary nested-results))))
+             (print-suite-run-summary nested-results nesting-dedent-level))))
 
 (mac assert (test fail-message)
      `(unless ,test
