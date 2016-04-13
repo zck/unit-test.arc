@@ -99,6 +99,9 @@
 
 
 (def check-for-shadowing (cur-suite)
+     "Check CUR-SUITE recursively for shadowing, and throw an error upon finding any.
+
+      Shadowing is when a suite and a test have the same full path."
      (let suite-names (memtable (keys cur-suite!nested-suites))
           (each test-name (keys cur-suite!tests)
                 (when suite-names.test-name
@@ -249,6 +252,7 @@
   return-value nil)
 
 (def pretty-results (test-result)
+     "Print out a pretty summary of TEST-RESULT."
      (pr test-result!suite-name "." test-result!test-name " ")
      (if (is test-result!status 'pass)
          (prn  "passed!")
@@ -279,9 +283,15 @@ from racket is needed to tell if all tests passed or not"
             (err "Not all tests passed."))))
 
 (def retest ()
+     "Rerun the last group of tests run."
      (do-test *last-things-run*))
 
 (def filter-unique-names (names)
+     "Gets the unique names from NAMES.
+
+      If one name is a full prefix of another (only counting period-separated fragments),
+      only include the prefix. So if the input is '(whatever.thing whatever), the output
+      should be '(whatever)."
      (withs (names-fragments (map get-name-fragments
                                   (sort < (dedup names)))
              helper (afn (names) (if (len< names 2)
