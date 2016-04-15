@@ -399,6 +399,9 @@ and the second element is the symbol that isn't a nested suite under the first e
        t))
 
 (def get-all-top-level-suite-names ()
+     "Get the names of all the top-level suites.
+
+      A top-level suite is a suite that doesn't have a parent."
      (keep is-valid-name
            (keys *unit-tests*)))
 
@@ -462,16 +465,19 @@ and the second element is the symbol that isn't a nested suite under the first e
            (list passes tests)))
 
 (def summarize-run-of-all-tests ()
+     "Summarise the run of all tests."
      (summarize-run (get-all-top-level-suite-names)))
 
 
 (def total-tests (suite-results)
+     "Count the total number of tests in SUITE-RESULTS, a list of suite-results templates."
      (apply +
             (len suite-results!test-results)
             (map total-tests
                  (vals suite-results!nested-suite-results))))
 
 (def count-passes (suite-results)
+     "Count the total number of passed tests in SUITE-RESULTS, a list of suite-results templates."
      (apply +
             (count result-is-pass
                    (vals suite-results!test-results))
@@ -479,10 +485,14 @@ and the second element is the symbol that isn't a nested suite under the first e
                  (vals suite-results!nested-suite-results))))
 
 (def result-is-pass (test-result)
+     "Return t if TEST-RESULT, a test-result template instance, represents a passed test."
      (is test-result!status
          'pass))
 
 (def is-valid-name (name)
+     "Return t if NAME, a symbol, is a valid name for a suite or test.
+
+      Valid names contain any characters but periods."
      (no (find #\.
                (string name))))
 
