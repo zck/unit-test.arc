@@ -639,7 +639,7 @@ and the second element is the symbol that isn't a nested suite under the first e
      `(assert-two-vals same ,expected ,actual ,fail-message))
 
 (mac assert-t (actual (o fail-message))
-     `(assert-two-vals (fn (ex act) act) t ,actual ,fail-message))
+     `(assert-two-vals isnt nil ,actual ,fail-message))
 ;; We can't call (assert-two-vals is t ,actual) because we want to accept _any_ non-nil value, not just 't
 
 (mac assert-nil (actual (o fail-message))
