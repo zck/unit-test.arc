@@ -83,7 +83,7 @@ Put a nested suite anywhere inside its parent suite. You can intermingle tests a
 
 If you run a suite, it also runs all nested suites inside it.
 
-arc> (test math)
+    arc> (test math)
 
     Suite math:
     math.this-test-will-fail failed: 4 should be 3 but instead was 4
