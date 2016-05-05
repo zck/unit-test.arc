@@ -430,4 +430,10 @@
                                                       val))
                       (test binds-unbound-value (assert-t (bound `,bound-symbol)))
                       (test binds-proper-value (assert-same 3 (eval `,bound-symbol)))
-                      (test doesnt-change-already-bound-value (eval `(ensure-bound ,bound-symbol 4)) (eval `(assert-same 3 ,bound-symbol)))))
+                      (test doesnt-change-already-bound-value (eval `(ensure-bound ,bound-symbol 4)) (eval `(assert-same 3 ,bound-symbol))))
+
+       (suite suite-has-content
+              (test empty-suite (assert-nil (suite-has-content (inst 'suite))))
+              (test only-nested-test (assert-t (suite-has-content (inst 'suite 'tests (obj nested-test (inst 'test))))))
+              (test only-nested-suite (assert-t (suite-has-content (inst 'suite 'nested-suites (obj nested-suite (inst 'suite))))))
+              (test nested-test-and-suite (assert-t (suite-has-content (inst 'suite 'nested-suites (obj nested-suite (inst 'suite)) 'tests (obj nested-test (inst 'test))))))))

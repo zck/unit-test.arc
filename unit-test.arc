@@ -694,3 +694,8 @@ and the second element is the symbol that isn't a nested suite under the first e
                 (keep [is-valid-name _!full-suite-name]
                       (vals *unit-tests*))
                 (helper top-level-suite 0))))
+
+(def suite-has-content (the-suite)
+     "Return t if SUITE has either tests or nested suites."
+     (or (no (empty the-suite!nested-suites))
+         (no (empty the-suite!tests))))
