@@ -682,7 +682,7 @@ and the second element is the symbol that isn't a nested suite under the first e
      "Prints out all suites that can be run."
      (prn "Here are all the suites that can be run.\nEach nested suite is indented under its parent.\n")
      (let helper (afn (cur-suite nesting-level)
-                      (prn (newstring nesting-level #\tab)
+                      (prn (newstring (* 8 nesting-level) #\space)
                            cur-suite!suite-name
                            ": "
                            (plural (len cur-suite!tests)
