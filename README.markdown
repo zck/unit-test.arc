@@ -162,3 +162,32 @@ You can rerun the last set of suites you ran with `(retest)`:
 
     Yay! The single test passed!
     (1 1)
+
+## Suite management
+
+### Examining suites
+
+Suites can be deleted with `list-suites`
+
+    arc> (list-suites)
+    Here are all the suites that can be run.
+    Each nested suite is indented under its parent.
+
+    math: 2 tests
+        subtracting: 2 tests
+        adding: 2 tests
+    nil
+
+### Deleting suites
+
+If you want to delete a suite or test, pass its name to `wipe-tests`:
+
+    arc> (wipe-tests math.subtracting)
+    nil
+    arc> (list-suites)
+    Here are all the suites that can be run.
+    Each nested suite is indented under its parent.
+
+    math: 2 tests
+        adding: 2 tests
+    nil

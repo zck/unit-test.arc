@@ -695,6 +695,49 @@ and the second element is the symbol that isn't a nested suite under the first e
                       (vals *unit-tests*))
                 (helper top-level-suite 0))))
 
+
+(mac wipe-tests names
+     "Delete the tests or suites from *unit-tests*, causing them to not exist anymore.
+
+      If this deletion results in a suite with no tests and no nested suites, that suite
+      will be removed also."
+     `(wipe-tests-helper ',names))
+
+(def wipe-tests-helper (name-list)
+     "For each thing named in NAME-LIST, delete it from *unit-tests*."
+     (each name name-list
+           (remove-thing (get-name-fragments name)
+                         *unit-tests*)))
+
+(def remove-thing (name-fragments suites-obj)
+     "Delete the thing referred to by NAME-FRAGMENTS from SUITES-OBJ.
+
+      To do this, take each non-terminal element of NAME-FRAGMENTS,
+      treat that symbol as a suite name, and look up that suite.
+
+      Then it takes the last element, and deletes any suites or tests with that name. Finally,
+      it will go back up the path and delete any empty suites.
+
+      For example, it might get called as (remove-thing '(top nested1 nested2 last-thing)).
+      It will remove a suite called top.nested1.nested2.last-thing, or a test named last-thing
+      inside top.nested1.nested2."
+     (let (first-name next-name . other-names) name-fragments
+          (when first-name
+            (if (no next-name)
+                (wipe suites-obj.first-name)
+              (let current-suite suites-obj.first-name
+                   (when current-suite
+                     (unless other-names
+                       (wipe current-suite!tests.next-name)
+                       (wipe current-suite!nested-suites.next-name))
+                     (remove-thing (cons next-name
+                                         other-names)
+                                   current-suite!nested-suites)
+                     (unless (suite-has-content current-suite)
+                       (wipe suites-obj.first-name)))))))
+     suites-obj)
+
+
 (def suite-has-content (the-suite)
      "Return t if SUITE has either tests or nested suites."
      (or (no (empty the-suite!nested-suites))
