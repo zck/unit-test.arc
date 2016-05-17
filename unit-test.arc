@@ -703,6 +703,10 @@ and the second element is the symbol that isn't a nested suite under the first e
       will be removed also."
      `(wipe-tests-helper ',names))
 
+(def wipe-all-tests ()
+     "Delete all tests and suites."
+     (= *unit-tests* (obj)))
+
 (def wipe-tests-helper (name-list)
      "For each thing named in NAME-LIST, delete it from *unit-tests*."
      (each name name-list
