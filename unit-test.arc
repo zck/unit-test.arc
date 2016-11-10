@@ -26,9 +26,6 @@
 (mac suite args
      `(summarize-suite-creation (make-and-save-suite (suite ,@args))))
 
-(mac suite-w/setup args
-     `(summarize-suite-creation (make-and-save-suite (suite-w/setup ,@args))))
-
 (def summarize-suite-creation (cur-suite)
      (summarize-single-suite cur-suite)
      (each (suite-name nested-suite) cur-suite!nested-suites
@@ -48,7 +45,7 @@
 
 (mac ensure-bound (place default)
      `(unless (bound ',place)
-       (= ,place ,default)))
+        (= ,place ,default)))
 
 (ensure-bound *unit-tests* (obj))
 
@@ -84,132 +81,125 @@
            (= (*unit-tests* this-suite!full-suite-name)
               this-suite)))
 
-(mac make-suite (parent-suite-name full-suite)
+(mac make-suite (parent-suite-full-name suite-sexp)
      "Makes a suite.
 
-      PARENT-SUITE-NAME is the full name of the parent suite, or nil.
+      PARENT-SUITE-FULL-NAME is the full name of the parent suite, or nil. Don't quote it.
       FULL-SUITE is the full s-exp for the suite; something like (suite my-name (test...) ...). "
-     (w/uniq (processed-children cur-suite)
-             `(withs (,processed-children (suite-partition ,parent-suite-name
-                                                           nil
-                                                           ,full-suite)
-                      ,cur-suite (car (vals (,processed-children 'suites))))
-                    (check-for-shadowing ,cur-suite)
-                    ,cur-suite)))
+     (w/uniq (suite-name cur-suite setup)
+             (withs (cur-suite-name (cadr suite-sexp)
+                     full-suite-name (make-full-name parent-suite-full-name cur-suite-name)
+                     suite-error-string (get-suite-structure-problems suite-sexp))
+                    (if suite-error-string
+                        `(err ,suite-error-string)
+                      `(withs (,suite-name ',(cadr suite-sexp)
+                               ,cur-suite (inst 'suite
+                                                'suite-name ,suite-name
+                                                'full-suite-name ',full-suite-name)
+                               ,setup ',(cdr (car (keep-by-car suite-sexp 'setup)))) ;;zck what if there's more than one setup clause?
+                                (if (no (is-valid-name ,suite-name))
+                                    (err (string "Suite names can't have periods in them. "
+                                                 ,suite-name
+                                                 " does."))
+                                  (do
+                                      (add-suites-to-suite ,full-suite-name
+                                                           (add-tests-to-suite (inst 'suite
+                                                                                     'suite-name ,suite-name
+                                                                                     'full-suite-name ',(make-full-name parent-suite-full-name cur-suite-name))
+                                                                               ,(make-full-name parent-suite-full-name cur-suite-name)
+                                                                               ,(cdr (car (keep-by-car suite-sexp 'setup)))
+                                                                               ,(keep-by-car suite-sexp 'test))
+                                                           ,(keep-by-car suite-sexp 'suite)))))))))
 
+(mac add-tests-to-suite (cur-suite-sexp full-suite-name setup tests-sexps)
+     "Add tests to CUR-SUITE-SEXP, with setup SETUP. Tests come from TESTS-SEXPS.
 
-(def check-for-shadowing (cur-suite)
-     "Check CUR-SUITE recursively for shadowing, and throw an error upon finding any.
+SETUP is a list of var val pairs, like (x 1) or (age 31 height 70)."
+     (if (no tests-sexps)
+         cur-suite-sexp
+       (w/uniq (cur-suite test-name)
+               `(withs (,cur-suite ,cur-suite-sexp
+                        ,test-name ',((car tests-sexps) 1))
+                       (when (would-shadow ,cur-suite ,test-name)
+                         (err (string "In suite "
+                                      ,full-suite-name
+                                      ", there are two things named "
+                                      ,test-name
+                                      ".")))
+                       (= ((,cur-suite 'tests) ,test-name)
+                          (make-test ',full-suite-name
+                                     ',((car tests-sexps) 1) ;;this is the same as ',test-name, but needs to be macroexpanded directly. For reasons!
+                                     ,setup
+                                     ,@(cddr (car tests-sexps)))) ;;zck we need to be able to call this, right?
+                       (add-tests-to-suite ,cur-suite
+                                           ,full-suite-name
+                                           ,setup
+                                           ,(cdr tests-sexps))))))
 
-      Shadowing is when a suite and a test have the same full path."
-     (let suite-names (memtable (keys cur-suite!nested-suites))
-          (each test-name (keys cur-suite!tests)
-                (when suite-names.test-name
-                  (err (string "In the suite "
-                               cur-suite!full-suite-name
-                               ", both a nested suite and a test are named "
-                               test-name
-                               "."))))
-          (each (suite-name suite-template) cur-suite!nested-suites
-                (check-for-shadowing suite-template))))
+(mac add-suites-to-suite (full-suite-name cur-suite-sexp suites-sexps)
+     "Add the first suite from SUITES-SEXPS to CUR-SUITE-SEXP.
+FULL-SUITE-NAME is the unquoted name of the suite."
+     (if (no suites-sexps)
+         cur-suite-sexp
+       (w/uniq (cur-suite nested-suite nested-suite-name)
+               `(withs (,cur-suite ,cur-suite-sexp
+                        ,nested-suite (make-suite
+                                       ,full-suite-name
+                                       ,(car suites-sexps))
+                        ,nested-suite-name (,nested-suite 'suite-name))
+                       (when (would-shadow ,cur-suite ,nested-suite-name);;zck quoting nested-suite-name is the problem
+                         (err (string "In suite "
+                                      ',full-suite-name
+                                      ", there are two things named "
+                                      ,nested-suite-name
+                                      ".")))
+                       (= ((,cur-suite 'nested-suites) ,nested-suite-name)
+                          ,nested-suite)
+                       (add-suites-to-suite ,full-suite-name
+                                            ,cur-suite
+                                            ,(cdr suites-sexps))))))
 
-(mac handle-suite-body (parent-suite-name suite-name setup body)
-     "Take PARENT-SUITE-NAME SUITE-NAME, and SETUP, and parse BODY into a suite.
-      BODY should be everything in the suite body that isn't the initial 'suite' or 'suite-w/setup',
-      the name of the suite, or its setup. It could be something like ((test basic (assert-same 2 2)))."
-         (let full-suite-name (make-full-name parent-suite-name suite-name)
-              (if body
-                  `(with (first-thing (suite-partition ,full-suite-name
-                                                           ,setup
-                                                           ,(car body))
-                                      the-rest-of-body (handle-suite-body ,parent-suite-name
-                                                                          ,suite-name
-                                                                          ,setup
-                                                                          ,(cdr body)))
-                         (each (nested-suite-name nested-suite) first-thing!suites
-                               (= the-rest-of-body!nested-suites.nested-suite-name
-                                  nested-suite))
-                         (each (test-name the-test) first-thing!tests
-                               (= the-rest-of-body!tests.test-name
-                                  the-test))
-                         the-rest-of-body)
-                `(if (no (is-valid-name ',suite-name))
-                     ;;this test is inside the macroexpansion so we can test it.
-                     ;;We know we'll always get to this case, because handle-suite-body recurses.
-                     (err (string "Suite names can't have periods in them. "
-                                  ',suite-name
-                                  " does."))
-                   (inst 'suite
-                         'suite-name ',suite-name
-                         'tests (obj)
-                         'nested-suites (obj)
-                         'full-suite-name ',full-suite-name)))))
+(def get-suite-structure-problems (suite-sexp)
+     "Return the problems with the structure of SUITE-SEXP, as a string.
 
-(mac suite-partition (parent-suite-name setup . children)
-     "Return an obj with two values: 'tests and 'suites.
-      Each of these is an obj of names to templates.
-      CHILDREN is a list of things that can be in the body of a suite: other suites or tests.
-      An example call is: (suite-partition parent-name nil (suite a (test b t)))."
-     (if children
-         (w/uniq the-rest
-                 (let this-form (car children)
-                      (if (caris this-form
-                                 'test)
-                          ;;children is:
-                          ;;((test test-name . test-body) . suite-rest)
-                          (if (len< this-form 3)
-                              (err (string "Tests must have a name and a body. This doesn't: "
-                                           (to-readable-string this-form)))
-                            (let test-name (this-form 1)
-                                 `(let ,the-rest (suite-partition ,(make-full-name ',parent-suite-name 'what)
-                                                                      ,setup
-                                                                      ,@(cdr children))
-                                       (= ((,the-rest 'tests) ',test-name)
-                                          (make-test ,parent-suite-name
-                                                     ,test-name
-                                                     ,setup
-                                                     ,@(cddr this-form)))
-                                       ,the-rest)))
+For example, a SUITE-SEXP of (suitex name (test a b)) should have an error about
+beginning with the symbol 'suitex ."
+     (let errors
+       (keep idfn
+             (cons (unless (caris suite-sexp 'suite)
+                     (string "The first element of the suite should be the symbol 'suite. It is: "
+                             (car suite-sexp)))
+                   (cons (unless (isa suite-sexp.1 'sym)
+                           (string "The second element of the suite should be the suite-name, a symbol. It is: "
+                                   suite-sexp.1))
+                         (let setup-clause (car (keep-by-car suite-sexp 'setup))
+                              (cons (when (is 1
+                                              (mod (len (cdr setup-clause))
+                                                   2))
+                                      (string "In a setup clause, all variables should have a value. This doesn't: "
+                                              (to-readable-string setup-clause)))
+                                    (map [unless (and (acons _)
+                                                      (mem (car _)
+                                                           '(suite test setup)))
+                                         (string "Each element of a suite should begin with one of the symbols 'suite, 'test, or 'setup. This doesn't: "
+                                                 (to-readable-string _)
+                                                 ".")]
+                                                 (cddr suite-sexp)))))))
+       (when errors (apply string
+                           (intersperse "  "
+                                        errors)))))
 
-                        (caris this-form
-                               'suite)
-                        ;;this-form is:
-                        ;; (suite suite-name . body)
-                        ;;children is:
-                        ;;((suite suite-name . suite-body) . suite-rest)
-                        (if (len< this-form 3)
-                            (err (string "Suites must have a name and a body. This doesn't: "
-                                         (to-readable-string this-form)))
-                          (let suite-name (this-form 1)
-                               `(let ,the-rest (suite-partition ,parent-suite-name
-                                                                    ,setup
-                                                                    ,@(cdr children))
-                                     (= ((,the-rest 'suites) ',suite-name)
-                                        (handle-suite-body ,parent-suite-name
-                                                           ,suite-name
-                                                           nil
-                                                           ,(cddr this-form)))
-                                     ,the-rest)))
-                        (caris this-form
-                               'suite-w/setup)
-                        ;;children is:
-                        ;;((suite suite-name setup . suite-body) . suite-rest)
-                        (if (len< this-form 4)
-                            (err (string "Suites with setup must have a name, a setup, and a body. This doesn't: "
-                                         (to-readable-string this-form)))
-                          (let suite-name (this-form 1)
-                               `(let ,the-rest (suite-partition ,parent-suite-name
-                                                                   ,setup
-                                                                   ,@(cdr children))
-                                     (= ((,the-rest 'suites) ',suite-name)
-                                        (handle-suite-body ,parent-suite-name
-                                                           ,suite-name
-                                                           ,(this-form 2)
-                                                           ,(nthcdr 3 this-form)))
-                                     ,the-rest)))
-                        (err (string "We can't parse this as a suite body: " (to-readable-string this-form))))))
-       `(obj tests (obj) suites (obj))))
+(def would-shadow (cur-suite thing-name)
+     "Returns t iff CUR-SUITE has a test or suite named THING-NAME."
+     (or cur-suite!tests.thing-name
+         cur-suite!nested-suites.thing-name))
 
+(def keep-by-car (sexp identifier)
+     "Gets each element of SEXP where that element is a list, and the car of that element is IDENTIFIER."
+     (keep [and (alist _)
+               (is (car _)
+                   identifier)]
+               sexp))
 
 (deftem test
   test-name 'test-with-no-name
@@ -217,31 +207,36 @@
   test-fn (fn args (assert nil "You didn't give this test a body. So I'm making it fail.")))
 
 (mac make-test (suite-name test-name setup . body)
-     `(if (no (is-valid-name ',test-name))
+     "Make a test for SUITE-NAME named TEST-NAME. Quote both of these.
+
+The test should have SETUP and BODY."
+     `(if (no (is-valid-name ,test-name))
           (err (string "Test names can't have periods in them. "
-                       ',test-name
+                       ,test-name
                        " does."))
         (inst 'test
-              'suite-name ',suite-name
-              'test-name ',test-name
+              'suite-name ,suite-name
+              'test-name ,test-name
               'test-fn (make-test-fn ,suite-name ,test-name ,setup ,@body))))
 
 (mac make-test-fn (suite-name test-name setup . body)
      `(fn ()
           (on-err (fn (ex) (inst 'test-result
-                                 'suite-name ',suite-name
-                                 'test-name ',test-name
-                                 'full-test-name ',(make-full-name suite-name test-name)
+                                 'suite-name ,suite-name
+                                 'test-name ,test-name
+                                 'full-test-name (make-full-name ,suite-name ,test-name)
                                  'status 'fail
                                  'details (details ex)))
                   (fn ()
                       (eval '(withs ,setup
                                     (inst 'test-result
-                                          'suite-name ',suite-name
-                                          'test-name ',test-name
-                                          'full-test-name ',(make-full-name suite-name test-name)
+                                          'suite-name ,suite-name
+                                          'test-name ,test-name
+                                          'full-test-name (make-full-name ,suite-name ,test-name)
                                           'status 'pass
                                           'return-value (w/stdout (outstring) ,@body))))))))
+
+
 
 (deftem test-result
   test-name 'test-results-with-no-test-name
@@ -321,23 +316,6 @@ from racket is needed to tell if all tests passed or not"
 
 ;;; functions dealing with symbol manipulation
 
-(def verify-suite-name (full-suite-name)
-     "Take FULL-SUITE-NAME, and parse it into its component suite names, if there are any nested ones.
-Then, for each sequence of component suite names, see if there is a suite with that name.
-So, for full-suite-name of math.adding.whatever, check if there's a suite named math, then if there's one
-named math.adding, then one named math.adding.whatever.
-
-Return a list where the first element is the longest suite name we checked this way that exists,
-and the second element is the symbol that isn't a nested suite under the first element. Either element of the list can be nil. A possible return value would be '(math.adding whatever)."
-     (let helper (afn (existing-suite-name nested-names)
-                      (if (no nested-names)
-                          (list existing-suite-name nil)
-                        (let next-name (make-full-name existing-suite-name (car nested-names))
-                             (if (get-suite next-name)
-                                 (self next-name (cdr nested-names))
-                               (list existing-suite-name (sym (car nested-names)))))))
-          (helper nil (tokens (string full-suite-name) #\.))))
-
 (def get-name-fragments (name)
      "Take a full suite name NAME, and return the fragments of it as a list of symbols.
       For example, (get-name-fragments 'math.integers.subtracting)
@@ -359,16 +337,6 @@ and the second element is the symbol that isn't a nested suite under the first e
              pivot (last (positions #\. string-name)))
             (list (sym (cut string-name 0 pivot))
                   (when pivot (sym (cut string-name (+ 1 pivot)))))))
-
-(def get-suite-name (test-full-name)
-     "This takes a test full name, and returns the suite that would hold the test.
-      Note that you can pass in a suite name, and get that suite's parent suite."
-     (car (get-suite-and-test-name test-full-name)))
-
-(def get-test-name (test-full-name)
-     "This takes a test full name, and returns the test's name."
-     (cadr (get-suite-and-test-name test-full-name)))
-
 
 (def get-suite (name)
      "Get the suite with full name NAME out of *unit-tests*
@@ -523,7 +491,6 @@ and the second element is the symbol that isn't a nested suite under the first e
                    (test-template!test-fn)))
           test-results))
 
-
 (def run-test (cur-test (o store-result nil))
      (let result (cur-test!test-fn)
           (when store-result
@@ -543,7 +510,9 @@ and the second element is the symbol that isn't a nested suite under the first e
           ": "
           (if (result-is-pass test-result)
               "passed!"
-            "failed.")))
+            "failed."))) ;;zck this doesn't use pretty-results, so printed message is different.
+;;compare (print-run-summary 'unit-test-tests.suite-creation.add-tests-to-suite)
+;;with (print-run-summary 'unit-test-tests.suite-creation.add-tests-to-suite.passing-test-passes)
 
 (def print-suite-run-summary (suite-results-template (o nesting-dedent-level 0))
      (when suite-results-template
