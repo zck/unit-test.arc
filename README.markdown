@@ -117,13 +117,14 @@ If you want to run only one suite that's nested inside another one, that's possi
 
 ## Setup
 
-If you need to set up some values to share across tests, use `suite-w/setup`. The method signature is `(suite-w/setup suite-name setup . children)`. Just like a `with` block, insert a list containing `var val` pairs. For example:
+If you need to set up some values to share across tests, declare a `setup` form alongside the tests in a suite. Just like a `with` block, insert a list containing `var val` pairs. For example:
 
-    (suite-w/setup math (x 6 y 2)
-                   (test adding-works (assert-same 8
-                                                   (+ x y)))
-                   (test multiplying-works (assert-same 12
-                                                        (* x y))))
+    (suite math
+           (setup x 6 y 2)
+           (test adding-works (assert-same 8
+                                           (+ x y)))
+           (test multiplying-works (assert-same 12
+                                                (* x y))))
 
     arc> (test math)
 
@@ -133,12 +134,13 @@ If you need to set up some values to share across tests, use `suite-w/setup`. Th
     (2 2)
 
 
-Under the hood, `suite-w/setup` uses `withs`, so variables can depend on earlier variables.
+Under the hood, `setup` uses `withs`, so variables can depend on earlier variables.
 
-    (suite-w/setup math (x 3
-                         y (+ x 2))
-                   (test lets-multiply (assert-same 15
-                                                    (* x y))))
+    (suite math
+           (setup x  3
+                  y  (+ x 2))
+           (test lets-multiply (assert-same 15
+                                            (* x y))))
 
     arc> (test math)
 
