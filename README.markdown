@@ -18,7 +18,6 @@ To declare a suite, give it a name, then a declare a bunch of tests. Tests are w
 ### Running tests
 
     arc> (test math)
-
     Suite math:
     math.this-will-fail failed: (+ 2 2) should be 3 but instead was 4
     math.this-will-pass passed!
@@ -30,9 +29,7 @@ To declare a suite, give it a name, then a declare a bunch of tests. Tests are w
 You can run multiple suites in `test`, or even call specific tests by name:
 
     arc> (test math.this-will-pass)
-
-    Running test math.this-will-pass
-    It passed!
+    Test math.this-will-pass: passed!
 
     Yay! The single test passed!
     (1 1)
@@ -84,18 +81,15 @@ Put a nested suite anywhere inside its parent suite. You can intermingle tests a
 If you run a suite, it also runs all nested suites inside it.
 
     arc> (test math)
-
     Suite math:
     math.this-test-will-fail failed: 4 should be 3 but instead was 4
     math.numbers-are-equal passed!
     In suite math, 1 of 2 tests passed.
-
-    Suite math.subtracting:
+        Suite math.subtracting:
     math.subtracting.bad failed: (- 2 42) should be 0 but instead was -40
     math.subtracting.good passed!
     In suite math.subtracting, 1 of 2 tests passed.
-
-    Suite math.adding:
+        Suite math.adding:
     math.adding.bad failed: (+ 2 2) should be 3 but instead was 4
     math.adding.good passed!
     In suite math.adding, 1 of 2 tests passed.
@@ -106,7 +100,6 @@ If you run a suite, it also runs all nested suites inside it.
 If you want to run only one suite that's nested inside another one, that's possible. Just call `test` with the full name of the suite you want to run. The full name is simply the names of all the parents of the suite concatenated together, with a period between them, then the suite's name:
 
     arc> (test math.adding)
-
     Suite math.adding:
     math.adding.bad failed: (+ 2 2) should be 3 but instead was 4
     math.adding.good passed!
@@ -127,8 +120,7 @@ If you need to set up some values to share across tests, declare a `setup` form 
                                                 (* x y))))
 
     arc> (test math)
-
-    Suite math: the 2 tests passed!
+    Suite math: all 2 tests passed!
 
     Yay! All 2 tests passed!
     (2 2)
@@ -137,13 +129,12 @@ If you need to set up some values to share across tests, declare a `setup` form 
 Under the hood, `setup` uses `withs`, so variables can depend on earlier variables.
 
     (suite math
-           (setup x  3
-                  y  (+ x 2))
+           (setup x 3
+                  y (+ x 2))
            (test lets-multiply (assert-same 15
                                             (* x y))))
 
     arc> (test math)
-
     Suite math: the single test passed!
 
     Yay! The single test passed!
@@ -159,7 +150,6 @@ Macros can be tested just like functions. The macro won't be expanded until the 
 You can rerun the last set of suites you ran with `(retest)`:
 
     arc> (retest)
-
     Suite math: the single test passed!
 
     Yay! The single test passed!
