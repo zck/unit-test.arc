@@ -159,7 +159,19 @@ You can rerun the last set of suites you ran with `(retest)`:
 
 ### Examining suites
 
-Suites can be deleted with `list-suites`
+Often, it is useful to know what suites there are. Using the following suite:
+
+    (suite math
+           (test numbers-are-equal (assert-same 2 2))
+           (suite adding
+                  (test good (assert-same 4 (+ 2 2)))
+                  (test bad (assert-same 3 (+ 2 2))))
+           (test this-test-will-fail (assert-same 3 4))
+           (suite subtracting
+                  (test good (assert-same 0 (- 2 2)))
+                  (test bad (assert-same 0 (- 2 42)))))
+
+We can introspect with `list-suites`:
 
     arc> (list-suites)
     Here are all the suites that can be run.
