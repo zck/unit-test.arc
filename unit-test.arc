@@ -92,24 +92,20 @@
                      suite-error-string (get-suite-structure-problems suite-sexp))
                     (if suite-error-string
                         `(err ,suite-error-string)
-                      `(withs (,suite-name ',(cadr suite-sexp)
-                               ,cur-suite (inst 'suite
-                                                'suite-name ,suite-name
-                                                'full-suite-name ',full-suite-name)
-                               ,setup ',(cdr (car (keep-by-car suite-sexp 'setup)))) ;;zck what if there's more than one setup clause?
+                      `(let ,suite-name ',(cadr suite-sexp)
                                 (if (no (is-valid-name ,suite-name))
                                     (err (string "Suite names can't have periods in them. "
                                                  ,suite-name
                                                  " does."))
-                                  (do
-                                      (add-suites-to-suite ,full-suite-name
-                                                           (add-tests-to-suite (inst 'suite
-                                                                                     'suite-name ,suite-name
-                                                                                     'full-suite-name ',(make-full-name parent-suite-full-name cur-suite-name))
-                                                                               ,(make-full-name parent-suite-full-name cur-suite-name)
-                                                                               ,(cdr (car (keep-by-car suite-sexp 'setup)))
-                                                                               ,(keep-by-car suite-sexp 'test))
-                                                           ,(keep-by-car suite-sexp 'suite)))))))))
+                                  (add-suites-to-suite ,full-suite-name
+                                                       (add-tests-to-suite (inst 'suite
+                                                                                 'suite-name ,suite-name
+                                                                                 'full-suite-name ',(make-full-name parent-suite-full-name cur-suite-name))
+                                                                           ,(make-full-name parent-suite-full-name cur-suite-name)
+                                                                           ;;zck should this error if there's more than one setup clause?
+                                                                           ,(cdr (car (keep-by-car suite-sexp 'setup)))
+                                                                           ,(keep-by-car suite-sexp 'test))
+                                                       ,(keep-by-car suite-sexp 'suite))))))))
 
 (mac add-tests-to-suite (cur-suite-sexp full-suite-name setup tests-sexps)
      "Add tests to CUR-SUITE-SEXP, with setup SETUP. Tests come from TESTS-SEXPS.
