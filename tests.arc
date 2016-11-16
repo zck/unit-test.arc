@@ -250,12 +250,14 @@
                                                                                             single-suite!nested-suites!a!tests!b!suite-name))
                      (test periods-in-suite-names-error (assert-error (make-suite nil (suite bad.name (test whatever t)))
                                                                       "Suite names can't have periods in them. bad.name does."))
-                     (test checks-for-shadowing (assert-error (make-suite nil (suite a (test b t) (suite b (test c t))))
+                     (test mixed-checks-for-shadowing (assert-error (make-suite nil (suite a (test b t) (suite b (test c t))))
                                                               "In suite a, there are two things named b."))
                      (test parent-suite-name-is-respected (assert-same 'my-parent.empty-child-suite
                                                                        suite-with-parent!full-suite-name))
-                     (test two-tests-with-same-name-error (assert-error (make-suite nil (suite a (test b t) (test b nil)))))
-                     (test two-suites-with-same-name-error (assert-error (make-suite nil (suite a (suite b) (suite b)))))
+                     (test two-tests-with-same-name-error (assert-error (make-suite nil (suite a (test b t) (test b nil)))
+                                                                        "In suite a, there are two things named b."))
+                     (test two-suites-with-same-name-error (assert-error (make-suite nil (suite a (suite b) (suite b)))
+                                                                         "In suite a, there are two things named b."))
                      (test suite-with-bad-initial-value-errors (assert-error (make-suite nil (bad-syntax a (test b t)))))
                      (test suite-with-bad-later-value-errors (assert-error (make-suite nil (suite a (bad-value b t)))))
                      (test suite-with-bad-setup-errors (assert-error (make-suite nil (suite a (setup x) (test val t))))))
@@ -316,13 +318,13 @@
                                 (assert-t (is result!status 'fail))))
                      (test shadowed-tests-error
                            (assert-error (add-tests-to-suite (inst 'suite 'suite-name 'base 'full-suite-name 'base 'tests (obj this-shadows (inst 'test 'test-name 'this-shadows)))
-                                                             'base
+                                                             base
                                                              nil
                                                              ((test this-shadows (assert-same 3 3))))
                                          "In suite base, there are two things named this-shadows."))
                      (test shadowed-suite-errors
                            (assert-error (add-tests-to-suite (inst 'suite 'suite-name 'base 'full-suite-name 'base 'nested-suites (obj this-shadows (inst 'suite 'suite-name 'this-shadows)))
-                                                             'base
+                                                             base
                                                              nil
                                                              ((suite this-shadows (test whatever (assert-same 3 3)))))
                                          "In suite base, there are two things named this-shadows."))) ;;zck add a bunch more tests to this suite

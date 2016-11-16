@@ -114,7 +114,8 @@
 (mac add-tests-to-suite (cur-suite-sexp full-suite-name setup tests-sexps)
      "Add tests to CUR-SUITE-SEXP, with setup SETUP. Tests come from TESTS-SEXPS.
 
-SETUP is a list of var val pairs, like (x 1) or (age 31 height 70)."
+SETUP is a list of var val pairs, like (x 1) or (age 31 height 70).
+Don't quote FULL-SUITE-NAME."
      (if (no tests-sexps)
          cur-suite-sexp
        (w/uniq (cur-suite test-name)
@@ -122,7 +123,7 @@ SETUP is a list of var val pairs, like (x 1) or (age 31 height 70)."
                         ,test-name ',((car tests-sexps) 1))
                        (when (would-shadow ,cur-suite ,test-name)
                          (err (string "In suite "
-                                      ,full-suite-name
+                                      ',full-suite-name
                                       ", there are two things named "
                                       ,test-name
                                       ".")))
