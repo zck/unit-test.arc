@@ -1,5 +1,6 @@
 ;;; unit-test.arc --- Simply write and run tests.
 
+;; Version: 1.0
 ;; This file is part of unit-test.arc .
 
 ;; Copyright 2013-2017 Zachary Kanfer <zkanfer@gmail.com>
