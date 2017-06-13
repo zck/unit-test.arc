@@ -1,6 +1,8 @@
-;; Copyright 2013-2015 Zachary Kanfer
+;;; unit-test.arc --- Simply write and run tests.
 
 ;; This file is part of unit-test.arc .
+
+;; Copyright 2013-2017 Zachary Kanfer <zkanfer@gmail.com>
 
 ;; unit-test.arc is free software: you can redistribute it and/or modify
 ;; it under the terms of the GNU Lesser General Public License as published by
