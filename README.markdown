@@ -4,9 +4,11 @@ A unit test library for the [Arc](http://www.arclanguage.org/) programming langu
 
 ## Quickstart
 
-Yeah, everyone wants examples first, so here they are:
+Let's get started and make some unit tests!
 
 ### Defining a suite
+
+Each test must be defined inside a suite, to group together similar tests. Suites can also hold other suites, to allow for logical grouping of suites.
 
 To declare a suite, give it a name, then a declare a bunch of tests. Tests are written as: `(test your-test-name your-test-body)` Use asserts (explained below) when you want to throw if the two things aren't equal to each other.
 
@@ -16,6 +18,8 @@ To declare a suite, give it a name, then a declare a bunch of tests. Tests are w
 
 
 ### Running tests
+
+Tests don't do you any good if you can't run them! Sure, you wouldn't have any failures, but you wouldn't have any passes either.
 
     arc> (test math)
     Suite math:
