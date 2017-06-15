@@ -1,4 +1,4 @@
-;; Copyright 2013 Zachary Kanfer
+;; Copyright 2013-2015 Zachary Kanfer
 
 ;; This file is part of unit-test.arc .
 
@@ -18,299 +18,587 @@
 
 
 (suite unit-test-tests
-       (suite assert t-doesnt-error (assert t "shouldn't throw")
-              nil-errors (assert-error (assert nil "should throw")))
+       (suite comparisons
+              (suite same
+                     (test numbers-same (assert-t (same 1 1)))
+                     (test numbers-diff (assert-nil (same 1 2)))
+                     (test strings-same (assert-t (same "Now Mary" "Now Mary")))
+                     (test strings-diff (assert-nil (same "Now Mary" "Mow Nary")))
+                     (test lists-same (assert-t (same '(1 2 3)
+                                                      '(1 2 3))))
+                     (test lists-diff (assert-nil (same '(1 2 3)
+                                                        '(1 3 3))))
+                     (test lists-sub-lists-of-the-second (assert-nil (same '(1 2 3)
+                                                                           '(1 2 3 4))))
+                     (test tables-same (assert-t (same (obj 1 2)
+                                                       (obj 1 2))))
+                     (test tables-different-vals (assert-nil (same (obj 1 2)
+                                                                   (obj 1 1))))
+                     (test tables-different-keys (assert-nil (same (obj 1 1)
+                                                                   (obj 2 1))))
+                     (test tables-extra-keys (assert-nil (same (obj 1 2)
+                                                               (obj 1 2 3 4))))
+                     (test cross-number-and-obj (assert-nil (same 1
+                                                                  (obj 1 2))))
+                     (test cross-obj-and-number (assert-nil (same (obj 1 2)
+                                                                  1)))
+                     (test cross-number-and-string (assert-nil (same 1
+                                                                     "1")))
+                     (test obj-as-key-of-obj-are-same (assert-t (same (w/table tbl (= (tbl (obj 1 2)) 'val))
+                                                                      (w/table tbl (= (tbl (obj 1 2)) 'val)))))
+                     (test obj-as-val-of-obj-are-same (assert-t (same (obj 1 (obj))
+                                                                      (obj 1 (obj))))))
 
-       (suite same
-              numbers-same (assert-t (same 1 1))
-              numbers-diff (assert-nil (same 1 2))
-              strings-same (assert-t (same "Now Mary" "Now Mary"))
-              strings-diff (assert-nil (same "Now Mary" "Mow Nary"))
-              lists-same (assert-t (same '(1 2 3)
-                                         '(1 2 3)))
-              lists-diff (assert-nil (same '(1 2 3)
-                                           '(1 3 3)))
-              lists-sub-lists-of-the-second (assert-nil (same '(1 2 3)
-                                                              '(1 2 3 4)))
-              tables-same (assert-t (same (obj 1 2)
-                                          (obj 1 2)))
-              tables-different-vals (assert-nil (same (obj 1 2)
-                                                      (obj 1 1)))
-              tables-different-keys (assert-nil (same (obj 1 1)
-                                                      (obj 2 1)))
-              tables-extra-keys (assert-nil (same (obj 1 2)
-                                                  (obj 1 2 3 4)))
-              cross-number-and-obj (assert-nil (same 1
-                                                     (obj 1 2)))
-              cross-obj-and-number (assert-nil (same (obj 1 2)
-                                                     1))
-              cross-number-and-string (assert-nil (same 1
-                                                        "1"))
-              obj-as-key-of-obj-are-same (assert-t (same (w/table tbl (= (tbl (obj 1 2)) 'val))
-                                                         (w/table tbl (= (tbl (obj 1 2)) 'val))))
-              obj-as-val-of-obj-are-same (assert-t (same (obj 1 (obj))
-                                                         (obj 1 (obj)))))
+              (suite hash-same
+                     (test empty (assert-t (hash-same (obj)
+                                                      (obj))))
+                     (test single-elt-same (assert-t (hash-same (obj 1 t)
+                                                                (obj 1 t))))
+                     (test single-elt-different-val (assert-nil (hash-same (obj 1 t)
+                                                                           (obj 1 'pants))))
+                     (test single-elt-different-key (assert-nil (hash-same (obj 1 t)
+                                                                           (obj 2 t))))
+                     (test multiple-elts-same (assert-t (hash-same (obj 1 t 2 'a (1) 2)
+                                                                   (obj 1 t 2 'a (1) 2))))
+                     (test multiple-elts-different-key (assert-nil (hash-same (obj 1 t 2 t 3 t)
+                                                                              (obj 1 t 2 t 4 t))))
+                     (test multiple-elts-different-val (assert-nil (hash-same (obj 1 t 2 t 3 t)
+                                                                              (obj 1 t 2 t 3 4))))
+                     (test extra-elt-on-left (assert-nil (hash-same (obj 1 t 2 t)
+                                                                    (obj 1 t 2 t 3 t))))
+                     (test extra-elt-on-right (assert-nil (hash-same (obj 1 t 2 t 3 t)
+                                                                     (obj 1 t 2 t))))
+                     (test does-order-matter? (assert-t (hash-same (obj 1 t 2 t)
+                                                                   (obj 2 t 1 t))))))
 
-
-       (suite assert-same
-              equal-vals (assert-same 1 1 "equal values are good")
-              lists-are-same (assert-same (list 1) (list 1) "equal lists are good")
-              different-vals (assert-error (assert-same 1 2))
-              hashtables-are-same (assert-same (obj 1 2) (obj 1 2) "equal hashtables are good"))
-
-       (suite assert-t
-              t-is-good (assert-t t)
-              nil-throws (assert-error (assert-t nil))
-              3-is-treated-as-good (assert-t 3))
-
-       (suite assert-nil
-              t-is-good (assert-error (assert-nil t))
-              nil-is-good (assert-nil nil)
-              3-is-treated-as-bad (assert-error (assert-nil 3)))
-
-       (suite-w/setup test
-                      (sample-test (test sample-suite sample-test nil 3)
-                      simple-setup (test sample-suite simple-setup (x 3) x)
-                      multiple-variable-setup (test sample-suite multiple-variable-setup (x 3 y 4) (+ x y))
-                      reliant-variable-setup (test sample-suite reliant-variable-setup (x 3 y x) (+ x y)))
-                      test-name (assert-same 'sample-test sample-test!test-name)
-                      suite-name (assert-same 'sample-suite sample-test!suite-name)
-                      test-fn (assert-same 3
-                                           ((sample-test!test-fn)
-                                            'return-value))
-                      simple-setup (assert-same 3
-                                                ((simple-setup!test-fn)
-                                                 'return-value))
-                      multiple-variable-setup (assert-same 7
-                                                           ((multiple-variable-setup!test-fn)
-                                                            'return-value))
-                      reliant-variable-setup (assert-same 6
-                                                          ((reliant-variable-setup!test-fn)
-                                                           'return-value))
-                      suite-names-cant-have-periods (assert-error (test sample test.name nil)))
+       (suite asserts
+              (suite assert
+                     (test t-doesnt-error (assert t "shouldn't throw"))
+                     (test nil-errors (assert-error (assert nil "should throw"))))
 
 
+              (suite assert-same
+                     (test equal-vals (assert-same 1 1 "equal values are good"))
+                     (test lists-are-same (assert-same (list 1) (list 1) "equal lists are good"))
+                     (test different-vals (assert-error (assert-same 1 2)))
+                     (test hashtables-are-same (assert-same (obj 1 2) (obj 1 2) "equal hashtables are good")))
 
-       (suite-w/setup make-test-fn
-                      (pass-test-val ((make-test-fn sample-suite pass-test nil 3))
-                      fail-test-val ((make-test-fn sample-suite fail-test nil (err "failing...")))
-                      simple-setup ((make-test-fn sample-suite w/setup (x 3) x))
-                      multiple-variable-setup ((make-test-fn sample-suite multiple-variable-setup (x 3 y 4) (+ x y)))
-                      reliant-variable-setup ((make-test-fn sample-suite reliant-variable-setup (x 3 y x) (+ x y))))
-                      pass-has-right-return-value (assert-same 3 pass-test-val!return-value)
-                      pass-has-test-name (assert-same 'pass-test pass-test-val!test-name)
-                      fail-has-test-name (assert-same 'fail-test fail-test-val!test-name)
-                      pass-has-suite-name (assert-same 'sample-suite pass-test-val!suite-name)
-                      fail-has-suite-name (assert-same 'sample-suite fail-test-val!suite-name)
-                      pass-has-pass-status (assert-same 'pass pass-test-val!status)
-                      fail-has-fail-status (assert-same 'fail fail-test-val!status)
-                      fail-has-proper-details (assert-same "failing..." fail-test-val!details)
-                      setup-has-right-value (assert-same 3 simple-setup!return-value)
-                      multiple-variables-are-setup-properly (assert-same 7 multiple-variable-setup!return-value)
-                      reliant-variables-are-setup-properly (assert-same 6 reliant-variable-setup!return-value))
+              (suite assert-t
+                     (test t-is-good (assert-t t))
+                     (test nil-throws (assert-error (assert-t nil)))
+                     (test 3-is-treated-as-good (assert-t 3)))
 
-       (suite-w/setup suite-partition
-                      (single-test (suite-partition test-suite-1 nil a 3)
-                       single-suite (suite-partition test-suite-2 nil (suite a b 3))
-                       two-of-each (suite-partition test-suite-3 nil a 3 (suite b c 4) d 5 (suite e f 6 g 7))
-                       none-of-either (suite-partition test-suite-4 nil)
-                       test-after-nested-suite (suite-partition test-suite-4 nil (suite a b 1) c 2)
-                       test-with-setup (suite-partition test-suite-5 (x 3) a x)
-                       nested-test-with-setup (suite-partition test-suite-6 nil (suite-w/setup a (x 3) b x)))
-                      nothing (do (assert-t (empty none-of-either!tests))
-                                  (assert-t (empty none-of-either!suites)))
-                      single-test-has-no-suite (assert-t (empty single-test!suites))
-                      single-test-has-one-test (assert-same 1
-                                                            (len single-test!tests))
-                      single-test-has-right-test (assert-same 'a
-                                                              single-test!tests!a!test-name)
-                      single-test-has-right-suite (assert-same 'test-suite-1
-                                                               single-test!tests!a!suite-name)
-                      single-suite-has-no-tests (assert-t (empty single-suite!tests))
-                      single-suite-has-one-suite (assert-same 1
-                                                              (len single-suite!suites))
-                      single-suite-contains-one-test (assert-same 1
-                                                                  (len single-suite!suites!a!tests))
-                      single-suite-contains-right-test (assert-same 'b
-                                                                    single-suite!suites!a!tests!b!test-name)
-                      two-of-each-has-two-tests (assert-same 2
-                                                             (len two-of-each!tests))
-                      two-of-each-has-two-suites (assert-same 2
-                                                              (len two-of-each!suites))
-                      nested-suite-has-right-name (assert-same 'a
-                                                               single-suite!suites!a!suite-name)
-                      nested-suite-has-right-full-name (assert-same 'test-suite-2.a
-                                                                    single-suite!suites!a!full-suite-name)
-                      test-after-nested-suite-has-correct-parent-name (assert-same 'test-suite-4
-                                                                                   test-after-nested-suite!tests!c!suite-name)
-                      test-fn-returns-right-value (assert-same 3
-                                                               ((single-test!tests!a!test-fn) 'return-value))
-                      nested-test-fn-returns-right-value (assert-same 3
-                                                                      ((single-suite!suites!a!tests!b!test-fn) 'return-value))
-                      test-with-setup-returns-right-value (assert-same 3
-                                                                       ((test-with-setup!tests!a!test-fn)
-                                                                        'return-value))
-                      nested-test-with-setup-returns-right-value (assert-same 3
-                                                                              ((nested-test-with-setup!suites!a!tests!b!test-fn)
-                                                                               'return-value)))
+              (suite assert-nil
+                     (test t-is-good (assert-error (assert-nil t)))
+                     (test nil-is-good (assert-nil nil))
+                     (test 3-is-treated-as-bad (assert-error (assert-nil 3))))
+
+              (suite assert-error
+                     (test err-is-ok (assert-error (err "oh dear!")))
+                     (test no-err-fails (assert-nil (errsafe (do (assert-error "no error")
+                                                                 t))))
+                     (test checks-error-message (assert-nil (errsafe (do (assert-error (err "this is bad")
+                                                                                       "this is the wrong message")
+                                                                         t))))
+                     (test valid-error-message-passes (assert-error (err "oh no...")
+                                                                    "oh no..."))
+                     (test no-error-fails-when-error-message-given (assert-nil (errsafe (do (assert-error "no error" "error message")
+                                                                                            t))
+                                                                               "Even when an error message is given, not having an error should fail assert-error.")))
+
+              (suite assert-no-error
+                     (test no-error-is-ok (assert-no-error 3))
+
+                     ;;errsafe returns nil if error happens, so if assert-no-error properly errors
+                     ;;(because there was an error in its body), errsafe will return nil.
+                     ;;If there's no error, it'll return t and not error
+                     (test error-fails (assert-nil (errsafe (do (assert-no-error (err "error!"))
+                                                                t))))))
+
+       (suite make-test
+              (setup sample-test (make-test 'sample-suite 'sample-test nil 3)
+                     simple-setup (make-test 'sample-suite 'simple-setup (x 3) x)
+                     multiple-variable-setup (make-test 'sample-suite 'multiple-variable-setup (x 3 y 4) (+ x y))
+                     reliant-variable-setup (make-test 'sample-suite 'reliant-variable-setup (x 3 y x) (+ x y))
+                     let-setup (let suite-name 'my-suite-name
+                                    (make-test suite-name 'test-name nil t)))
+              (test test-name (assert-same 'sample-test sample-test!test-name))
+              (test suite-name (assert-same 'sample-suite sample-test!suite-name))
+              (test test-fn (assert-same 3
+                                         ((sample-test!test-fn)
+                                          'return-value)))
+              (test simple-setup (assert-same 3
+                                              ((simple-setup!test-fn)
+                                               'return-value)))
+              (test multiple-variable-setup (assert-same 7
+                                                         ((multiple-variable-setup!test-fn)
+                                                          'return-value)))
+              (test reliant-variable-setup (assert-same 6
+                                                        ((reliant-variable-setup!test-fn)
+                                                         'return-value)))
+              (test suite-names-cant-have-periods (assert-error (make-test sample test.name nil)))
+              (test let-bound-name-works (assert-same 'my-suite-name
+                                                      let-setup!suite-name)))
+
+       (suite make-test-fn
+              ;;make-test-fn should take symbols as args.
+              ;;so (make-test-fn 'sample-suite 'pass-test nil 3)
+              ;;or the calling code should unpack the gensym.
+              (setup pass-test-val ((make-test-fn 'sample-suite 'pass-test nil 3))
+                     fail-test-val ((make-test-fn 'sample-suite 'fail-test nil (err "failing...")))
+                     simple-setup ((make-test-fn 'sample-suite 'w/setup (x 3) x))
+                     multiple-variable-setup ((make-test-fn 'sample-suite 'multiple-variable-setup (x 3 y 4) (+ x y)))
+                     reliant-variable-setup ((make-test-fn 'sample-suite 'reliant-variable-setup (x 3 y x) (+ x y)))
+                     multiple-asserts-all-pass-val ((make-test-fn 'sample-suite 'multiple-asserts-all-pass-val nil (assert-same 2 2) (assert-same 1 1)))
+                     multiple-asserts-first-fails-val ((make-test-fn 'sample-suite 'multiple-asserts-first-fails-val nil (assert-same 2 1) (assert-same 1 1)))
+                     multiple-asserts-second-fails-val ((make-test-fn 'sample-suite 'multiple-asserts-second-fails-val nil (assert-same 2 2) (assert-same 1 42)))
+                     let-bound-passing-names (let name 'my-special-name ((make-test-fn name name nil (assert-t t))))
+                     let-bound-failing-names (let name 'my-special-name ((make-test-fn name name nil (assert-t nil)))))
+              (test pass-has-right-return-value (assert-same 3 pass-test-val!return-value))
+              (test pass-has-test-name (assert-same 'pass-test pass-test-val!test-name))
+              (test fail-has-test-name (assert-same 'fail-test fail-test-val!test-name))
+              (test pass-has-suite-name (assert-same 'sample-suite pass-test-val!suite-name))
+              (test fail-has-suite-name (assert-same 'sample-suite fail-test-val!suite-name))
+              (test pass-has-pass-status (assert-same 'pass pass-test-val!status))
+              (test fail-has-fail-status (assert-same 'fail fail-test-val!status))
+              (test fail-has-proper-details (assert-same "failing..." fail-test-val!details))
+              (test setup-has-right-value (assert-same 3 simple-setup!return-value))
+              (test multiple-variables-are-setup-properly (assert-same 7 multiple-variable-setup!return-value))
+              (test reliant-variables-are-setup-properly (assert-same 6 reliant-variable-setup!return-value))
+              (test multiple-asserts-work (assert-t (result-is-pass multiple-asserts-all-pass-val)))
+              (test multiple-asserts-first-fails (assert-nil (result-is-pass multiple-asserts-first-fails-val)))
+              (test multiple-asserts-second-fails (assert-nil (result-is-pass multiple-asserts-second-fails-val)))
+              (test let-bound-passing-name-suite-name (assert-same 'my-special-name let-bound-passing-names!suite-name))
+              (test let-bound-passing-name-test-name (assert-same 'my-special-name let-bound-passing-names!test-name))
+              (test let-bound-failing-name-suite-name (assert-same 'my-special-name let-bound-failing-names!suite-name))
+              (test let-bound-failing-name-test-name (assert-same 'my-special-name let-bound-failing-names!test-name)))
+
+       (suite suite-creation
+              (suite make-suite
+                     (setup empty-suite (make-suite nil (suite empty-suite-1))
+                            single-test (make-suite nil (suite single-test-suite (test a 3)))
+                            single-suite (make-suite nil (suite single-suite-suite (suite a (test b 3))))
+                            one-of-each (make-suite nil (suite one-of-each-suite (test a 3) (suite and-nested (test b 4))))
+                            two-of-each (make-suite nil (suite two-of-each-suite (test a 3) (suite b (test c 4)) (test d 5) (suite e (test f 6) (test g 7))))
+                            test-with-setup (make-suite nil (suite setup-suite (setup x 3) (test a x)))
+                            suite-with-parent (make-suite my-parent (suite empty-child-suite)))
+                     (test empty-suite-has-right-name (assert-same 'empty-suite-1
+                                                                   empty-suite!full-suite-name))
+                     (test empty-suite-has-no-tests (assert-same 0
+                                                                 (len empty-suite!tests)))
+                     (test empty-suite-has-no-nested-suites (assert-same 0
+                                                                         (len empty-suite!nested-suites)))
+                     (test single-test-has-right-name (assert-same 'single-test-suite
+                                                                   single-test!full-suite-name))
+                     (test single-test-has-one-test (assert-same 1
+                                                                 (len single-test!tests)))
+                     (test single-test-has-no-nested-suites (assert-same 0
+                                                                         (len single-test!nested-suites)))
+                     (test single-test-has-right-test (assert-same 'a
+                                                                   single-test!tests!a!test-name))
+                     (test single-test-has-right-suite (assert-same 'single-test-suite
+                                                                    single-test!tests!a!suite-name))
+                     (test single-test-has-right-return-value (assert-same 3
+                                                                           ((single-test!tests!a!test-fn) 'return-value)))
+                     (test single-test-has-right-test-name (assert-same 'a
+                                                                        ((single-test!tests!a!test-fn) 'test-name)))
+                     (test single-test-has-right-full-test-name (assert-same 'single-test-suite.a
+                                                                             ((single-test!tests!a!test-fn) 'full-test-name)))
+                     (test single-test-has-right-suite-name (assert-same 'single-test-suite
+                                                                         ((single-test!tests!a!test-fn) 'suite-name)))
+                     (test single-test-has-right-status (assert-same 'pass
+                                                                     ((single-test!tests!a!test-fn) 'status)))
+                     (test single-suite-has-right-suite-name (assert-same 'single-suite-suite
+                                                                          single-suite!full-suite-name))
+                     (test single-suite-has-right-full-name (assert-same 'single-suite-suite
+                                                                         single-suite!full-suite-name))
+                     (test single-suite-has-no-tests (assert-same 0
+                                                                  (len single-suite!tests)))
+                     (test single-suite-has-one-nested-suite (assert-same 1
+                                                                          (len single-suite!nested-suites)))
+                     (test one-of-each-has-right-name (assert-same 'one-of-each-suite
+                                                                   one-of-each!full-suite-name))
+                     (test one-of-each-has-one-test (assert-same 1
+                                                                 (len one-of-each!tests)))
+                     (test one-of-each-has-one-nested-suite (assert-same 1
+                                                                         (len one-of-each!nested-suites)))
+                     (test two-of-each-has-right-name (assert-same 'two-of-each-suite
+                                                                   two-of-each!full-suite-name))
+                     (test two-of-each-has-two-tests (assert-same 2
+                                                                  (len two-of-each!tests)))
+                     (test two-of-each-has-two-nested-suites (assert-same 2
+                                                                          (len two-of-each!nested-suites)))
+                     (test test-with-setup-has-right-name (assert-same 'setup-suite
+                                                                       test-with-setup!full-suite-name))
+                     (test test-with-setup-has-one-test (assert-same 1
+                                                                     (len test-with-setup!tests)))
+                     (test test-with-setup-has-no-nested-suites (assert-same 0
+                                                                             (len test-with-setup!nested-suites)))
+                     (test setup-is-done-properly (assert-same 3
+                                                               ((test-with-setup!tests!a!test-fn)
+                                                                'return-value)))
+
+                     (test single-suites-nested-suite-has-right-suite-name (assert-same 'a
+                                                                                        single-suite!nested-suites!a!suite-name))
+                     (test single-suites-nested-suite-has-right-full-suite-name (assert-same 'single-suite-suite.a
+                                                                                             single-suite!nested-suites!a!full-suite-name))
+                     (test single-suite-nested-suite-contains-one-test (assert-same 1
+                                                                                    (len single-suite!nested-suites!a!tests)))
+                     (test single-suite-nested-suite-contains-right-test (assert-same 'b
+                                                                                      single-suite!nested-suites!a!tests!b!test-name))
+                     (test single-suite-nested-suite-test-has-right-suite-name (assert-same 'single-suite-suite.a
+                                                                                            single-suite!nested-suites!a!tests!b!suite-name))
+                     (test periods-in-suite-names-error (assert-error (make-suite nil (suite bad.name (test whatever t)))
+                                                                      "Suite names can't have periods in them. bad.name does."))
+                     (test mixed-checks-for-shadowing (assert-error (make-suite nil (suite a (test b t) (suite b (test c t))))
+                                                              "In suite a, there are two things named b."))
+                     (test parent-suite-name-is-respected (assert-same 'my-parent.empty-child-suite
+                                                                       suite-with-parent!full-suite-name))
+                     (test two-tests-with-same-name-error (assert-error (make-suite nil (suite a (test b t) (test b nil)))
+                                                                        "In suite a, there are two things named b."))
+                     (test two-suites-with-same-name-error (assert-error (make-suite nil (suite a (suite b) (suite b)))
+                                                                         "In suite a, there are two things named b."))
+                     (test suite-with-bad-initial-value-errors (assert-error (make-suite nil (bad-syntax a (test b t)))))
+                     (test suite-with-bad-later-value-errors (assert-error (make-suite nil (suite a (bad-value b t)))))
+                     (test suite-with-bad-setup-errors (assert-error (make-suite nil (suite a (setup x) (test val t))))))
+
+              (suite add-tests-to-suite
+                     (setup one-test (add-tests-to-suite (inst 'suite 'suite-name 'base 'full-suite-name 'base)
+                                                         base
+                                                         (x 1)
+                                                         ((test passes (assert-same x 1))))
+                            one-test-returns-proper-value (add-tests-to-suite (inst 'suite)
+                                                                              nil
+                                                                              (x 42)
+                                                                              ((test returns-x x)))
+                            two-tests (add-tests-to-suite (inst 'suite)
+                                                          nil
+                                                          (x 1)
+                                                          ((test passes (assert-same x 1))
+                                                           (test fails (assert-same x 2))))
+                            test-with-multiple-lines (add-tests-to-suite
+                                                      (inst 'suite)
+                                                      nil
+                                                      nil
+                                                      ((test two-lines
+                                                             (assert-t t)
+                                                             (assert-t nil)))))
+                     (test no-tests (assert-same (inst 'suite)
+                                                 (add-tests-to-suite (inst 'suite) nil nil ())))
+                     (test one-is-added
+                           (assert-same 1
+                                        (len one-test!tests)))
+                     (test one-is-in-right-place
+                           (assert-t one-test!tests!passes))
+                     (test one-has-right-test-name
+                           (assert-same 'passes
+                                        one-test!tests!passes!test-name))
+                     (test one-test-test-has-right-suite-name
+                           (assert-same 'base
+                                        one-test!tests!passes!suite-name))
+                     (test return-value-is-right (assert-same 42
+                                                              ((one-test-returns-proper-value!tests!returns-x!test-fn) 'return-value)))
+                     (test two-are-added
+                           (assert-same 2
+                                        (len two-tests!tests)))
+                     (test two-is-in-right-places
+                           (assert-t two-tests!tests!passes)
+                           (assert-t two-tests!tests!fails))
+                     (test tests-are-wrapped-to-create-test-result-template
+                           (let result (one-test!tests!passes!test-fn)
+                                (assert-t (isa result 'table))))
+                     (test passing-test-passes
+                           (let result (two-tests!tests!passes!test-fn)
+                                (assert-t (is result!status 'pass))))
+                     (test failing-test-fails
+                           (let result (two-tests!tests!fails!test-fn)
+                                (assert-t (is result!status 'fail))))
+                     (test multiple-lines-fails
+                           (let result (test-with-multiple-lines!tests!two-lines!test-fn)
+                                (assert-t (is result!status 'fail))))
+                     (test shadowed-tests-error
+                           (assert-error (add-tests-to-suite (inst 'suite 'suite-name 'base 'full-suite-name 'base 'tests (obj this-shadows (inst 'test 'test-name 'this-shadows)))
+                                                             base
+                                                             nil
+                                                             ((test this-shadows (assert-same 3 3))))
+                                         "In suite base, there are two things named this-shadows."))
+                     (test shadowed-suite-errors
+                           (assert-error (add-tests-to-suite (inst 'suite 'suite-name 'base 'full-suite-name 'base 'nested-suites (obj this-shadows (inst 'suite 'suite-name 'this-shadows)))
+                                                             base
+                                                             nil
+                                                             ((suite this-shadows (test whatever (assert-same 3 3)))))
+                                         "In suite base, there are two things named this-shadows."))) ;;zck add a bunch more tests to this suite
+              (suite add-suites-to-suite
+                     (setup one-suite (add-suites-to-suite base
+                                                           (inst 'suite 'suite-name 'base 'full-suite-name 'base)
+                                                           ((suite nested-one)))
+                            two-suites (add-suites-to-suite base
+                                                            (inst 'suite 'suite-name 'base 'full-suite-name 'base)
+                                                            ((suite nested-one)
+                                                             (suite nested-two))))
+                     (test no-suites (assert-same (inst 'suite)
+                                                  (add-suites-to-suite empty
+                                                                       (inst 'suite)
+                                                                       ())))
+                     (test one-suite-has-right-number-of-children
+                           (assert-same 1
+                                        (len one-suite!nested-suites)))
+                     (test one-suite-is-in-right-place
+                           (assert-t one-suite!nested-suites!nested-one))
+                     (test one-suite-has-right-name
+                           (assert-same 'nested-one
+                                        one-suite!nested-suites!nested-one!suite-name))
+                     (test one-suite-has-right-full-name
+                           (assert-same 'base.nested-one
+                                        one-suite!nested-suites!nested-one!full-suite-name))
+                     (test two-suites-has-right-number-of-children
+                           (assert-same 2
+                                        (len two-suites!nested-suites)))
+                     (test two-suites-first-is-in-right-place
+                           (assert-t two-suites!nested-suites!nested-one))
+                     (test two-suites-first-has-right-name
+                           (assert-same 'nested-one
+                                        two-suites!nested-suites!nested-one!suite-name))
+                     (test two-suites-first-has-right-full-name
+                           (assert-same 'base.nested-one
+                                        two-suites!nested-suites!nested-one!full-suite-name))
+                     (test two-suites-second-is-in-right-place
+                           (assert-t two-suites!nested-suites!nested-two))
+                     (test two-suites-second-has-right-name
+                           (assert-same 'nested-two
+                                        two-suites!nested-suites!nested-two!suite-name))
+                     (test two-suites-second-has-right-full-name
+                           (assert-same 'base.nested-two
+                                        two-suites!nested-suites!nested-two!full-suite-name))
+                     (test shadowing-suite-errors (assert-error (add-suites-to-suite base
+                                                                                     (inst 'suite 'suite-name 'base 'full-suite-name 'base 'nested-suites (obj problem (inst 'suite 'suite-name 'problem)))
+                                                                                     ((suite problem)))
+                                                                "In suite base, there are two things named problem."))
+                     (test shadowing-test-errors (assert-error (add-suites-to-suite base
+                                                                                    (inst 'suite 'suite-name 'base 'full-suite-name 'base 'tests (obj problem (inst 'test 'test-name 'problem)))
+                                                                                    ((suite problem)))
+                                                               "In suite base, there are two things named problem.")))
 
 
-       (suite-w/setup make-suite
-                      (single-test (make-suite test-suite-1 nil nil a 3)
-                       single-suite (make-suite test-suite-2 nil nil (suite a b 3))
-                       two-of-each (make-suite test-suite-3 nil nil a 3 (suite b c 4) d 5 (suite e f 6 g 7))
-                       test-w/setup (make-suite test-suite-4 nil (x 3) a x))
-                      single-test-has-no-suite (assert-t (empty single-test!suites))
-                      single-test-has-one-test (assert-same 1
-                                                            (len single-test!tests))
-                      single-test-has-right-test (assert-same 'a
-                                                              single-test!tests!a!test-name)
-                      single-test-has-right-suite (assert-same 'test-suite-1
-                                                               single-test!tests!a!suite-name)
-                      single-suite-has-no-tests (assert-t (empty single-suite!tests))
-                      single-suite-has-one-suite (assert-same 1
-                                                              (len single-suite!nested-suites))
-                      single-suites-nested-suite-has-right-suite-name (assert-same 'a
-                                                                                   single-suite!nested-suites!a!suite-name)
-                      single-suites-nested-suite-has-right-full-suite-name (assert-same 'test-suite-2.a
-                                                                                        single-suite!nested-suites!a!full-suite-name)
-                      single-suite-has-right-name (assert-same 'test-suite-2
-                                                               single-suite!suite-name)
-                      single-suite-has-right-full-suite-name (assert-same 'test-suite-2
-                                                                          single-suite!full-suite-name)
-                      single-suite-contains-one-test (assert-same 1
-                                                                  (len single-suite!nested-suites!a!tests))
-                      single-suite-contains-right-test (assert-same 'b
-                                                                    single-suite!nested-suites!a!tests!b!test-name)
-                      single-suite-test-in-nested-suite-has-right-suite-name (assert-same 'test-suite-2.a
-                                                                                          single-suite!nested-suites!a!tests!b!suite-name)
-                      two-of-each-has-two-tests (assert-same 2
-                                                             (len two-of-each!tests))
-                      two-of-each-has-two-suites (assert-same 2
-                                                              (len two-of-each!nested-suites))
-                      setup-is-done-properly (assert-same 3
-                                                          ((test-w/setup!tests!a!test-fn)
-                                                           'return-value))
-                      periods-in-suite-names-error (assert-error (make-suite suite.name nil nil)))
+              (suite would-shadow
+                     (setup sample-suite (inst 'suite 'tests (obj test-child t) 'nested-suites (obj suite-child t)))
+                     (test shadowing-test (assert-t (would-shadow sample-suite 'test-child)))
+                     (test shadowing-suite (assert-t (would-shadow sample-suite 'suite-child)))
+                     (test shadowing-nothing (assert-nil (would-shadow sample-suite 'something-else))))
+
+              (suite keep-by-car
+                     (setup nothing '(suite empty)
+                            one-test '(suite one-test (test whatever t))
+                            one-suite '(suite one-suite (suite nested (test whatever t)))
+                            one-of-each '(suite one-suite (suite nested (test nested-whatever t)) (test whatever t))
+                            two-of-each '(suite one-suite (suite nested (test nested-whatever t)) (test whatever t) (suite other-nested (test nested-whatever t)) (test other-whatever t)))
+
+                     (test nothing-tests (assert-nil (keep-by-car nothing 'test)))
+                     (test nothing-suites (assert-nil (keep-by-car nothing 'suite)))
+
+                     (test one-test-tests (assert-same '((test whatever t))
+                                                       (keep-by-car one-test 'test)))
+                     (test one-test-suites (assert-nil (keep-by-car one-test 'suite)))
+
+                     (test one-suite-tests (assert-nil (keep-by-car one-suite 'test)))
+                     (test one-suite-suites (assert-same '((suite nested (test whatever t)))
+                                                         (keep-by-car one-suite 'suite)))
+
+                     (test one-of-each-tests (assert-same '((test whatever t))
+                                                          (keep-by-car one-of-each 'test)))
+                     (test one-of-each-suites (assert-same '((suite nested (test nested-whatever t)))
+                                                           (keep-by-car one-of-each 'suite)))
+                     (test two-of-each-tests (assert-same '((test whatever t) (test other-whatever t))
+                                                          (keep-by-car two-of-each 'test)))
+                     (test two-of-each-suites (assert-same '((suite nested (test nested-whatever t)) (suite other-nested (test nested-whatever t)))
+                                                           (keep-by-car two-of-each 'suite))))
+
+              (suite get-suite-structure-problems
+                     (test beginning-wrong-symbol (assert-t (get-suite-structure-problems '(suitex arst (test a t)))))
+                     (test beginning-not-a-symbol (assert-t (get-suite-structure-problems '((suite wrongly-nested) arst (test a t)))))
+                     (test suite-name-not-a-symbol (assert-t (get-suite-structure-problems '(suite (arst) (test a t)))))
+                     (test nested-bad-sym (assert-t (get-suite-structure-problems '(suite arst (oops-bad a t)))))
+                     (test late-elements-not-a-list (assert-t (get-suite-structure-problems '(suite arst (test a t) what-is-this))))
+                     (test two-errors-both-reported (let problems (get-suite-structure-problems '(suitex arst (test a t) what-is-this))
+                                                         (assert-t (posmatch "suitex" problems))
+                                                         (assert-t (posmatch "what-is-this" problems))))
+                     (test wrong-number-of-symbols-in-setup (assert-t (get-suite-structure-problems '(suite a (setup x) (test val t)))))
+                     (test everything-cool (assert-nil (get-suite-structure-problems '(suite arst (setup x 3) (test a t) (suite nested)))))))
 
 
        (suite count-passes
-              0-empty (assert-same 0
+              (test 0-empty (assert-same 0
+                                         (count-passes (inst 'suite-results
+                                                             'test-results (obj)))))
+              (test 0-stuff (assert-same 0
+                                         (count-passes (inst 'suite-results
+                                                             'test-results (obj fail (inst 'test-results 'status 'fail))))))
+              (test 1 (assert-same 1
                                    (count-passes (inst 'suite-results
-                                                       'test-results (obj))))
-              0-stuff (assert-same 0
-                                   (count-passes (inst 'suite-results
-                                                       'test-results (obj fail (inst 'test-results 'status 'fail)))))
-              1 (assert-same 1
-                             (count-passes (inst 'suite-results
-                                                 'test-results (obj numbers
-                                                                    (inst 'test-results 'status 'pass)))))
-              2-flat (assert-same 2
-                                  (count-passes (inst 'suite-results
-                                                      'test-results (obj sample1 (inst 'test-results 'status 'pass)
-                                                                         sample2 (inst 'test-results 'status 'fail)
-                                                                         sample3 (inst 'test-results 'status 'pass)))))
-              3-nested (assert-same 3
-                                    (count-passes (inst 'suite-results
-                                                        'test-results (obj sample1 (inst 'test-results 'status 'pass)
-                                                                           sample2 (inst 'test-results 'status 'pass)
-                                                                           sample3 (inst 'test-results 'status 'fail))
-                                                        'nested-suite-results (obj nested (inst 'suite-results
-                                                                                                'test-results (obj sample1 (inst 'test-results 'status 'pass)
-                                                                                                                   sample2 (inst 'test-results 'status 'fail)))))))
-              1-empty-main-suite (assert-same 1
-                                              (count-passes (inst 'suite-results
-                                                                  'nested-suite-results (obj nested (inst 'suite-results
-                                                                                                          'test-results (obj sample1 (inst 'test-results 'status 'pass)
-                                                                                                                             sample2 (inst 'test-results 'status 'fail)))))))
-              3-doubly-nested (assert-same 3
-                                           (count-passes (inst 'suite-results
-                                                               'test-results (obj sample1 (inst 'test-results 'status 'fail))
-                                                               'nested-suite-results (obj nested1 (inst 'suite-results
-                                                                                                        'test-results (obj sample2 (inst 'test-results 'status 'pass)
-                                                                                                                           sample3 (inst 'test-results 'status 'fail))
-                                                                                                        'nested-suite-results (obj nested2 (inst 'suite-results
-                                                                                                                                                 'test-results (obj sample4 (inst 'test-results 'status 'pass)
-                                                                                                                                                                    sample5 (inst 'test-results 'status 'pass)
-                                                                                                                                                                    sample6 (inst 'test-results 'status 'fail)
-                                                                                                                                                                    sample7 (inst 'test-results 'status 'fail)))))))))
-              6-multiple-nested (assert-same 6
-                                             (count-passes (inst 'suite-results
-                                                                 'test-results (obj sample1 (inst 'test-results 'status 'pass))
-                                                                 'nested-suite-results (obj nested1 (inst 'suite-results
-                                                                                                          'test-results (obj sample2 (inst 'test-results 'status 'pass)
-                                                                                                                             sample3 (inst 'test-results 'status 'pass)
-                                                                                                                             sample4 (inst 'test-results 'status 'fail)))
-                                                                                            nested2 (inst 'suite-results
-                                                                                                          'test-results
-                                                                                                          (obj sample4 (inst 'test-results 'status 'pass)
-                                                                                                               sample5 (inst 'test-results 'status 'pass)
-                                                                                                               sample6 (inst 'test-results 'status 'pass)
-                                                                                                               sample7 (inst 'test-results 'status 'fail))))))))
+                                                       'test-results (obj numbers
+                                                                          (inst 'test-results 'status 'pass))))))
+              (test 2-flat (assert-same 2
+                                        (count-passes (inst 'suite-results
+                                                            'test-results (obj sample1 (inst 'test-results 'status 'pass)
+                                                                               sample2 (inst 'test-results 'status 'fail)
+                                                                               sample3 (inst 'test-results 'status 'pass))))))
+              (test 3-nested (assert-same 3
+                                          (count-passes (inst 'suite-results
+                                                              'test-results (obj sample1 (inst 'test-results 'status 'pass)
+                                                                                 sample2 (inst 'test-results 'status 'pass)
+                                                                                 sample3 (inst 'test-results 'status 'fail))
+                                                              'nested-suite-results (obj nested (inst 'suite-results
+                                                                                                      'test-results (obj sample1 (inst 'test-results 'status 'pass)
+                                                                                                                         sample2 (inst 'test-results 'status 'fail))))))))
+              (test 1-empty-main-suite (assert-same 1
+                                                    (count-passes (inst 'suite-results
+                                                                        'nested-suite-results (obj nested (inst 'suite-results
+                                                                                                                'test-results (obj sample1 (inst 'test-results 'status 'pass)
+                                                                                                                                   sample2 (inst 'test-results 'status 'fail))))))))
+              (test 3-doubly-nested (assert-same 3
+                                                 (count-passes (inst 'suite-results
+                                                                     'test-results (obj sample1 (inst 'test-results 'status 'fail))
+                                                                     'nested-suite-results (obj nested1 (inst 'suite-results
+                                                                                                              'test-results (obj sample2 (inst 'test-results 'status 'pass)
+                                                                                                                                 sample3 (inst 'test-results 'status 'fail))
+                                                                                                              'nested-suite-results (obj nested2 (inst 'suite-results
+                                                                                                                                                       'test-results (obj sample4 (inst 'test-results 'status 'pass)
+                                                                                                                                                                          sample5 (inst 'test-results 'status 'pass)
+                                                                                                                                                                          sample6 (inst 'test-results 'status 'fail)
+                                                                                                                                                                          sample7 (inst 'test-results 'status 'fail))))))))))
+              (test 6-multiple-nested (assert-same 6
+                                                   (count-passes (inst 'suite-results
+                                                                       'test-results (obj sample1 (inst 'test-results 'status 'pass))
+                                                                       'nested-suite-results (obj nested1 (inst 'suite-results
+                                                                                                                'test-results (obj sample2 (inst 'test-results 'status 'pass)
+                                                                                                                                   sample3 (inst 'test-results 'status 'pass)
+                                                                                                                                   sample4 (inst 'test-results 'status 'fail)))
+                                                                                                  nested2 (inst 'suite-results
+                                                                                                                'test-results
+                                                                                                                (obj sample4 (inst 'test-results 'status 'pass)
+                                                                                                                     sample5 (inst 'test-results 'status 'pass)
+                                                                                                                     sample6 (inst 'test-results 'status 'pass)
+                                                                                                                     sample7 (inst 'test-results 'status 'fail)))))))))
 
 
 
        (suite result-is-pass
-              pass (assert-t (result-is-pass (inst 'test-results
-                                                   'status 'pass)))
-              fail (assert-nil (result-is-pass (inst 'test-results
-                                                     'status 'fail))))
-
-       (suite make-full-suite-name
-              regular (assert-same 'pants
-                                   (make-full-suite-name nil
-                                                         'pants))
-              nested (assert-same 'parent.child
-                                  (make-full-suite-name 'parent
-                                                        'child)))
-
-       (suite hash-same
-              empty (assert-t (hash-same (obj)
-                                         (obj)))
-              single-elt-same (assert-t (hash-same (obj 1 t)
-                                                   (obj 1 t)))
-              single-elt-different-val (assert-nil (hash-same (obj 1 t)
-                                                              (obj 1 'pants)))
-              single-elt-different-key (assert-nil (hash-same (obj 1 t)
-                                                              (obj 2 t)))
-              multiple-elts-same (assert-t (hash-same (obj 1 t 2 'a (1) 2)
-                                                      (obj 1 t 2 'a (1) 2)))
-              multiple-elts-different-key (assert-nil (hash-same (obj 1 t 2 t 3 t)
-                                                                 (obj 1 t 2 t 4 t)))
-              multiple-elts-different-val (assert-nil (hash-same (obj 1 t 2 t 3 t)
-                                                                 (obj 1 t 2 t 3 4)))
-              extra-elt-on-left (assert-nil (hash-same (obj 1 t 2 t)
-                                                       (obj 1 t 2 t 3 t)))
-              extra-elt-on-right (assert-nil (hash-same (obj 1 t 2 t 3 t)
-                                                        (obj 1 t 2 t)))
-              does-order-matter? (assert-t (hash-same (obj 1 t 2 t)
-                                                      (obj 2 t 1 t))))
-
-       (suite assert-error
-              err-is-ok (assert-error (err "oh dear!"))
-              no-err-fails (assert-nil (errsafe (do (assert-error "no error")
-                                                    t)))
-              checks-error-message (assert-nil (errsafe (do (assert-error (err "this is bad")
-                                                                          "this is the wrong message")
-                                                            t)))
-              valid-error-message-passes (assert-error (err "oh no...")
-                                                       "oh no...")
-              no-error-fails-when-error-message-given (assert-nil (errsafe (do (assert-error "no error" "error message")
-                                                                               t))
-                                                                  "Even when an error message is given, not having an error should fail assert-error."))
+              (test pass (assert-t (result-is-pass (inst 'test-results
+                                                         'status 'pass))))
+              (test fail (assert-nil (result-is-pass (inst 'test-results
+                                                           'status 'fail)))))
 
        (suite to-readable-string
-              strings-are-quoted (assert-same "'string!'"
-                                              (to-readable-string "string!"))
-              numbers-are-ok (assert-same "42"
-                                          (to-readable-string 42))
-              lists-are-ok (assert-same "(1 (2 3) . 4)"
-                                        (to-readable-string '(1 (2 3) . 4)))
-              lists-containing-string (assert-same "(1 '2' 3)"
-                                                   (to-readable-string '(1 "2" 3)))
-              tables-containing-string (assert-same "#hash((1 . '2')('3' . 4))"
-                                                    (to-readable-string (obj 1 "2" "3" 4))))
+              (test strings-are-quoted (assert-same "\"string!\""
+                                                    (to-readable-string "string!")))
+              (test numbers-are-ok (assert-same "42"
+                                                (to-readable-string 42)))
+              (test lists-are-ok (assert-same "(1 (2 3) . 4)"
+                                              (to-readable-string '(1 (2 3) . 4))))
+              (test lists-containing-string (assert-same "(1 \"2\" 3)"
+                                                         (to-readable-string '(1 "2" 3))))
+              (test tables-containing-string (assert-same "(obj (\"3\" 4)(\"5\" 6)(0 14)(1 \"2\"))"
+                                                          (to-readable-string (obj 1 "2" "3" 4 "5" 6 0 14)))))
 
-       (suite is-valid-name
-              periods-not-ok (assert-nil (is-valid-name "hi.there"))
-              no-period-is-ok (assert-t (is-valid-name "hi;there!mom:)"))))
+       (suite names
+              (suite make-full-name
+                     (test regular (assert-same 'pants
+                                                (make-full-name nil
+                                                                'pants)))
+                     (test nested (assert-same 'parent.child
+                                               (make-full-name 'parent
+                                                               'child)))
+                     (test multi-nested (assert-same 'parent.child.grandchild
+                                                     (make-full-name 'parent 'child 'grandchild))))
+
+              (suite is-valid-name
+                     (test periods-not-ok (assert-nil (is-valid-name "hi.there")))
+                     (test no-period-is-ok (assert-t (is-valid-name "hi;there!mom:)"))))
+
+              (suite get-suite-and-test-name
+                     (test no-test-name (assert-same '(suite nil)
+                                                     (get-suite-and-test-name 'suite)))
+                     (test simple-test-name (assert-same '(suite test)
+                                                         (get-suite-and-test-name 'suite.test)))
+                     (test nested-suites (assert-same '(suite.nested test)
+                                                      (get-suite-and-test-name 'suite.nested.test)))
+                     (test deeply-nested-suites (assert-same '(suite.nested1.nested2.nested3 test)
+                                                             (get-suite-and-test-name 'suite.nested1.nested2.nested3.test))))
+
+              (suite get-name-fragments
+                     (test simple (assert-same '(top-level)
+                                               (get-name-fragments 'top-level)))
+                     (test one-nested (assert-same '(top-level single)
+                                                   (get-name-fragments 'top-level.single)))
+                     (test two-nested (assert-same '(top-level nested-1 nested-2)
+                                                   (get-name-fragments 'top-level.nested-1.nested-2))))
+
+              (suite get-nesting-level
+                     (test 0 (assert-same 0
+                                          (get-nesting-level 'top-level-suite)))
+                     (test 1 (assert-same 1
+                                          (get-nesting-level 'top-level-suite.single-nested)))
+                     (test 2 (assert-same 2
+                                          (get-nesting-level 'top-level-suite.single-nested.again))))
+
+              (suite filter-unique-names
+                     (test empty (assert-nil (filter-unique-names '())))
+                     (test one-thing (assert-same '(my-name) (filter-unique-names '(my-name))))
+                     (test different-things (assert-same '(one two) (filter-unique-names '(one two))))
+                     (test removes-duplicates (assert-same '(one) (filter-unique-names '(one one one one))))
+                     (test removes-nested-duplicates (assert-same '(one) (filter-unique-names '(one one.two.three.four))))
+                     (test removes-nonconsecutive-duplicates (assert-same '(one two) (filter-unique-names '(one two one two))))
+                     (test leading-differs (assert-same '(hell hello) (filter-unique-names '(hell hello))))
+                     (test keeps-more-general (assert-same '(top-scope) (filter-unique-names '(top-scope top-scope.nested))))
+                     (test keeps-nested-names (assert-same '(a.b.c.d) (filter-unique-names '(a.b.c.d))))
+                     (test many-items (assert-same '(math top.one top.three.nested top.two a)
+                                                   (filter-unique-names '(math top.one a.b top.three.nested top.two a math.adding))))
+                     (test multiple-removals (assert-same '(math xyzzy) (filter-unique-names '(math xyzzy math.adding xyzzy math))))
+                     (test order-is-kept (assert-same '(z a y b) (filter-unique-names '(z a y b))))
+                     (test first-duplicate-is-kept (assert-same '(z a) (filter-unique-names '(z a z))))))
+       (suite ensure-bound
+              (setup bound-symbol (let val (uniq)
+                                       (eval `(ensure-bound ,val 3))
+                                       val))
+              (test binds-unbound-value (assert-t (bound `,bound-symbol)))
+              (test binds-proper-value (assert-same 3 (eval `,bound-symbol)))
+              (test doesnt-change-already-bound-value (eval `(ensure-bound ,bound-symbol 4)) (eval `(assert-same 3 ,bound-symbol))))
+
+       (suite suite-has-content
+              (test empty-suite (assert-nil (suite-has-content (inst 'suite))))
+              (test only-nested-test (assert-t (suite-has-content (inst 'suite 'tests (obj nested-test (inst 'test))))))
+              (test only-nested-suite (assert-t (suite-has-content (inst 'suite 'nested-suites (obj nested-suite (inst 'suite))))))
+              (test nested-test-and-suite (assert-t (suite-has-content (inst 'suite 'nested-suites (obj nested-suite (inst 'suite)) 'tests (obj nested-test (inst 'test)))))))
+
+       (suite remove-thing
+              (setup empty-hash (obj)
+                     single-suite (obj single (inst 'suite 'tests (obj nested (inst 'test))))
+                     orig-single-suite (obj single (inst 'suite 'tests (obj nested (inst 'test))))
+                     two-suites (obj first (inst 'suite 'tests (obj nested (inst 'test)))
+                                     second (inst 'suite 'tests (obj nested (inst 'test))))
+                     single-nested-suite (obj first (inst 'suite 'nested-suites (obj nested (inst 'suite))))
+                     double-nested-suite (obj first (inst 'suite 'nested-suites (obj nested (inst 'suite) nested2 (inst 'suite))))
+                     deep-nested-suite (obj top (inst 'suite 'nested-suites (obj middle (inst 'suite 'tests (obj bottom (inst 'test))))))
+                     two-nested-tests (obj single (inst 'suite 'nested-suites (obj double (inst 'suite 'tests (obj one (inst 'test) two (inst 'test)))))))
+              (test remove-from-empty (assert-t (empty (remove-thing '(whatever) empty-hash))))
+              (test remove-from-single (assert-same (obj)
+                                                    (remove-thing '(single) single-suite)))
+              (test remove-nothing-from-single (assert-same orig-single-suite
+                                                            (remove-thing '(not-found) single-suite)))
+              (test remove-one-of-two-suites (assert-same (obj second (inst 'suite 'tests (obj nested (inst 'test))))
+                                                          (remove-thing '(first) two-suites)))
+              (test remove-nested-suite (assert-same (obj first (inst 'suite 'nested-suites (obj nested2 (inst 'suite))))
+                                                     (remove-thing '(first nested)
+                                                                   double-nested-suite)))
+              (test remove-nested-test (assert-same (obj single (inst 'suite 'nested-suites (obj double (inst 'suite 'tests (obj two (inst 'test))))))
+                                                    (remove-thing '(single double one)
+                                                                  two-nested-tests)))
+              (test removes-empty-suites (assert-same (obj)
+                                                      (remove-thing '(single nested)
+                                                                    single-suite)))
+              (test nested-empty-suites-removed
+                    (assert-same (obj)
+                                 (remove-thing '(top middle bottom)
+                                               deep-nested-suite)))))
+
+;;minitest in ruby

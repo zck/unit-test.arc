@@ -4,22 +4,25 @@ A unit test library for the [Arc](http://www.arclanguage.org/) programming langu
 
 ## Quickstart
 
-Yeah, everyone wants examples first, so here they are:
+Let's get started and make some unit tests!
 
 ### Defining a suite
 
-To declare a suite, give it a name, then a declare a bunch of tests. To declare a test, give it a name, then the code to run it. Use asserts (see below) when you want to throw if the two things aren't equal to each other.
+Each test must be defined inside a suite, to group together similar tests. Suites can also hold other suites, to allow for logical grouping of suites.
+
+To declare a suite, give it a name, then a declare a bunch of tests. Tests are written as: `(test your-test-name your-test-body)` Use asserts (explained below) when you want to throw if the two things aren't equal to each other.
 
     (suite math
-           this-will-pass (assert-same 4 (+ 2 2))
-           this-will-fail (assert-same 3 (+ 2 2)))
+           (test this-will-pass (assert-same 4 (+ 2 2)))
+           (test this-will-fail (assert-same 3 (+ 2 2))))
 
 
-### Running a suite
+### Running tests
 
-    arc> (run-suite math)
+Tests don't do you any good if you can't run them! Sure, you wouldn't have any failures, but you wouldn't have any passes either.
 
-    Running suite math
+    arc> (test math)
+    Suite math:
     math.this-will-fail failed: (+ 2 2) should be 3 but instead was 4
     math.this-will-pass passed!
     In suite math, 1 of 2 tests passed.
@@ -27,7 +30,13 @@ To declare a suite, give it a name, then a declare a bunch of tests. To declare 
     Oh dear, 1 of 2 failed.
     (1 2)
 
-You can run multiple suites in `run-suite`, or call `run-suites`. They do the same thing.
+You can run multiple suites in `test`, or even call specific tests by name:
+
+    arc> (test math.this-will-pass)
+    Test math.this-will-pass: passed!
+
+    Yay! The single test passed!
+    (1 1)
 
 ## Asserts
 
@@ -62,45 +71,40 @@ Suites can be nested, for the sake of organization, and to make them easier to r
 Put a nested suite anywhere inside its parent suite. You can intermingle tests and suites, and it'll deal with it just fine:
 
     (suite math
-           numbers-are-equal (assert-same 2 2)
+           (test numbers-are-equal (assert-same 2 2))
            (suite adding
-                  good (assert-same 4 (+ 2 2))
-                  bad (assert-same 3 (+ 2 2)))
-           this-test-will-fail (assert-same 3 4)
+                  (test good (assert-same 4 (+ 2 2)))
+                  (test bad (assert-same 3 (+ 2 2))))
+           (test this-test-will-fail (assert-same 3 4))
            (suite subtracting
-                  good (assert-same 0 (- 2 2))
-                  bad (assert-same 0 (- 2 42))))
+                  (test good (assert-same 0 (- 2 2)))
+                  (test bad (assert-same 0 (- 2 42)))))
 
 ### Running nested suites
 
 If you run a suite, it also runs all nested suites inside it.
 
-
-    arc> (run-suite math)
-
-    Running suite math
-    math.numbers-are-equal passed!
+    arc> (test math)
+    Suite math:
     math.this-test-will-fail failed: 4 should be 3 but instead was 4
+    math.numbers-are-equal passed!
     In suite math, 1 of 2 tests passed.
-
-    Running suite math.adding
+        Suite math.subtracting:
+    math.subtracting.bad failed: (- 2 42) should be 0 but instead was -40
+    math.subtracting.good passed!
+    In suite math.subtracting, 1 of 2 tests passed.
+        Suite math.adding:
     math.adding.bad failed: (+ 2 2) should be 3 but instead was 4
     math.adding.good passed!
     In suite math.adding, 1 of 2 tests passed.
 
-    Running suite math.subtracting
-    math.subtracting.bad failed: (- 2 42) should be 0 but instead was -40
-    math.subtracting.good passed!
-    In suite math.subtracting, 1 of 2 tests passed.
-
     Oh dear, 3 of 6 failed.
     (3 6)
 
-If you want to run only one suite that's nested inside another one, that's possible. Just call `run-suite` with the full name of the suite you want to run. The full name is simply the names of all the parents of the suite concatenated together, with a period between them, then the suite's name:
+If you want to run only one suite that's nested inside another one, that's possible. Just call `test` with the full name of the suite you want to run. The full name is simply the names of all the parents of the suite concatenated together, with a period between them, then the suite's name:
 
-    arc> (run-suite math.adding)
-
-    Running suite math.adding
+    arc> (test math.adding)
+    Suite math.adding:
     math.adding.bad failed: (+ 2 2) should be 3 but instead was 4
     math.adding.good passed!
     In suite math.adding, 1 of 2 tests passed.
@@ -108,36 +112,35 @@ If you want to run only one suite that's nested inside another one, that's possi
     Oh dear, 1 of 2 failed.
     (1 2)
 
-
 ## Setup
 
-If you need to set up some values to share across tests, use `suite-w/setup`. The method signature is `(suite-w/setup suite-name setup . children)`. Just like a `with` block, insert a list containing `var val` pairs. For example:
+If you need to set up some values to share across tests, declare a `setup` form alongside the tests in a suite. Just like a `with` block, insert a list containing `var val` pairs. For example:
 
-    (suite-w/setup math (x 6 y 2)
-                   adding-works (assert-same 8
-                                             (+ x y))
-                   multiplying-works (assert-same 12
-                                                  (* x y)))
+    (suite math
+           (setup x 6 y 2)
+           (test adding-works (assert-same 8
+                                           (+ x y)))
+           (test multiplying-works (assert-same 12
+                                                (* x y))))
 
-    arc> (run-suite math)
+    arc> (test math)
+    Suite math: all 2 tests passed!
 
-    Running suite math
-    In suite math, all 2 tests passed!
     Yay! All 2 tests passed!
     (2 2)
 
 
-Under the hood, `suite-w/setup` uses `withs`, so variables can depend on earlier variables.
+Under the hood, `setup` uses `withs`, so variables can depend on earlier variables.
 
-    (suite-w/setup math (x 3
-                         y (+ x 2))
-                   lets-multiply (assert-same 15
-                                              (* x y)))
+    (suite math
+           (setup x 3
+                  y (+ x 2))
+           (test lets-multiply (assert-same 15
+                                            (* x y))))
 
-    arc> (run-suite math)
+    arc> (test math)
+    Suite math: the single test passed!
 
-    Running suite math
-    In suite math, all 1 tests passed!
     Yay! The single test passed!
     (1 1)
 
@@ -148,11 +151,51 @@ Macros can be tested just like functions. The macro won't be expanded until the 
 
 ## Rerunning the last set of suites ran
 
-You can rerun the last set of suites you ran with `(rerun-last-suites-run)`:
+You can rerun the last set of suites you ran with `(retest)`:
 
-    arc> (rerun-last-suites-run)
+    arc> (retest)
+    Suite math: the single test passed!
 
-    Running suite math
-    In suite math, all 1 tests passed!
     Yay! The single test passed!
     (1 1)
+
+## Suite management
+
+### Examining suites
+
+Often, it is useful to know what suites there are. Using the following suite:
+
+    (suite math
+           (test numbers-are-equal (assert-same 2 2))
+           (suite adding
+                  (test good (assert-same 4 (+ 2 2)))
+                  (test bad (assert-same 3 (+ 2 2))))
+           (test this-test-will-fail (assert-same 3 4))
+           (suite subtracting
+                  (test good (assert-same 0 (- 2 2)))
+                  (test bad (assert-same 0 (- 2 42)))))
+
+We can introspect with `list-suites`:
+
+    arc> (list-suites)
+    Here are all the suites that can be run.
+    Each nested suite is indented under its parent.
+
+    math: 2 tests
+        subtracting: 2 tests
+        adding: 2 tests
+    nil
+
+### Deleting suites
+
+If you want to delete a suite or test, pass its name to `wipe-tests`:
+
+    arc> (wipe-tests math.subtracting)
+    nil
+    arc> (list-suites)
+    Here are all the suites that can be run.
+    Each nested suite is indented under its parent.
+
+    math: 2 tests
+        adding: 2 tests
+    nil
