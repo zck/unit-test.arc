@@ -74,13 +74,15 @@
        (suite asserts
               (suite assert
                      (test t-doesnt-error (assert t "shouldn't throw"))
-                     (test nil-errors (assert-error (assert nil "should throw"))))
+                     (test nil-errors (assert-error (assert nil "should throw")
+                                                    "should throw")))
 
 
               (suite assert-same
                      (test equal-vals (assert-same 1 1 "equal values are good"))
                      (test lists-are-same (assert-same (list 1) (list 1) "equal lists are good"))
-                     (test different-vals (assert-error (assert-same 1 2)))
+                     (test different-vals (assert-error (assert-same 1 2)
+                                                        "2 should be 1 but instead was 2"))
                      (test hashtables-are-same (assert-same (obj 1 2) (obj 1 2) "equal hashtables are good")))
 
               (suite assert-t
@@ -89,12 +91,15 @@
                      (test 3-is-treated-as-good (assert-t 3)))
 
               (suite assert-nil
-                     (test t-is-good (assert-error (assert-nil t)))
+                     (test t-is-good (assert-error (assert-nil t)
+                                                   "t should be nil but instead was t"))
                      (test nil-is-good (assert-nil nil))
-                     (test 3-is-treated-as-bad (assert-error (assert-nil 3))))
+                     (test 3-is-treated-as-bad (assert-error (assert-nil 3)
+                                                             "3 should be nil but instead was 3")))
 
               (suite assert-error
-                     (test err-is-ok (assert-error (err "oh dear!")))
+                     (test err-is-ok (assert-error (err "oh dear!")
+                                                   "oh dear!"))
                      (test no-err-fails (assert-nil (errsafe (do (assert-error "no error")
                                                                  t))))
                      (test checks-error-message (assert-nil (errsafe (do (assert-error (err "this is bad")
@@ -136,7 +141,9 @@
               (test reliant-variable-setup (assert-same 6
                                                         ((reliant-variable-setup!test-fn)
                                                          'return-value)))
-              (test suite-names-cant-have-periods (assert-error (make-test sample test.name nil)))
+
+              (test suite-names-cant-have-periods (assert-error (make-test 'sample 'test.name nil)
+                                                                "Test names can't have periods in them. test.name does."))
               (test let-bound-name-works (assert-same 'my-suite-name
                                                       let-setup!suite-name)))
 
@@ -251,16 +258,19 @@
                      (test periods-in-suite-names-error (assert-error (make-suite nil (suite bad.name (test whatever t)))
                                                                       "Suite names can't have periods in them. bad.name does."))
                      (test mixed-checks-for-shadowing (assert-error (make-suite nil (suite a (test b t) (suite b (test c t))))
-                                                              "In suite a, there are two things named b."))
+                                                                    "In suite a, there are two things named b."))
                      (test parent-suite-name-is-respected (assert-same 'my-parent.empty-child-suite
                                                                        suite-with-parent!full-suite-name))
                      (test two-tests-with-same-name-error (assert-error (make-suite nil (suite a (test b t) (test b nil)))
                                                                         "In suite a, there are two things named b."))
                      (test two-suites-with-same-name-error (assert-error (make-suite nil (suite a (suite b) (suite b)))
                                                                          "In suite a, there are two things named b."))
-                     (test suite-with-bad-initial-value-errors (assert-error (make-suite nil (bad-syntax a (test b t)))))
-                     (test suite-with-bad-later-value-errors (assert-error (make-suite nil (suite a (bad-value b t)))))
-                     (test suite-with-bad-setup-errors (assert-error (make-suite nil (suite a (setup x) (test val t))))))
+                     (test suite-with-bad-initial-value-errors (assert-error (make-suite nil (bad-syntax a (test b t)))
+                                                                             "The first element of the suite should be the symbol 'suite. It is: bad-syntax"))
+                     (test suite-with-bad-later-value-errors (assert-error (make-suite nil (suite a (bad-value b t)))
+                                                                           "Each element of a suite should begin with one of the symbols 'suite, 'test, or 'setup. This doesn't: (bad-value b t)."))
+                     (test suite-with-bad-setup-errors (assert-error (make-suite nil (suite a (setup x) (test val t)))
+                                                                     "In a setup clause, all variables should have a value. This doesn't: (setup x)")))
 
               (suite add-tests-to-suite
                      (setup one-test (add-tests-to-suite (inst 'suite 'suite-name 'base 'full-suite-name 'base)
