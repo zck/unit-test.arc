@@ -316,7 +316,11 @@
                            (assert-t two-tests!tests!fails))
                      (test tests-are-wrapped-to-create-test-result-template
                            (let result (one-test!tests!passes!test-fn)
-                                (assert-t (isa result 'table))))
+                                ;;arc templates are of type 'table
+                                ;;Anarki templates are of type 'tem
+                                ;;So work with either.
+                                (assert-t (or (isa result 'table)
+                                              (isa result 'tem)))))
                      (test passing-test-passes
                            (let result (two-tests!tests!passes!test-fn)
                                 (assert-t (is result!status 'pass))))
