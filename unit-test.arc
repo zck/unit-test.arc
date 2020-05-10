@@ -217,9 +217,10 @@ The test should have SETUP and BODY."
         (inst 'test
               'suite-name ,suite-name
               'test-name ,test-name
-              'test-fn (make-test-fn ,suite-name ,test-name ,setup ,@body))))
+              ;; zck replace nil with teardown, when we actually have one.
+              'test-fn (make-test-fn ,suite-name ,test-name ,setup nil ,@body))))
 
-(mac make-test-fn (suite-name test-name setup . body)
+(mac make-test-fn (suite-name test-name setup teardown . body)
      `(fn ()
           (on-err (fn (ex) (inst 'test-result
                                  'suite-name ,suite-name
@@ -234,7 +235,7 @@ The test should have SETUP and BODY."
                                           'test-name ,test-name
                                           'full-test-name (make-full-name ,suite-name ,test-name)
                                           'status 'pass
-                                          'return-value (w/stdout (outstring) ,@body))))))))
+                                          'return-value (w/stdout (outstring) (do1 (do ,@body) ,teardown)))))))))
 
 
 
