@@ -2,6 +2,8 @@
 
 A unit test library for the [Arc](http://www.arclanguage.org/) programming language. It lets test suites be written and run simply.
 
+It has a [bug tracker](https://todo.sr.ht/~zck/unit-test.arc).
+
 ## Quickstart
 
 Let's get started and make some unit tests!
