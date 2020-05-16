@@ -258,12 +258,13 @@ The test should have SETUP and BODY."
      `(do-test ',names-list))
 
 (def do-test (names)
-     (if (no names)
-         (do (run-all-tests)
-             (summarize-run-of-all-tests))
-       (let unique-names (filter-unique-names names)
-            (do (run-specific-things unique-names t)
-                (summarize-run unique-names)))))
+  (let starting-time (seconds)
+    (if (no names)
+        (do (run-all-tests)
+            (summarize-run-of-all-tests starting-time))
+        (let unique-names (filter-unique-names names)
+             (do (run-specific-things unique-names t)
+                 (summarize-run unique-names starting-time))))))
 
 (mac test-and-error-on-failure names
      `(do-test-and-error-on-failure ',names))
@@ -401,7 +402,7 @@ from racket is needed to tell if all tests passed or not"
           (run-test it store-result)
           nil))
 
-(def summarize-run (names)
+(def summarize-run (names starting-time)
      "Summarize a given test run.
       That is, print out information about the overall status
       of a set of suites."
@@ -424,6 +425,7 @@ from racket is needed to tell if all tests passed or not"
              (each name names-not-found
                    (prn name))
              (prn))
+           (prn "Test run completed in " (plural (since starting-time) "second") ".")
            (if (is tests 0)
                (prn "We didn't find any tests. Odd...")
              (is passes tests)
@@ -433,9 +435,9 @@ from racket is needed to tell if all tests passed or not"
              (prn "Oh dear, " (- tests passes) " of " tests " failed."))
            (list passes tests)))
 
-(def summarize-run-of-all-tests ()
+(def summarize-run-of-all-tests (starting-time)
      "Summarise the run of all tests."
-     (summarize-run (get-all-top-level-suite-names)))
+     (summarize-run (get-all-top-level-suite-names) starting-time))
 
 
 (def total-tests (suite-results)
