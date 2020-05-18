@@ -121,12 +121,12 @@
                                                                 t))))))
 
        (suite make-test
-              (setup sample-test (make-test 'sample-suite 'sample-test nil 3)
-                     simple-setup (make-test 'sample-suite 'simple-setup (x 3) x)
-                     multiple-variable-setup (make-test 'sample-suite 'multiple-variable-setup (x 3 y 4) (+ x y))
-                     reliant-variable-setup (make-test 'sample-suite 'reliant-variable-setup (x 3 y x) (+ x y))
+              (setup sample-test (make-test 'sample-suite 'sample-test nil nil 3)
+                     simple-setup (make-test 'sample-suite 'simple-setup (x 3) nil x)
+                     multiple-variable-setup (make-test 'sample-suite 'multiple-variable-setup (x 3 y 4) nil (+ x y))
+                     reliant-variable-setup (make-test 'sample-suite 'reliant-variable-setup (x 3 y x) nil (+ x y))
                      let-setup (let suite-name 'my-suite-name
-                                    (make-test suite-name 'test-name nil t)))
+                                    (make-test suite-name 'test-name nil nil t)))
               (test test-name (assert-same 'sample-test sample-test!test-name))
               (test suite-name (assert-same 'sample-suite sample-test!suite-name))
               (test test-fn (assert-same 3
@@ -142,10 +142,24 @@
                                                         ((reliant-variable-setup!test-fn)
                                                          'return-value)))
 
-              (test suite-names-cant-have-periods (assert-error (make-test 'sample 'test.name nil)
+              (test suite-names-cant-have-periods (assert-error (make-test 'sample 'test.name nil nil)
                                                                 "Test names can't have periods in them. test.name does."))
               (test let-bound-name-works (assert-same 'my-suite-name
-                                                      let-setup!suite-name)))
+                                                      let-setup!suite-name))
+
+              (suite teardown
+                     (setup failing-test-and-teardown-result (((make-test 'sample 'failing nil ((err "fails in teardown")) (err "fails in test")) 'test-fn))
+                            failing-teardown-result (((make-test 'sample 'failing-teardown nil ((err "fails in teardown")) 'passes-in-test)
+                                                      'test-fn))
+                            multiple-teardown-passing-result (((make-test 'sample 'multiple-teardown nil ((+ 1 2) (+ 3 4))) 'test-fn))
+                            multiple-teardown-first-fails-result (((make-test 'sample 'multiple-teardown nil ((err "first teardown fails") (+ 3 4))) 'test-fn))
+                            multiple-teardown-second-fails-result (((make-test 'sample 'multiple-teardown nil ((+ 1 2) (err "second teardown fails"))) 'test-fn)))
+                     (test failing-test-and-teardown-has-test-error-message (assert-same "fails in test" failing-test-and-teardown-result!details))
+                     (test failing-teardown-message (assert-same "fails in teardown" failing-teardown-result!details))
+                     (test failing-teardown-fails (assert-same 'fail failing-teardown-result!status))
+                     (test multiple-teardown-passes (assert-same 'pass multiple-teardown-passing-result!status))
+                     (test multiple-teardown-first-fails (assert-same 'fail multiple-teardown-first-fails-result!status))
+                     (test multiple-teardown-second-fails (assert-same 'fail multiple-teardown-second-fails-result!status))))
 
        (suite make-test-fn
               ;;make-test-fn should take symbols as args.
@@ -162,7 +176,8 @@
                      let-bound-passing-names (let name 'my-special-name ((make-test-fn name name nil nil (assert-t t))))
                      let-bound-failing-names (let name 'my-special-name ((make-test-fn name name nil nil (assert-t nil))))
                      teardown-pass-result ((make-test-fn 'sample-suite 'teardown-fine nil nil 3))
-                     teardown-fail-result ((make-test-fn 'sample-suite 'teardown-errors nil (err "teardown caused this!") 3)))
+                     teardown-fail-result ((make-test-fn 'sample-suite 'teardown-errors nil ((err "teardown caused this!")) 3))
+                     teardown-multiple-values-result ((make-test-fn 'sample-suite 'teardown-multiple-values nil ((+ 1 2) (+ 3 4)))))
               (test pass-has-right-return-value (assert-same 3 pass-test-val!return-value))
               (test pass-has-test-name (assert-same 'pass-test pass-test-val!test-name))
               (test fail-has-test-name (assert-same 'fail-test fail-test-val!test-name))
@@ -194,6 +209,7 @@
                             one-of-each (make-suite nil (suite one-of-each-suite (test a 3) (suite and-nested (test b 4))))
                             two-of-each (make-suite nil (suite two-of-each-suite (test a 3) (suite b (test c 4)) (test d 5) (suite e (test f 6) (test g 7))))
                             test-with-setup (make-suite nil (suite setup-suite (setup x 3) (test a x)))
+                            suite-with-teardown (make-suite nil (suite teardown-suite (teardown (err "teardown running!")) (test foo nil)))
                             suite-with-parent (make-suite my-parent (suite empty-child-suite)))
                      (test empty-suite-has-right-name (assert-same 'empty-suite-1
                                                                    empty-suite!full-suite-name))
@@ -250,6 +266,8 @@
                      (test setup-is-done-properly (assert-same 3
                                                                ((test-with-setup!tests!a!test-fn)
                                                                 'return-value)))
+                     (test teardown-block-causes-failure (assert-same 'fail
+                                                                  ((suite-with-teardown!tests!foo!test-fn) 'status)))
 
                      (test single-suites-nested-suite-has-right-suite-name (assert-same 'a
                                                                                         single-suite!nested-suites!a!suite-name))
@@ -274,7 +292,7 @@
                      (test suite-with-bad-initial-value-errors (assert-error (make-suite nil (bad-syntax a (test b t)))
                                                                              "The first element of the suite should be the symbol 'suite. It is: bad-syntax"))
                      (test suite-with-bad-later-value-errors (assert-error (make-suite nil (suite a (bad-value b t)))
-                                                                           "Each element of a suite should begin with one of the symbols 'suite, 'test, or 'setup. This doesn't: (bad-value b t)."))
+                                                                           "Each element of a suite should begin with one of the symbols 'suite, 'test, 'setup, or 'teardown. This doesn't: (bad-value b t)."))
                      (test suite-with-bad-setup-errors (assert-error (make-suite nil (suite a (setup x) (test val t)))
                                                                      "In a setup clause, all variables should have a value. This doesn't: (setup x)")))
 
@@ -282,25 +300,48 @@
                      (setup one-test (add-tests-to-suite (inst 'suite 'suite-name 'base 'full-suite-name 'base)
                                                          base
                                                          (x 1)
+                                                         nil
                                                          ((test passes (assert-same x 1))))
                             one-test-returns-proper-value (add-tests-to-suite (inst 'suite)
                                                                               nil
                                                                               (x 42)
+                                                                              nil
                                                                               ((test returns-x x)))
                             two-tests (add-tests-to-suite (inst 'suite)
                                                           nil
                                                           (x 1)
+                                                          nil
                                                           ((test passes (assert-same x 1))
                                                            (test fails (assert-same x 2))))
                             test-with-multiple-lines (add-tests-to-suite
                                                       (inst 'suite)
                                                       nil
                                                       nil
+                                                      nil
                                                       ((test two-lines
                                                              (assert-t t)
-                                                             (assert-t nil)))))
+                                                             (assert-t nil))))
+                            suite-with-teardown-test-result
+                            (((((add-tests-to-suite
+                                 (inst 'suite)
+                                 nil
+                                 nil
+                                 ((err "teardown running!"))
+                                 ((test foo 3)))
+                                'tests)
+                               'foo)
+                              'test-fn))
+                            suite-with-multiple-tests
+                            (add-tests-to-suite (inst 'suite)
+                                                nil
+                                                nil
+                                                ((err "teardown running!"))
+                                                ((test one nil)
+                                                 (test two nil)))
+                            first-test-with-teardown-result (suite-with-multiple-tests!tests!one!test-fn)
+                            second-test-with-teardown-result (suite-with-multiple-tests!tests!two!test-fn))
                      (test no-tests (assert-same (inst 'suite)
-                                                 (add-tests-to-suite (inst 'suite) nil nil ())))
+                                                 (add-tests-to-suite (inst 'suite) nil nil nil ())))
                      (test one-is-added
                            (assert-same 1
                                         (len one-test!tests)))
@@ -340,14 +381,26 @@
                            (assert-error (add-tests-to-suite (inst 'suite 'suite-name 'base 'full-suite-name 'base 'tests (obj this-shadows (inst 'test 'test-name 'this-shadows)))
                                                              base
                                                              nil
+                                                             nil
                                                              ((test this-shadows (assert-same 3 3))))
                                          "In suite base, there are two things named this-shadows."))
                      (test shadowed-suite-errors
                            (assert-error (add-tests-to-suite (inst 'suite 'suite-name 'base 'full-suite-name 'base 'nested-suites (obj this-shadows (inst 'suite 'suite-name 'this-shadows)))
                                                              base
                                                              nil
+                                                             nil
                                                              ((suite this-shadows (test whatever (assert-same 3 3)))))
-                                         "In suite base, there are two things named this-shadows."))) ;;zck add a bunch more tests to this suite
+                                         "In suite base, there are two things named this-shadows."))
+                     (test first-test-teardown-runs
+                           (assert-same 'fail first-test-with-teardown-result!status))
+                     (test first-test-teardown-has-right-message
+                           (assert-same "teardown running!"
+                                        first-test-with-teardown-result!details))
+                     (test second-test-teardown-runs
+                           (assert-same 'fail second-test-with-teardown-result!status))
+                     (test second-test-teardown-has-right-message
+                           (assert-same "teardown running!"
+                                        second-test-with-teardown-result!details)))
               (suite add-suites-to-suite
                      (setup one-suite (add-suites-to-suite base
                                                            (inst 'suite 'suite-name 'base 'full-suite-name 'base)

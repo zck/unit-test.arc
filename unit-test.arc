@@ -105,15 +105,17 @@
                                                                                  'suite-name ,suite-name
                                                                                  'full-suite-name ',(make-full-name parent-suite-full-name cur-suite-name))
                                                                            ,(make-full-name parent-suite-full-name cur-suite-name)
-                                                                           ;;zck should this error if there's more than one setup clause?
+                                                                           ;;zck should this error if there's >1 setup, or >1 teardown clause?
                                                                            ,(cdr (car (keep-by-car suite-sexp 'setup)))
+                                                                           ,(cdr (car (keep-by-car suite-sexp 'teardown)))
                                                                            ,(keep-by-car suite-sexp 'test))
                                                        ,(keep-by-car suite-sexp 'suite))))))))
 
-(mac add-tests-to-suite (cur-suite-sexp full-suite-name setup tests-sexps)
+(mac add-tests-to-suite (cur-suite-sexp full-suite-name setup teardown tests-sexps)
      "Add tests to CUR-SUITE-SEXP, with setup SETUP. Tests come from TESTS-SEXPS.
 
-SETUP is a list of var val pairs, like (x 1) or (age 31 height 70).
+SETUP is a list of var val pairs, like (x 1), (age 31 height 70), or (backup-important-global (copy important-global)).
+Teardown is a list of s-expressions to run after the tests finish, like ((= important-global backup-important-global)).
 Don't quote FULL-SUITE-NAME."
      (if (no tests-sexps)
          cur-suite-sexp
@@ -130,10 +132,12 @@ Don't quote FULL-SUITE-NAME."
                           (make-test ',full-suite-name
                                      ',((car tests-sexps) 1) ;;this is the same as ',test-name, but needs to be macroexpanded directly. For reasons!
                                      ,setup
+                                     ,teardown
                                      ,@(cddr (car tests-sexps)))) ;;zck we need to be able to call this, right?
                        (add-tests-to-suite ,cur-suite
                                            ,full-suite-name
                                            ,setup
+                                           ,teardown
                                            ,(cdr tests-sexps))))))
 
 (mac add-suites-to-suite (full-suite-name cur-suite-sexp suites-sexps)
@@ -180,8 +184,8 @@ beginning with the symbol 'suitex ."
                                               (to-readable-string setup-clause)))
                                     (map [unless (and (acons _)
                                                       (mem (car _)
-                                                           '(suite test setup)))
-                                         (string "Each element of a suite should begin with one of the symbols 'suite, 'test, or 'setup. This doesn't: "
+                                                           '(suite test setup teardown)))
+                                         (string "Each element of a suite should begin with one of the symbols 'suite, 'test, 'setup, or 'teardown. This doesn't: "
                                                  (to-readable-string _)
                                                  ".")]
                                                  (cddr suite-sexp)))))))
@@ -206,10 +210,12 @@ beginning with the symbol 'suitex ."
   suite-name 'test-with-no-suite-name
   test-fn (fn args (assert nil "You didn't give this test a body. So I'm making it fail.")))
 
-(mac make-test (suite-name test-name setup . body)
+(mac make-test (suite-name test-name setup teardown . body)
      "Make a test for SUITE-NAME named TEST-NAME. Quote both of these.
 
-The test should have SETUP and BODY."
+The test should have SETUP, TEARDOWN, and BODY. SETUP is a list of
+variable-value pairs, like (x 3 y (+ x 2)). TEARDOWN is a list of
+s-expressions to run after the test, like ((wipe test-storage))."
      `(if (no (is-valid-name ,test-name))
           (err (string "Test names can't have periods in them. "
                        ,test-name
@@ -217,8 +223,7 @@ The test should have SETUP and BODY."
         (inst 'test
               'suite-name ,suite-name
               'test-name ,test-name
-              ;; zck replace nil with teardown, when we actually have one.
-              'test-fn (make-test-fn ,suite-name ,test-name ,setup nil ,@body))))
+              'test-fn (make-test-fn ,suite-name ,test-name ,setup ,teardown ,@body))))
 
 (mac make-test-fn (suite-name test-name setup teardown . body)
      `(fn ()
@@ -235,7 +240,7 @@ The test should have SETUP and BODY."
                                           'test-name ,test-name
                                           'full-test-name (make-full-name ,suite-name ,test-name)
                                           'status 'pass
-                                          'return-value (w/stdout (outstring) (do1 (do ,@body) ,teardown)))))))))
+                                          'return-value (w/stdout (outstring) (do1 (do ,@body) ,@teardown)))))))))
 
 
 
