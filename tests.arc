@@ -87,7 +87,8 @@
 
               (suite assert-t
                      (test t-is-good (assert-t t))
-                     (test nil-throws (assert-error (assert-t nil)))
+                     (test nil-throws (assert-error (assert-t nil)
+                                                    "nil should be non-nil but instead was nil"))
                      (test 3-is-treated-as-good (assert-t 3)))
 
               (suite assert-nil
