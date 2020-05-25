@@ -226,21 +226,25 @@ s-expressions to run after the test, like ((wipe test-storage))."
               'test-fn (make-test-fn ,suite-name ,test-name ,setup ,teardown ,@body))))
 
 (mac make-test-fn (suite-name test-name setup teardown . body)
-     `(fn ()
-          (on-err (fn (ex) (inst 'test-result
-                                 'suite-name ,suite-name
-                                 'test-name ,test-name
-                                 'full-test-name (make-full-name ,suite-name ,test-name)
-                                 'status 'fail
-                                 'details (details ex)))
-                  (fn ()
-                      (eval '(withs ,setup
-                                    (inst 'test-result
-                                          'suite-name ,suite-name
-                                          'test-name ,test-name
-                                          'full-test-name (make-full-name ,suite-name ,test-name)
-                                          'status 'pass
-                                          'return-value (w/stdout (outstring) (do1 (do ,@body) ,@teardown)))))))))
+     (let test-code `'(withs ,setup (do1 (do ,@body) ,@teardown))
+          `(fn ()
+               (let test-code ,test-code
+                    (on-err (fn (ex) (inst 'test-result
+                                           'suite-name ,suite-name
+                                           'test-name ,test-name
+                                           'full-test-name (make-full-name ,suite-name ,test-name)
+                                           'status 'fail
+                                           'details (details ex)
+                                           'code ,test-code))
+                            (fn ()
+                                (eval '(withs ,setup
+                                        (inst 'test-result
+                                         'suite-name ,suite-name
+                                         'test-name ,test-name
+                                         'full-test-name (make-full-name ,suite-name ,test-name)
+                                         'status 'pass
+                                         'return-value (w/stdout (outstring) (do1 (do ,@body) ,@teardown))
+                                         'code ,test-code)))))))))
 
 
 
@@ -250,7 +254,8 @@ s-expressions to run after the test, like ((wipe test-storage))."
   suite-name 'test-results-with-no-suite-name
   status 'fail
   details "test results with no details"
-  return-value nil)
+  return-value nil
+  test-code nil)
 
 (def pretty-results (test-result)
      "Print out a pretty summary of TEST-RESULT."

@@ -178,7 +178,9 @@
                      let-bound-failing-names (let name 'my-special-name ((make-test-fn name name nil nil (assert-t nil))))
                      teardown-pass-result ((make-test-fn 'sample-suite 'teardown-fine nil nil 3))
                      teardown-fail-result ((make-test-fn 'sample-suite 'teardown-errors nil ((err "teardown caused this!")) 3))
-                     teardown-multiple-values-result ((make-test-fn 'sample-suite 'teardown-multiple-values nil ((+ 1 2) (+ 3 4)))))
+                     teardown-multiple-values-result ((make-test-fn 'sample-suite 'teardown-multiple-values nil ((+ 1 2) (+ 3 4))))
+                     passing-result-setup-and-teardown ((make-test-fn 'sample-suite 'setup-and-teardown (x 3) ((prn "teardown")) (assert-same 3 3) (assert-same 4 (* 2 2))))
+                     failing-result-setup-and-teardown ((make-test-fn 'sample-suite 'setup-and-teardown (x 3) ((prn "teardown")) (assert-same 3 3) (assert-same 4 (* 2 -2)))))
               (test pass-has-right-return-value (assert-same 3 pass-test-val!return-value))
               (test pass-has-test-name (assert-same 'pass-test pass-test-val!test-name))
               (test fail-has-test-name (assert-same 'fail-test fail-test-val!test-name))
@@ -200,7 +202,13 @@
               (test teardown-fail-causes-failure (assert-same 'fail teardown-fail-result!status))
               (test teardown-fail-error-message (assert-same "teardown caused this!" teardown-fail-result!details))
               (test teardown-pass-success (assert-same 'pass teardown-pass-result!status))
-              (test teardown-pass-result (assert-same 3 teardown-pass-result!return-value)))
+              (test teardown-pass-result (assert-same 3 teardown-pass-result!return-value))
+              (test passing-has-proper-code
+                    (assert-same '(withs (x 3) (do1 (do (assert-same 3 3) (assert-same 4 (* 2 2))) (prn "teardown")))
+                                 passing-result-setup-and-teardown!code))
+              (test failing-has-proper-code
+                    (assert-same '(withs (x 3) (do1 (do (assert-same 3 3) (assert-same 4 (* 2 -2))) (prn "teardown")))
+                                 failing-result-setup-and-teardown!code)))
 
        (suite suite-creation
               (suite make-suite
