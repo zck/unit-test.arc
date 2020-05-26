@@ -261,8 +261,11 @@ s-expressions to run after the test, like ((wipe test-storage))."
      "Print out a pretty summary of TEST-RESULT."
      (pr test-result!suite-name "." test-result!test-name " ")
      (if (is test-result!status 'pass)
-         (prn  "passed!")
-       (prn "failed: " test-result!details)))
+         (prn "passed!")
+         (prn "failed: "
+              test-result!details
+              ".\trerun this test: "
+              test-result!code)))
 
 (mac test names-list
      `(do-test ',names-list))
