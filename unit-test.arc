@@ -255,7 +255,7 @@ s-expressions to run after the test, like ((wipe test-storage))."
   status 'fail
   details "test results with no details"
   return-value nil
-  test-code nil)
+  code nil)
 
 (def pretty-results (test-result)
      "Print out a pretty summary of TEST-RESULT."
