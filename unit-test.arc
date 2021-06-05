@@ -257,15 +257,21 @@ s-expressions to run after the test, like ((wipe test-storage))."
   return-value nil
   code nil)
 
-(def pretty-results (test-result)
-     "Print out a pretty summary of TEST-RESULT."
-     (pr test-result!suite-name "." test-result!test-name " ")
-     (if (is test-result!status 'pass)
-         (prn "passed!")
-         (prn "failed: "
-              test-result!details
-              ".\trerun this test: "
-              test-result!code)))
+(def pretty-results (test-result (o verbose nil))
+  "Print out a pretty summary of TEST-RESULT."
+  ;; (prn "pretty resultsing!")
+  (let indentation (newstring (* 4 (get-nesting-level test-result!full-test-name))
+                              #\space)
+    ;;zck maybe this should always be on? Or at least, it should be working now?
+    (when (or verbose (is test-result!status 'fail))
+      (pr test-result!suite-name "." test-result!test-name " "))
+    (if (is test-result!status 'fail)
+        (prn "failed: "
+             test-result!details
+             ".\trerun this test: "
+             test-result!code)
+        verbose
+        (prn "passed!"))))
 
 (mac test names-list
      `(do-test ',names-list))
@@ -530,7 +536,7 @@ from racket is needed to tell if all tests passed or not"
 ;;compare (print-run-summary 'unit-test-tests.suite-creation.add-tests-to-suite)
 ;;with (print-run-summary 'unit-test-tests.suite-creation.add-tests-to-suite.passing-test-passes)
 
-(def print-suite-run-summary (suite-results-template (o nesting-dedent-level 0))
+(def print-suite-run-summary (suite-results-template (o nesting-dedent-level 0) (o verbose nil))
      (when suite-results-template
        (with (tests 0
               passed 0)
@@ -543,6 +549,7 @@ from racket is needed to tell if all tests passed or not"
                                            (string suite-results-template!suite-name))
                                     nesting-dedent-level))
                               #\space))
+               ;;zck after adding tests, refactor to add verbosity
                (if (is tests 0)
                    (prn "There are no tests directly in suite " suite-results-template!suite-name ".")
                  (is tests passed 1)
@@ -551,7 +558,7 @@ from racket is needed to tell if all tests passed or not"
                  (prn "Suite " suite-results-template!suite-name ": all " tests " tests passed!")
                  (do (prn "Suite " suite-results-template!suite-name ":")
                      (each (test-name test-result) suite-results-template!test-results
-                           (pretty-results test-result))
+                      (pretty-results test-result))
                    (prn "In suite " suite-results-template!suite-name ", " passed " of " tests " tests passed."))))
        (each (nested-name nested-results) suite-results-template!nested-suite-results
              (print-suite-run-summary nested-results nesting-dedent-level))))

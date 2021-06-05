@@ -690,6 +690,28 @@
               (test nested-empty-suites-removed
                     (assert-same (obj)
                                  (remove-thing '(top middle bottom)
-                                               deep-nested-suite)))))
+                                               deep-nested-suite))))
+
+       (suite print-suite-run-summary
+              (test empty-top-level (assert-same "There are no tests directly in suite empty-suite.\n"
+                                                 (tostring (print-suite-run-summary (inst 'suite-result 'suite-name 'empty-suite 'test-results (obj) 'nested-suite-results (obj))))))
+              (test single-passing-test
+                    (assert-same "Suite single-passing-test: the single test passed!\n"
+                                 (tostring (print-suite-run-summary (inst 'suite-results 'suite-name 'single-passing-test 'test-results (obj foo (inst 'test-result 'status 'pass)))))))
+              (test single-failing-test
+                    (assert-same "Suite single-failing-test:\nsingle-failing-suite.foo failed: fail message here.\trerun this test: (this is failing code)\nIn suite single-failing-test, 0 of 1 tests passed.\n"
+                                 (tostring (print-suite-run-summary (inst 'suite-results 'suite-name 'single-failing-test 'test-results (obj foo (inst 'test-result 'test-name 'foo 'suite-name 'single-failing-suite 'status 'fail 'code '(this is failing code) 'details "fail message here")))))))
+              (test two-passing-tests
+                    (assert-same "Suite two-passing: all 2 tests passed!\n"
+                                 (tostring (print-suite-run-summary (inst 'suite-results 'suite-name 'two-passing 'test-results (obj foo (inst 'test-result 'status 'pass) bar (inst 'test-result 'status 'pass)))))))
+              (test empty-second-level (assert-same "    There are no tests directly in suite empty.suite.\n"
+                                                    (tostring (print-suite-run-summary (inst 'suite-result 'suite-name 'empty.suite 'test-results (obj) 'nested-suite-results (obj))))))
+              ;;zck add more tests before refactoring
+              )
+       (suite pretty-results
+              (test passing (assert-same "s.t passed!\n"
+                                         (tostring (pretty-results (inst 'test-result 'suite-name 's 'test-name 't 'full-test-name 's.t 'status 'pass) t))))
+              (test failing (assert-same "s.t failed: everything hurts.\trerun this test: (huh?)\n"
+                                         (tostring (pretty-results (inst 'test-result 'suite-name 's 'test-name 't 'full-test-name 's.t 'status 'fail 'details "everything hurts" 'code '(huh?))))))))
 
 ;;minitest in ruby
